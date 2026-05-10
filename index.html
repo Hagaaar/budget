@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Budget mensuel — Hicham</title>
+<style>
+/* ── Lock screen ── */
+#lock-screen { position:fixed;inset:0;background:#1a1a1a;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem; }
+#lock-screen.hidden { display:none; }
+.lock-title { font-size:15px;color:#777;letter-spacing:.05em; }
+.pin-dots { display:flex;gap:18px; }
+.pin-dot { width:14px;height:14px;border-radius:50%;border:1.5px solid #555;background:transparent;transition:background .1s; }
+.pin-dot.filled { background:#e8e8e6;border-color:#e8e8e6; }
+.pin-dot.error { background:#e07070;border-color:#e07070; }
+.pin-pad { display:grid;grid-template-columns:repeat(3,72px);gap:12px; }
+.pin-key { width:72px;height:72px;border-radius:50%;border:1px solid #333;background:#2e2e2e;color:#e8e8e6;font-size:22px;font-family:-apple-system,Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none; }
+.pin-key:active { background:#444; }
+.pin-key.del { font-size:18px;color:#888; }
+.pin-key.empty { border:none;background:transparent;cursor:default; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
+.shake { animation:shake .35s ease; }
+
+/* ── Base ── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{overflow-x:hidden;}
+body { font-family:-apple-system,Arial,sans-serif;background:#1a1a1a;color:#e8e8e6;min-height:100vh;padding:.6rem .5rem; }
+input[type=number]{-moz-appearance:textfield;}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+
+/* ── Header ── */
+.header { display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem; }
+.mois-input { background:none;border:none;border-bottom:1px dashed #555;color:#aaa;font-size:18px;font-weight:400;font-family:-apple-system,Arial,sans-serif;width:115px;outline:none;cursor:text; }
+.mois-input:focus { border-bottom-color:#999; }
+.sync-badge { font-size:10px;display:flex;align-items:center;gap:4px;color:#666; }
+#sync-dot { width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0; }
+#sync-dot.syncing { background:#e8a84f;animation:pulse .8s infinite; }
+#sync-dot.ok { background:#6dbf8a; }
+#sync-dot.err { background:#e07070; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Tabs ── */
+.tabs { display:flex;gap:6px;margin-bottom:.75rem; }
+.tab { flex:1;padding:8px 6px;border-radius:8px;border:1px solid #444;background:#2e2e2e;cursor:pointer;font-size:13px;color:#999;text-align:center;-webkit-tap-highlight-color:transparent; }
+.tab.active { background:#3a3a3a;color:#e8e8e6;font-weight:500;border-color:#666; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── Metric cards ── */
+.cards { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:.75rem; }
+.card { background:#2e2e2e;border-radius:8px;padding:8px 10px;border:1px solid #383838;min-width:0; }
+.card.green-bg { background:#1e2e22;border-color:#2d4a33; }
+.card.red-bg { background:#2e1e1e;border-color:#4a2d2d; }
+.card-label { font-size:10px;color:#888;margin-bottom:2px; }
+.card-value { font-size:17px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.card-value.green { color:#6dbf8a; }
+.card-value.red { color:#e07070; }
+.card-value.white { color:#e8e8e6; }
+.editable-val { background:none;border:none;border-bottom:1px dashed #555;color:#e8e8e6;font-size:17px;font-weight:500;font-family:-apple-system,Arial,sans-serif;width:80px;outline:none;appearance:textfield; }
+.editable-val:focus{border-bottom-color:#999;}
+
+/* ── Entry form ── */
+.entry-form { margin-bottom:.75rem; }
+.entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
+.entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
+.entry-form input, .entry-form select {
+padding:10px 8px;border:1px solid #444;border-radius:7px;
+background:#2a2a2a;color:#e8e8e6;font-size:14px;
+font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
+}
+.entry-form input[type=number]{appearance:textfield;}
+.btn-add { width:100%;padding:10px;background:#3a3a3a;border:1px solid #555;border-radius:7px;color:#e8e8e6;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.btn-add:active{background:#484848;}
+.btn-undo { width:100%;padding:10px;background:#3a3a3a;border:1px solid #555;border-radius:7px;color:#e8e8e6;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.btn-undo:active{background:#484848;}
+
+/* ── Category groups ── */
+.cat-group { margin-bottom:.5rem; }
+.cat-header { display:flex;justify-content:space-between;align-items:center;padding:5px 6px;background:#242424;border-radius:6px 6px 0 0;border-bottom:1px solid #333; }
+.cat-header-name { font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.04em; }
+.cat-header-right { display:flex;gap:10px;align-items:center; }
+.cat-budget { font-size:10px;color:#666; }
+.cat-reste { font-size:12px;font-weight:500; }
+.cat-reste.green{color:#6dbf8a;} .cat-reste.red{color:#e07070;}
+.entry-row-item { display:flex;align-items:center;padding:7px 6px;border-bottom:1px solid #222;background:#1e1e1e; }
+.entry-row-item:last-child{border-bottom:none;border-radius:0 0 6px 6px;}
+.entry-desc { flex:1;font-size:13px;color:#ccc; }
+.entry-amount { font-size:13px;color:#bbb;font-variant-numeric:tabular-nums;margin-right:8px;white-space:nowrap; }
+.entry-edit-desc { flex:1;background:none;border:none;border-bottom:1px dashed #333;color:#ccc;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0; }
+.entry-edit-desc:focus { border-bottom-color:#666;color:#e8e8e6; }
+.entry-edit-amount { width:62px;text-align:right;background:none;border:none;border-bottom:1px dashed #333;color:#bbb;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;appearance:textfield;padding:0;margin:0 8px;flex-shrink:0; }
+.entry-edit-amount:focus { border-bottom-color:#666;color:#e8e8e6; }
+.entry-edit-amount::-webkit-outer-spin-button,.entry-edit-amount::-webkit-inner-spin-button{-webkit-appearance:none;}
+.btn-sec-add { width:100%;padding:8px;background:none;border:1px dashed #444;border-radius:6px;color:#666;font-size:12px;cursor:pointer;margin-top:4px;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
+.btn-sec-add:active{color:#999;border-color:#666;}
+.budget-row-label-input { flex:1;background:none;border:none;border-bottom:1px dashed #333;color:#d8d8d6;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;margin-right:8px; }
+.budget-row-label-input:focus{border-bottom-color:#666;color:#e8e8e6;}
+.btn-row-del { background:none;border:none;color:#333;font-size:13px;cursor:pointer;padding:2px 4px;margin-left:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0; }
+.btn-row-del:active{color:#e07070;}
+.btn-del { background:none;border:none;color:#444;font-size:14px;cursor:pointer;padding:2px 4px;-webkit-tap-highlight-color:transparent; }
+.btn-del:active{color:#e07070;}
+.cat-empty { padding:8px 6px;font-size:12px;color:#444;background:#1e1e1e;border-radius:0 0 6px 6px; }
+
+/* ── Budget projeté table ── */
+.budget-section { margin-bottom:.75rem; }
+.budget-section-title { font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.05em;padding:5px 4px;border-bottom:1px solid #2e2e2e;margin-bottom:2px; }
+.budget-row { display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid #222; }
+.budget-row:last-child{border-bottom:none;}
+.budget-row-label { font-size:13px;color:#d8d8d6; }
+.budget-input-wrap { position:relative;display:inline-block; }
+.budget-input { width:80px;text-align:right;padding:5px 26px 5px 6px;border:1px solid #444;border-radius:6px;background:#2e2e2e;color:#e8e8e6;font-size:13px;font-family:-apple-system,Arial,sans-serif;appearance:textfield;outline:none; }
+.budget-input:focus{border-color:#777;}
+.budget-arrows { position:absolute;right:0;top:0;bottom:0;width:22px;display:flex;flex-direction:column;border-left:1px solid #444; }
+.budget-arr { flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#777;font-size:8px;user-select:none;-webkit-tap-highlight-color:transparent; }
+.budget-arr:active{background:#3a3a3a;color:#ccc;}
+.budget-arr:first-child{border-bottom:1px solid #444;border-radius:0 6px 0 0;}
+.budget-arr:last-child{border-radius:0 0 6px 0;}
+
+/* ── Boutons fin de mois ── */
+.action-btns { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1rem; }
+.btn-archive { padding:11px;background:#1e2e22;border:1px solid #2d4a33;border-radius:8px;color:#6dbf8a;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
+.btn-reset { padding:11px;background:#2e1e1e;border:1px solid #4a2d2d;border-radius:8px;color:#e07070;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
+#action-msg { text-align:center;font-size:11px;color:#666;margin-top:6px;min-height:14px; }
+</style>
+
+</head>
+<body>
+
+<!-- PIN -->
+
+<div id="lock-screen">
+  <div class="lock-title">Code d'accès</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-pad">
+    <div class="pin-key" onclick="pinPress('1')">1</div><div class="pin-key" onclick="pinPress('2')">2</div><div class="pin-key" onclick="pinPress('3')">3</div>
+    <div class="pin-key" onclick="pinPress('4')">4</div><div class="pin-key" onclick="pinPress('5')">5</div><div class="pin-key" onclick="pinPress('6')">6</div>
+    <div class="pin-key" onclick="pinPress('7')">7</div><div class="pin-key" onclick="pinPress('8')">8</div><div class="pin-key" onclick="pinPress('9')">9</div>
+    <div class="pin-key empty"></div><div class="pin-key" onclick="pinPress('0')">0</div><div class="pin-key del" onclick="pinDel()">⌫</div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div style="display:flex;align-items:baseline;gap:6px">
+      <span style="font-size:18px;font-weight:600;color:#e8e8e6;letter-spacing:.02em">BUDGET</span>
+      <input class="mois-input" id="mois-input" type="text" value="Mai 2026" oninput="save()">
+    </div>
+    <div class="sync-badge"><span id="sync-dot"></span><span id="sync-label">—</span></div>
+  </div>
+
+  <!-- Tabs -->
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
+    <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
+  </div>
+
+  <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
+
+  <div id="reel" class="panel active">
+    <!-- Formulaire de saisie -->
+    <div class="entry-form">
+      <div class="entry-row1">
+        <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+        <input type="text" id="e-desc" placeholder="Description">
+      </div>
+      <div class="entry-row2">
+        <select id="e-cat"></select>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <button class="btn-add" onclick="addEntry()">+</button>
+
+```
+    </div>
+  </div>
+</div>
+
+<!-- Totaux -->
+<div class="cards" style="margin-bottom:.75rem">
+  <div class="card">
+    <div class="card-label">Dépensé réel</div>
+    <div class="card-value white" id="r-reel">0,00 €</div>
+  </div>
+  <div class="card green-bg">
+    <div class="card-label">Reste réel</div>
+    <div class="card-value green" id="r-reste-reel">0 €</div>
+  </div>
+</div>
+
+<!-- Liste par catégorie -->
+<div id="cat-list"></div>
+
+<!-- Boutons fin de mois -->
+<div class="action-btns">
+  <button class="btn-archive" onclick="archiverMois()">📦 Archiver</button>
+  <button class="btn-reset" onclick="remiseAZero()">🗑 Remettre à zéro</button>
+</div>
+<div id="action-msg"></div>
+```
+
+  </div>
+
+  <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
+
+  <div id="budget" class="panel">
+    <!-- Salaire / Fixes -->
+    <div class="cards">
+      <div class="card">
+        <div class="card-label">Salaire net</div>
+        <input class="editable-val" id="salaire" type="number" value="2779" oninput="recalc()">
+      </div>
+      <div class="card red-bg">
+        <div class="card-label">Total fixes</div>
+        <div class="card-value red" id="b-fixes">1 806 €</div>
+      </div>
+    </div>
+
+```
+<!-- Budget variable / Reste -->
+<div class="cards">
+  <div class="card red-bg">
+    <div class="card-label">Budget variable</div>
+    <div class="card-value red" id="b-variable">660 €</div>
+  </div>
+  <div class="card green-bg">
+    <div class="card-label">Reste (sal − fixes − variable)</div>
+    <div class="card-value green" id="b-reste">313 €</div>
+  </div>
+</div>
+
+<!-- Variable -->
+<div class="budget-section">
+  <div class="budget-section-title">Dépenses variables budgétées</div>
+  <div id="sec-variable"></div>
+  <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
+</div>
+
+<!-- Logement -->
+<div class="budget-section">
+  <div class="budget-section-title">Logement</div>
+  <div id="sec-logement"></div>
+  <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
+</div>
+
+<!-- Abonnements -->
+<div class="budget-section">
+  <div class="budget-section-title">Abonnements &amp; services</div>
+  <div id="sec-abonnements"></div>
+  <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
+</div>
+
+<!-- Épargne -->
+<div class="budget-section">
+  <div class="budget-section-title">Épargne</div>
+  <div id="sec-epargne"></div>
+  <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
+</div>
+```
+
+  </div>
+
+</div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7KOFqysA2tM2Z8cLvonibuhULS7TSrLyTj77bRLn5undjoIlAooeY50RiicOedtixpg/exec';
+  const CATS = ['Courses','Restaurants','Loisirs','J. Challenge','L. Challenge','Divers']; // initial, becomes dynamic
+  let entries = [], entryId = 0, budgetRowId = 0;
+
+  function getCats() { return budgetSections.variable.map(r => r.label); }
+
+  function refreshCatSelect() {
+    const sel = document.getElementById('e-cat');
+    const current = sel.value;
+    sel.innerHTML = getCats().map(c => `<option${c===current?' selected':''}>${c}</option>`).join('');
+  }
+
+  let budgetSections = {
+    variable: [
+      {id:1,label:'Courses',value:300},{id:2,label:'Restaurants',value:100},
+      {id:3,label:'Loisirs',value:100},{id:4,label:'J. Challenge',value:20},
+      {id:5,label:'L. Challenge',value:60},{id:6,label:'Divers',value:80}
+    ],
+    logement: [
+      {id:7,label:'Loyer',value:640},{id:8,label:'\u00c9lectricit\u00e9',value:50},{id:9,label:'Internet',value:24}
+    ],
+    abonnements: [
+      {id:10,label:'T\u00e9l\u00e9phone',value:9},{id:11,label:'Assurance habitation',value:14},
+      {id:12,label:'Frais bancaires',value:2.5},{id:13,label:'Spotify',value:13},
+      {id:14,label:'Claude Pro',value:22},{id:15,label:'Gemini',value:11}
+    ],
+    epargne: [
+      {id:16,label:'Famille',value:200},{id:17,label:'PEA',value:200},{id:18,label:'PER',value:250},
+      {id:19,label:'Assurance vie',value:50},{id:20,label:"Fin d'ann\u00e9e",value:120},{id:21,label:'P. Challenge',value:200}
+    ]
+  };
+  budgetRowId = 21;
+
+  const fmt = n => n.toFixed(2).replace('.',',') + ' \u20ac';
+  const fmtR = n => Math.round(n) + ' \u20ac';
+  const gv = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+  function showTab(id, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function getFixesTotal() {
+    return ['logement','abonnements','epargne'].reduce((s,sec) =>
+      s + budgetSections[sec].reduce((ss,r) => ss + r.value, 0), 0);
+  }
+  function getVariableTotal() { return budgetSections.variable.reduce((s,r) => s + r.value, 0); }
+  function getVariableBudgetForCat(cat) {
+    const row = budgetSections.variable.find(r => r.label.trim().toLowerCase() === cat.trim().toLowerCase());
+    return row ? row.value : 0;
+  }
+  function getReelTotal() { return entries.reduce((s,e) => s + e.montant, 0); }
+  function getSpentByCat(cat) {
+    return entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase()).reduce((s,e) => s + e.montant, 0);
+  }
+
+  function renderBudgetSection(secKey) {
+    const container = document.getElementById('sec-' + secKey);
+    if (!container) return;
+    container.innerHTML = '';
+    budgetSections[secKey].forEach(row => {
+      const div = document.createElement('div');
+      div.className = 'budget-row';
+      div.id = 'brow-' + row.id;
+      div.innerHTML = `
+        <input class="budget-row-label-input" type="text" value="${row.label}"
+          onchange="updateBudgetRow(${row.id},'label',this.value)">
+        <div class="budget-input-wrap">
+          <input class="budget-input" type="number" value="${row.value}"
+            onchange="updateBudgetRow(${row.id},'value',this.value)">
+          <div class="budget-arrows">
+            <div class="budget-arr" onclick="stepBudgetRow(${row.id},10)">\u25b2</div>
+            <div class="budget-arr" onclick="stepBudgetRow(${row.id},-10)">\u25bc</div>
+          </div>
+        </div>
+        <button class="btn-row-del" onclick="removeBudgetRow('${secKey}',${row.id})">\u2715</button>`;
+      container.appendChild(div);
+    });
+  }
+  function renderAllBudgetSections() {
+    ['variable','logement','abonnements','epargne'].forEach(renderBudgetSection);
+    refreshCatSelect();
+  }
+  function updateBudgetRow(id, field, value) {
+    for (const [secKey, sec] of Object.entries(budgetSections)) {
+      const row = sec.find(r => r.id === id);
+      if (row) {
+        if (field === 'value') row.value = parseFloat(value) || 0;
+        else row[field] = value;
+        if (secKey === 'variable' && field === 'label') refreshCatSelect();
+        break;
+      }
+    }
+    recalc();
+  }
+  function stepBudgetRow(id, delta) {
+    for (const sec of Object.values(budgetSections)) {
+      const row = sec.find(r => r.id === id);
+      if (row) { row.value = Math.max(0, row.value + delta); break; }
+    }
+    renderAllBudgetSections(); recalc();
+  }
+  function addBudgetRow(secKey) {
+    budgetSections[secKey].push({id:++budgetRowId, label:'Nouvelle ligne', value:0});
+    renderBudgetSection(secKey);
+    if (secKey === 'variable') refreshCatSelect();
+    recalc();
+  }
+  function removeBudgetRow(secKey, id) {
+    if (budgetSections[secKey].length <= 1) return;
+    budgetSections[secKey] = budgetSections[secKey].filter(r => r.id !== id);
+    renderBudgetSection(secKey);
+    if (secKey === 'variable') refreshCatSelect();
+    recalc();
+  }
+
+  function recalc() {
+    const fixes = getFixesTotal();
+    const variable = getVariableTotal();
+    const salaire = gv('salaire');
+    const reste = salaire - fixes - variable;
+    const reelTotal = getReelTotal();
+    const resteReel = salaire - fixes - reelTotal;
+
+    document.getElementById('b-fixes').textContent = fmtR(fixes);
+    document.getElementById('b-variable').textContent = fmtR(variable);
+    document.getElementById('b-reste').textContent = fmtR(reste);
+    document.getElementById('b-reste').className = 'card-value ' + (reste >= 0 ? 'green' : 'red');
+
+    document.getElementById('r-reel').textContent = fmt(reelTotal);
+    document.getElementById('r-reste-reel').textContent = fmtR(resteReel);
+    document.getElementById('r-reste-reel').className = 'card-value ' + (resteReel >= 0 ? 'green' : 'red');
+    document.getElementById('r-reste-reel').closest('.card').className = 'card ' + (resteReel >= 0 ? 'green-bg' : 'red-bg');
+
+    refreshCatList();
+    save();
+  }
+
+  function refreshCatList() {
+    const container = document.getElementById('cat-list');
+    container.innerHTML = '';
+    getCats().forEach(cat => {
+      const budget = getVariableBudgetForCat(cat);
+      const spent = getSpentByCat(cat);
+      const reste = budget - spent;
+      const catEntries = entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase());
+
+      // Grouper par description (insensible à la casse)
+      const grouped = {};
+      catEntries.forEach(e => {
+        const key = (e.desc || '—').trim().toLowerCase();
+        if (!grouped[key]) grouped[key] = { desc: (e.desc || '—').trim(), total: 0, ids: [] };
+        grouped[key].total += e.montant;
+        grouped[key].ids.push(e.id);
+      });
+
+      const grp = document.createElement('div');
+      grp.className = 'cat-group';
+      const clrReste = reste >= 0 ? 'green' : 'red';
+      grp.innerHTML = `
+        <div class="cat-header">
+          <span class="cat-header-name">${cat}</span>
+          <div class="cat-header-right">
+            <span class="cat-budget">budget ${fmtR(budget)}</span>
+            <span class="cat-reste ${clrReste}">${reste >= 0 ? '+' : ''}${fmtR(reste)}</span>
+          </div>
+        </div>`;
+
+      if (Object.keys(grouped).length === 0) {
+        grp.innerHTML += `<div class="cat-empty">Aucune dépense</div>`;
+      } else {
+        Object.values(grouped).forEach(g => {
+          const row = document.createElement('div');
+          row.className = 'entry-row-item';
+          const countBadge = g.ids.length > 1 ? ` <span style="font-size:10px;color:#666;margin-left:4px">${g.ids.length}×</span>` : '';
+          row.innerHTML = `
+            <span class="entry-desc">${g.desc}${countBadge}</span>
+            <span class="entry-amount">${fmt(g.total)}</span>
+            <button class="btn-del" onclick="removeGroup('${cat}','${g.desc.replace(/'/g,"\\'")}')">✕</button>`;
+          grp.appendChild(row);
+        });
+      }
+      container.appendChild(grp);
+    });
+  }
+
+  function removeGroup(cat, desc) {
+    entries = entries.filter(e => !(e.cat?.trim().toLowerCase() === cat.trim().toLowerCase() && (e.desc || '—').trim() === desc));
+    recalc();
+  }
+
+  function addEntry() {
+    const montant = parseFloat(document.getElementById('e-montant').value);
+    const desc = document.getElementById('e-desc').value.trim();
+    const cat = document.getElementById('e-cat').value;
+    if (!montant || montant <= 0) return;
+    entries.push({ id: ++entryId, montant, desc, cat });
+    document.getElementById('e-montant').value = '';
+    document.getElementById('e-desc').value = '';
+    recalc();
+  }
+
+  function undoEntry() {
+    if (entries.length === 0) return;
+    entries.pop();
+    recalc();
+  }
+
+  function updateEntry(id, field, value) {
+    const e = entries.find(e => e.id === id);
+    if (!e) return;
+    if (field === 'montant') { const v = parseFloat(value); if (v > 0) e.montant = v; }
+    else e[field] = value;
+    recalc();
+  }
+
+  function removeEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    recalc();
+  }
+
+  // ── Sync ─────────────────────────────────────────────────────────────────
+  function setSyncStatus(state) {
+    const dot = document.getElementById('sync-dot');
+    const lbl = document.getElementById('sync-label');
+    dot.className = state;
+    lbl.textContent = state === 'syncing' ? 'Sync…' : state === 'ok' ? 'Synchronisé' : 'Hors ligne';
+  }
+
+  function getPayload() {
+    return { entries, entryId, budgetSections, budgetRowId,
+      mois: document.getElementById('mois-input').value, salaire: gv('salaire') };
+  }
+
+  function applyData(d) {
+    if (d.entries) entries = d.entries;
+    if (d.entryId) entryId = parseInt(d.entryId);
+    if (d.budgetSections) budgetSections = d.budgetSections;
+    if (d.budgetRowId) budgetRowId = parseInt(d.budgetRowId);
+    if (d.mois) document.getElementById('mois-input').value = d.mois;
+    if (d.salaire) document.getElementById('salaire').value = d.salaire;
+  }
+
+  let saveTimer = null;
+  function save() {
+    localStorage.setItem('bm_bak', JSON.stringify(getPayload()));
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(async () => {
+      setSyncStatus('syncing');
+      try {
+        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(getPayload()) });
+        setSyncStatus('ok');
+      } catch(e) { setSyncStatus('err'); }
+    }, 800);
+  }
+
+  async function load() {
+    setSyncStatus('syncing');
+    try {
+      const r = await fetch(SCRIPT_URL);
+      const d = await r.json();
+      if (d && Object.keys(d).length > 0) { applyData(d); setSyncStatus('ok'); }
+      else {
+        const bk = localStorage.getItem('bm_bak');
+        if (bk) applyData(JSON.parse(bk));
+        setSyncStatus('ok');
+      }
+    } catch(e) {
+      const bk = localStorage.getItem('bm_bak');
+      if (bk) applyData(JSON.parse(bk));
+      setSyncStatus('err');
+    }
+  }
+
+  // ── Fin de mois ──────────────────────────────────────────────────────────
+  async function archiverMois() {
+    const mois = document.getElementById('mois-input').value;
+    if (!confirm('Archiver "' + mois + '" dans Google Sheets ?')) return;
+    const msg = document.getElementById('action-msg');
+    msg.style.color = '#e8a84f'; msg.textContent = 'Archivage en cours…';
+    try {
+      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ action:'archive', mois, data: getPayload() }) });
+      msg.style.color = '#6dbf8a'; msg.textContent = '✓ "' + mois + '" archivé';
+    } catch(e) { msg.style.color = '#e07070'; msg.textContent = 'Erreur — vérifie ta connexion'; }
+    setTimeout(() => msg.textContent = '', 4000);
+  }
+
+  function remiseAZero() {
+    const mois = document.getElementById('mois-input').value;
+    if (!confirm('Supprimer toutes les dépenses de "' + mois + '" ?')) return;
+    entries = []; entryId = 0;
+    recalc();
+    const msg = document.getElementById('action-msg');
+    msg.style.color = '#6dbf8a'; msg.textContent = '✓ Dépenses effacées';
+    setTimeout(() => msg.textContent = '', 3000);
+  }
+
+  function verifierNouveauMois() {
+    const moisActuel = document.getElementById('mois-input').value;
+    const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const now = new Date();
+    const moisAttendu = MOIS[now.getMonth()] + ' ' + now.getFullYear();
+    if (moisActuel && moisActuel !== moisAttendu) {
+      setTimeout(() => {
+        if (confirm('📅 Nouveau mois !\n\nArchiver "' + moisActuel + '" et démarrer ' + moisAttendu + ' ?')) {
+          basculerMois(moisActuel, moisAttendu);
+        }
+      }, 800);
+    }
+  }
+
+  async function basculerMois(ancienMois, nouveauMois) {
+    const msg = document.getElementById('action-msg');
+    msg.style.color = '#e8a84f'; msg.textContent = 'Archivage de "' + ancienMois + '"…';
+    try {
+      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ action:'archive', mois: ancienMois, data: getPayload() }) });
+      entries = []; entryId = 0;
+      document.getElementById('mois-input').value = nouveauMois;
+      recalc();
+      msg.style.color = '#6dbf8a'; msg.textContent = '✓ Archivé — Bienvenue en ' + nouveauMois + ' !';
+    } catch(e) { msg.style.color = '#e07070'; msg.textContent = 'Erreur — réessaie manuellement'; }
+    setTimeout(() => msg.textContent = '', 5000);
+  }
+
+  // ── PIN ──────────────────────────────────────────────────────────────────
+  const PIN = '6810'; let pinEntry = '';
+  function pinPress(d) {
+    if (pinEntry.length >= 4) return;
+    pinEntry += d; updateDots();
+    if (pinEntry.length === 4) {
+      if (pinEntry === PIN) {
+        sessionStorage.setItem('bm_unlocked','1');
+        document.getElementById('lock-screen').classList.add('hidden');
+        initApp();
+      } else {
+        const dots = document.getElementById('pin-dots');
+        dots.classList.add('shake');
+        document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
+        setTimeout(() => { dots.classList.remove('shake'); document.querySelectorAll('.pin-dot').forEach(d => { d.classList.remove('error','filled'); }); pinEntry = ''; }, 600);
+      }
+    }
+  }
+  function pinDel() { pinEntry = pinEntry.slice(0,-1); updateDots(); }
+  function updateDots() { for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled', i < pinEntry.length); }
+
+  function initApp() {
+    (async () => {
+      await load();
+      renderAllBudgetSections();
+      refreshCatSelect();
+      recalc();
+      verifierNouveauMois();
+    })();
+  }
+
+  // Fix iOS scroll shift
+  document.addEventListener('focusin', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+      setTimeout(() => e.target.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
+    }
+  });
+
+  if (sessionStorage.getItem('bm_unlocked') === '1') {
+    document.getElementById('lock-screen').classList.add('hidden');
+    initApp();
+  }
+</script>
+
+</body>
+</html>
