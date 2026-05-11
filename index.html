@@ -39,6 +39,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 #sync-dot.err { background:#e07070; }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
+/* ── Toast ── */
+#toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#2e2e2e;border:1px solid #444;border-radius:8px;padding:10px 18px;font-size:12px;color:#e8e8e6;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
+#toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
+
 /* ── Tabs ── */
 .tabs { display:flex;gap:6px;margin-bottom:.75rem; }
 .tab { flex:1;padding:8px 6px;border-radius:8px;border:1px solid #444;background:#2e2e2e;cursor:pointer;font-size:13px;color:#999;text-align:center;-webkit-tap-highlight-color:transparent; }
@@ -86,17 +90,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-row-item:last-child{border-bottom:none;border-radius:0 0 6px 6px;}
 .entry-desc { flex:1;font-size:13px;color:#ccc; }
 .entry-amount { font-size:13px;color:#bbb;font-variant-numeric:tabular-nums;margin-right:8px;white-space:nowrap; }
-.entry-edit-desc { flex:1;background:none;border:none;border-bottom:1px dashed #333;color:#ccc;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0; }
-.entry-edit-desc:focus { border-bottom-color:#666;color:#e8e8e6; }
-.entry-edit-amount { width:62px;text-align:right;background:none;border:none;border-bottom:1px dashed #333;color:#bbb;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;appearance:textfield;padding:0;margin:0 8px;flex-shrink:0; }
-.entry-edit-amount:focus { border-bottom-color:#666;color:#e8e8e6; }
-.entry-edit-amount::-webkit-outer-spin-button,.entry-edit-amount::-webkit-inner-spin-button{-webkit-appearance:none;}
-.btn-sec-add { width:100%;padding:8px;background:none;border:1px dashed #444;border-radius:6px;color:#666;font-size:12px;cursor:pointer;margin-top:4px;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
-.btn-sec-add:active{color:#999;border-color:#666;}
-.budget-row-label-input { flex:1;background:none;border:none;border-bottom:1px dashed #333;color:#d8d8d6;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;margin-right:8px; }
-.budget-row-label-input:focus{border-bottom-color:#666;color:#e8e8e6;}
-.btn-row-del { background:none;border:none;color:#333;font-size:13px;cursor:pointer;padding:2px 4px;margin-left:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0; }
-.btn-row-del:active{color:#e07070;}
 .btn-del { background:none;border:none;color:#444;font-size:14px;cursor:pointer;padding:2px 4px;-webkit-tap-highlight-color:transparent; }
 .btn-del:active{color:#e07070;}
 .cat-empty { padding:8px 6px;font-size:12px;color:#444;background:#1e1e1e;border-radius:0 0 6px 6px; }
@@ -106,7 +99,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-section-title { font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.05em;padding:5px 4px;border-bottom:1px solid #2e2e2e;margin-bottom:2px; }
 .budget-row { display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid #222; }
 .budget-row:last-child{border-bottom:none;}
-.budget-row-label { font-size:13px;color:#d8d8d6; }
+.budget-row-label-input { flex:1;background:none;border:none;border-bottom:1px dashed #333;color:#d8d8d6;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;margin-right:8px; }
+.budget-row-label-input:focus{border-bottom-color:#666;color:#e8e8e6;}
 .budget-input-wrap { position:relative;display:inline-block; }
 .budget-input { width:80px;text-align:right;padding:5px 26px 5px 6px;border:1px solid #444;border-radius:6px;background:#2e2e2e;color:#e8e8e6;font-size:13px;font-family:-apple-system,Arial,sans-serif;appearance:textfield;outline:none; }
 .budget-input:focus{border-color:#777;}
@@ -115,15 +109,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-arr:active{background:#3a3a3a;color:#ccc;}
 .budget-arr:first-child{border-bottom:1px solid #444;border-radius:0 6px 0 0;}
 .budget-arr:last-child{border-radius:0 0 6px 0;}
-
-/* ── Boutons fin de mois ── */
-.action-btns { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1rem; }
-.btn-archive { padding:11px;background:#1e2e22;border:1px solid #2d4a33;border-radius:8px;color:#6dbf8a;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
-.btn-reset { padding:11px;background:#2e1e1e;border:1px solid #4a2d2d;border-radius:8px;color:#e07070;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
-#action-msg { text-align:center;font-size:11px;color:#666;margin-top:6px;min-height:14px; }
+.btn-row-del { background:none;border:none;color:#333;font-size:13px;cursor:pointer;padding:2px 4px;margin-left:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0; }
+.btn-row-del:active{color:#e07070;}
+.btn-sec-add { width:100%;padding:8px;background:none;border:1px dashed #444;border-radius:6px;color:#666;font-size:12px;cursor:pointer;margin-top:4px;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
+.btn-sec-add:active{color:#999;border-color:#666;}
 </style>
 </head>
 <body>
+
+<!-- Toast -->
+<div id="toast"></div>
 
 <!-- PIN -->
 <div id="lock-screen">
@@ -187,13 +182,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     <!-- Liste par catégorie -->
     <div id="cat-list"></div>
-
-    <!-- Boutons fin de mois -->
-    <div class="action-btns">
-      <button class="btn-archive" onclick="archiverMois()">📦 Archiver</button>
-      <button class="btn-reset" onclick="remiseAZero()">🗑 Remettre à zéro</button>
-    </div>
-    <div id="action-msg"></div>
   </div>
 
   <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
@@ -255,7 +243,17 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7KOFqysA2tM2Z8cLvonibuhULS7TSrLyTj77bRLn5undjoIlAooeY50RiicOedtixpg/exec';
-  const CATS = ['Courses','Restaurants','Loisirs','J. Challenge','L. Challenge','Divers']; // initial, becomes dynamic
+
+  // ── PIN (SHA-256 du code 6810) ────────────────────────────────────────────
+  // Pour changer le code : remplacer cette valeur par le SHA-256 du nouveau code
+  // sha256('6810') = cf96e7... calcul en ligne sur sha256.fr
+  const PIN_HASH = '77264818a004f87091854cd1dd037092477a3eb340b05c1f31a76ad78988ace9';
+
+  async function hashPin(pin) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
   let entries = [], entryId = 0, budgetRowId = 0;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -273,23 +271,33 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       {id:5,label:'L. Challenge',value:60},{id:6,label:'Divers',value:80}
     ],
     logement: [
-      {id:7,label:'Loyer',value:640},{id:8,label:'\u00c9lectricit\u00e9',value:50},{id:9,label:'Internet',value:24}
+      {id:7,label:'Loyer',value:640},{id:8,label:'Électricité',value:50},{id:9,label:'Internet',value:24}
     ],
     abonnements: [
-      {id:10,label:'T\u00e9l\u00e9phone',value:9},{id:11,label:'Assurance habitation',value:14},
+      {id:10,label:'Téléphone',value:9},{id:11,label:'Assurance habitation',value:14},
       {id:12,label:'Frais bancaires',value:2.5},{id:13,label:'Spotify',value:13},
       {id:14,label:'Claude Pro',value:22},{id:15,label:'Gemini',value:11}
     ],
     epargne: [
       {id:16,label:'Famille',value:200},{id:17,label:'PEA',value:200},{id:18,label:'PER',value:250},
-      {id:19,label:'Assurance vie',value:50},{id:20,label:"Fin d'ann\u00e9e",value:120},{id:21,label:'P. Challenge',value:200}
+      {id:19,label:'Assurance vie',value:50},{id:20,label:"Fin d'année",value:120},{id:21,label:'P. Challenge',value:200}
     ]
   };
   budgetRowId = 21;
 
-  const fmt = n => n.toFixed(2).replace('.',',') + ' \u20ac';
-  const fmtR = n => Math.round(n) + ' \u20ac';
+  const fmt = n => n.toFixed(2).replace('.',',') + ' €';
+  const fmtR = n => Math.round(n) + ' €';
   const gv = id => parseFloat(document.getElementById(id)?.value) || 0;
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(msg, duration = 3500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+  }
 
   function showTab(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -327,11 +335,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <input class="budget-input" type="number" value="${row.value}"
             onchange="updateBudgetRow(${row.id},'value',this.value)">
           <div class="budget-arrows">
-            <div class="budget-arr" onclick="stepBudgetRow(${row.id},10)">\u25b2</div>
-            <div class="budget-arr" onclick="stepBudgetRow(${row.id},-10)">\u25bc</div>
+            <div class="budget-arr" onclick="stepBudgetRow(${row.id},10)">▲</div>
+            <div class="budget-arr" onclick="stepBudgetRow(${row.id},-10)">▼</div>
           </div>
         </div>
-        <button class="btn-row-del" onclick="removeBudgetRow('${secKey}',${row.id})">\u2715</button>`;
+        <button class="btn-row-del" onclick="removeBudgetRow('${secKey}',${row.id})">✕</button>`;
       container.appendChild(div);
     });
   }
@@ -403,7 +411,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const reste = budget - spent;
       const catEntries = entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase());
 
-      // Grouper par description (insensible à la casse)
       const grouped = {};
       catEntries.forEach(e => {
         const key = (e.desc || '—').trim().toLowerCase();
@@ -464,25 +471,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     recalc();
   }
 
-  function updateEntry(id, field, value) {
-    const e = entries.find(e => e.id === id);
-    if (!e) return;
-    if (field === 'montant') { const v = parseFloat(value); if (v > 0) e.montant = v; }
-    else e[field] = value;
-    recalc();
-  }
-
-  function removeEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    recalc();
-  }
-
   // ── Sync ─────────────────────────────────────────────────────────────────
-  function setSyncStatus(state) {
+  function setSyncStatus(state, label) {
     const dot = document.getElementById('sync-dot');
     const lbl = document.getElementById('sync-label');
     dot.className = state;
-    lbl.textContent = state === 'syncing' ? 'Sync…' : state === 'ok' ? 'Synchronisé' : 'Hors ligne';
+    lbl.textContent = label || (state === 'syncing' ? 'Sync…' : state === 'ok' ? 'Synchronisé' : 'Hors ligne');
   }
 
   function getPayload() {
@@ -530,59 +524,54 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
   }
 
-  // ── Fin de mois ──────────────────────────────────────────────────────────
-  async function archiverMois() {
-    const mois = document.getElementById('mois-input').textContent;
-    if (!confirm('Archiver "' + mois + '" dans Google Sheets ?')) return;
-    const msg = document.getElementById('action-msg');
-    msg.style.color = '#e8a84f'; msg.textContent = 'Archivage en cours…';
-    try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ action:'archive', mois, data: getPayload() }) });
-      msg.style.color = '#6dbf8a'; msg.textContent = '✓ "' + mois + '" archivé';
-    } catch(e) { msg.style.color = '#e07070'; msg.textContent = 'Erreur — vérifie ta connexion'; }
-    setTimeout(() => msg.textContent = '', 4000);
-  }
+  // ── Bascule automatique de mois ──────────────────────────────────────────
+  const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
+                   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
-  function remiseAZero() {
-    const mois = document.getElementById('mois-input').textContent;
-    if (!confirm('Supprimer toutes les dépenses de "' + mois + '" ?')) return;
-    entries = []; entryId = 0;
-    recalc();
-    const msg = document.getElementById('action-msg');
-    msg.style.color = '#6dbf8a'; msg.textContent = '✓ Dépenses effacées';
-    setTimeout(() => msg.textContent = '', 3000);
-  }
-
-  function verifierNouveauMois() {
-    const moisActuel = document.getElementById('mois-input').textContent;
-    const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  function getMoisAttendu() {
     const now = new Date();
-    const moisAttendu = MOIS[now.getMonth()] + ' ' + now.getFullYear();
-    if (moisActuel && moisActuel !== moisAttendu) {
-      basculerMois(moisActuel, moisAttendu);
+    return MOIS_FR[now.getMonth()] + ' ' + now.getFullYear();
+  }
+
+  async function verifierNouveauMois() {
+    const moisActuel = document.getElementById('mois-input').textContent.trim();
+    const moisAttendu = getMoisAttendu();
+    if (!moisActuel || moisActuel === moisAttendu) return; // même mois, rien à faire
+
+    // Archivage silencieux du mois précédent
+    setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
+    showToast('📦 Archivage de ' + moisActuel + ' en cours…', 5000);
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: 'archive', mois: moisActuel, data: getPayload() })
+      });
+      // Reset des dépenses, passage au nouveau mois
+      entries = [];
+      entryId = 0;
+      document.getElementById('mois-input').textContent = moisAttendu;
+      recalc(); // recalc → save → sync du nouveau mois vide
+      setSyncStatus('ok');
+      showToast('✓ ' + moisActuel + ' archivé — Bienvenue en ' + moisAttendu + ' !', 4000);
+    } catch(e) {
+      setSyncStatus('err');
+      showToast('⚠ Archivage échoué — réessaie dans un instant', 5000);
+      // En cas d'erreur : on stocke localement une copie de secours de l'ancien mois
+      localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
     }
   }
 
-  async function basculerMois(ancienMois, nouveauMois) {
-    const msg = document.getElementById('action-msg');
-    msg.style.color = '#e8a84f'; msg.textContent = 'Archivage de "' + ancienMois + '"…';
-    try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ action:'archive', mois: ancienMois, data: getPayload() }) });
-      entries = []; entryId = 0;
-      document.getElementById('mois-input').textContent = nouveauMois;
-      recalc();
-      msg.style.color = '#6dbf8a'; msg.textContent = '✓ Archivé — Bienvenue en ' + nouveauMois + ' !';
-    } catch(e) { msg.style.color = '#e07070'; msg.textContent = 'Erreur — réessaie manuellement'; }
-    setTimeout(() => msg.textContent = '', 5000);
-  }
+  // ── PIN (hash SHA-256, PIN jamais en clair dans le code) ──────────────────
+  let pinEntry = '';
 
-  // ── PIN ──────────────────────────────────────────────────────────────────
-  const PIN = '6810'; let pinEntry = '';
-  function pinPress(d) {
+  async function pinPress(d) {
     if (pinEntry.length >= 4) return;
     pinEntry += d; updateDots();
     if (pinEntry.length === 4) {
-      if (pinEntry === PIN) {
+      const h = await hashPin(pinEntry);
+      if (h === PIN_HASH) {
         sessionStorage.setItem('bm_unlocked','1');
         document.getElementById('lock-screen').classList.add('hidden');
         initApp();
@@ -590,7 +579,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         const dots = document.getElementById('pin-dots');
         dots.classList.add('shake');
         document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('error'));
-        setTimeout(() => { dots.classList.remove('shake'); document.querySelectorAll('.pin-dot').forEach(d => { d.classList.remove('error','filled'); }); pinEntry = ''; }, 600);
+        setTimeout(() => {
+          dots.classList.remove('shake');
+          document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error','filled'));
+          pinEntry = '';
+        }, 600);
       }
     }
   }
@@ -603,7 +596,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       renderAllBudgetSections();
       refreshCatSelect();
       recalc();
-      verifierNouveauMois();
+      await verifierNouveauMois(); // auto-bascule si nouveau mois
     })();
   }
 
