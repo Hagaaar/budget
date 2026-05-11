@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -32,8 +31,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Header ── */
 .header { display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem; }
-.mois-input { background:none;border:none;border-bottom:1px dashed #555;color:#aaa;font-size:18px;font-weight:400;font-family:-apple-system,Arial,sans-serif;width:115px;outline:none;cursor:text; }
-.mois-input:focus { border-bottom-color:#999; }
+.mois-label { font-size:18px;font-weight:400;color:#aaa; }
 .sync-badge { font-size:10px;display:flex;align-items:center;gap:4px;color:#666; }
 #sync-dot { width:6px;height:6px;border-radius:50%;background:#555;flex-shrink:0; }
 #sync-dot.syncing { background:#e8a84f;animation:pulse .8s infinite; }
@@ -66,9 +64,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
 .entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
 .entry-form input, .entry-form select {
-padding:10px 8px;border:1px solid #444;border-radius:7px;
-background:#2a2a2a;color:#e8e8e6;font-size:14px;
-font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
+  padding:10px 8px;border:1px solid #444;border-radius:7px;
+  background:#2a2a2a;color:#e8e8e6;font-size:14px;
+  font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
 }
 .entry-form input[type=number]{appearance:textfield;}
 .btn-add { width:100%;padding:10px;background:#3a3a3a;border:1px solid #555;border-radius:7px;color:#e8e8e6;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent; }
@@ -124,12 +122,10 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
 .btn-reset { padding:11px;background:#2e1e1e;border:1px solid #4a2d2d;border-radius:8px;color:#e07070;font-size:13px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent; }
 #action-msg { text-align:center;font-size:11px;color:#666;margin-top:6px;min-height:14px; }
 </style>
-
 </head>
 <body>
 
 <!-- PIN -->
-
 <div id="lock-screen">
   <div class="lock-title">Code d'accès</div>
   <div class="pin-dots" id="pin-dots">
@@ -149,20 +145,18 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   <div class="header">
     <div style="display:flex;align-items:baseline;gap:6px">
       <span style="font-size:18px;font-weight:600;color:#e8e8e6;letter-spacing:.02em">BUDGET</span>
-      <input class="mois-input" id="mois-input" type="text" value="Mai 2026" oninput="save()">
+      <span class="mois-label" id="mois-input">Mai 2026</span>
     </div>
     <div class="sync-badge"><span id="sync-dot"></span><span id="sync-label">—</span></div>
   </div>
 
   <!-- Tabs -->
-
   <div class="tabs">
     <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
     <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
   </div>
 
   <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
-
   <div id="reel" class="panel active">
     <!-- Formulaire de saisie -->
     <div class="entry-form">
@@ -174,39 +168,35 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
         <select id="e-cat"></select>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
           <button class="btn-add" onclick="addEntry()">+</button>
-
-```
+          <button class="btn-undo" onclick="undoEntry()">&lt;</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Totaux -->
-<div class="cards" style="margin-bottom:.75rem">
-  <div class="card">
-    <div class="card-label">Dépensé réel</div>
-    <div class="card-value white" id="r-reel">0,00 €</div>
-  </div>
-  <div class="card green-bg">
-    <div class="card-label">Reste réel</div>
-    <div class="card-value green" id="r-reste-reel">0 €</div>
-  </div>
-</div>
+    <!-- Totaux -->
+    <div class="cards" style="margin-bottom:.75rem">
+      <div class="card">
+        <div class="card-label">Dépensé réel</div>
+        <div class="card-value white" id="r-reel">0,00 €</div>
+      </div>
+      <div class="card green-bg">
+        <div class="card-label">Reste réel</div>
+        <div class="card-value green" id="r-reste-reel">0 €</div>
+      </div>
+    </div>
 
-<!-- Liste par catégorie -->
-<div id="cat-list"></div>
+    <!-- Liste par catégorie -->
+    <div id="cat-list"></div>
 
-<!-- Boutons fin de mois -->
-<div class="action-btns">
-  <button class="btn-archive" onclick="archiverMois()">📦 Archiver</button>
-  <button class="btn-reset" onclick="remiseAZero()">🗑 Remettre à zéro</button>
-</div>
-<div id="action-msg"></div>
-```
-
+    <!-- Boutons fin de mois -->
+    <div class="action-btns">
+      <button class="btn-archive" onclick="archiverMois()">📦 Archiver</button>
+      <button class="btn-reset" onclick="remiseAZero()">🗑 Remettre à zéro</button>
+    </div>
+    <div id="action-msg"></div>
   </div>
 
   <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
-
   <div id="budget" class="panel">
     <!-- Salaire / Fixes -->
     <div class="cards">
@@ -220,48 +210,45 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
       </div>
     </div>
 
-```
-<!-- Budget variable / Reste -->
-<div class="cards">
-  <div class="card red-bg">
-    <div class="card-label">Budget variable</div>
-    <div class="card-value red" id="b-variable">660 €</div>
-  </div>
-  <div class="card green-bg">
-    <div class="card-label">Reste (sal − fixes − variable)</div>
-    <div class="card-value green" id="b-reste">313 €</div>
-  </div>
-</div>
+    <!-- Budget variable / Reste -->
+    <div class="cards">
+      <div class="card red-bg">
+        <div class="card-label">Budget variable</div>
+        <div class="card-value red" id="b-variable">660 €</div>
+      </div>
+      <div class="card green-bg">
+        <div class="card-label">Reste (sal − fixes − variable)</div>
+        <div class="card-value green" id="b-reste">313 €</div>
+      </div>
+    </div>
 
-<!-- Variable -->
-<div class="budget-section">
-  <div class="budget-section-title">Dépenses variables budgétées</div>
-  <div id="sec-variable"></div>
-  <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
-</div>
+    <!-- Variable -->
+    <div class="budget-section">
+      <div class="budget-section-title">Dépenses variables budgétées</div>
+      <div id="sec-variable"></div>
+      <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
+    </div>
 
-<!-- Logement -->
-<div class="budget-section">
-  <div class="budget-section-title">Logement</div>
-  <div id="sec-logement"></div>
-  <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
-</div>
+    <!-- Logement -->
+    <div class="budget-section">
+      <div class="budget-section-title">Logement</div>
+      <div id="sec-logement"></div>
+      <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
+    </div>
 
-<!-- Abonnements -->
-<div class="budget-section">
-  <div class="budget-section-title">Abonnements &amp; services</div>
-  <div id="sec-abonnements"></div>
-  <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
-</div>
+    <!-- Abonnements -->
+    <div class="budget-section">
+      <div class="budget-section-title">Abonnements &amp; services</div>
+      <div id="sec-abonnements"></div>
+      <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
+    </div>
 
-<!-- Épargne -->
-<div class="budget-section">
-  <div class="budget-section-title">Épargne</div>
-  <div id="sec-epargne"></div>
-  <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
-</div>
-```
-
+    <!-- Épargne -->
+    <div class="budget-section">
+      <div class="budget-section-title">Épargne</div>
+      <div id="sec-epargne"></div>
+      <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
+    </div>
   </div>
 
 </div>
@@ -500,7 +487,7 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
 
   function getPayload() {
     return { entries, entryId, budgetSections, budgetRowId,
-      mois: document.getElementById('mois-input').value, salaire: gv('salaire') };
+      mois: document.getElementById('mois-input').textContent, salaire: gv('salaire') };
   }
 
   function applyData(d) {
@@ -508,7 +495,7 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
     if (d.entryId) entryId = parseInt(d.entryId);
     if (d.budgetSections) budgetSections = d.budgetSections;
     if (d.budgetRowId) budgetRowId = parseInt(d.budgetRowId);
-    if (d.mois) document.getElementById('mois-input').value = d.mois;
+    if (d.mois) document.getElementById('mois-input').textContent = d.mois;
     if (d.salaire) document.getElementById('salaire').value = d.salaire;
   }
 
@@ -545,7 +532,7 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
 
   // ── Fin de mois ──────────────────────────────────────────────────────────
   async function archiverMois() {
-    const mois = document.getElementById('mois-input').value;
+    const mois = document.getElementById('mois-input').textContent;
     if (!confirm('Archiver "' + mois + '" dans Google Sheets ?')) return;
     const msg = document.getElementById('action-msg');
     msg.style.color = '#e8a84f'; msg.textContent = 'Archivage en cours…';
@@ -557,7 +544,7 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   }
 
   function remiseAZero() {
-    const mois = document.getElementById('mois-input').value;
+    const mois = document.getElementById('mois-input').textContent;
     if (!confirm('Supprimer toutes les dépenses de "' + mois + '" ?')) return;
     entries = []; entryId = 0;
     recalc();
@@ -567,16 +554,12 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   }
 
   function verifierNouveauMois() {
-    const moisActuel = document.getElementById('mois-input').value;
+    const moisActuel = document.getElementById('mois-input').textContent;
     const MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
     const now = new Date();
     const moisAttendu = MOIS[now.getMonth()] + ' ' + now.getFullYear();
     if (moisActuel && moisActuel !== moisAttendu) {
-      setTimeout(() => {
-        if (confirm('📅 Nouveau mois !\n\nArchiver "' + moisActuel + '" et démarrer ' + moisAttendu + ' ?')) {
-          basculerMois(moisActuel, moisAttendu);
-        }
-      }, 800);
+      basculerMois(moisActuel, moisAttendu);
     }
   }
 
@@ -586,7 +569,7 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
     try {
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify({ action:'archive', mois: ancienMois, data: getPayload() }) });
       entries = []; entryId = 0;
-      document.getElementById('mois-input').value = nouveauMois;
+      document.getElementById('mois-input').textContent = nouveauMois;
       recalc();
       msg.style.color = '#6dbf8a'; msg.textContent = '✓ Archivé — Bienvenue en ' + nouveauMois + ' !';
     } catch(e) { msg.style.color = '#e07070'; msg.textContent = 'Erreur — réessaie manuellement'; }
@@ -636,6 +619,5 @@ font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
     initApp();
   }
 </script>
-
 </body>
 </html>
