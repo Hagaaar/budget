@@ -111,9 +111,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-form input:focus, .entry-form select:focus { border-color:#5c5028; }
 .entry-form input::placeholder { color:#5a5440; }
 .entry-form input[type=number] { appearance:textfield; }
-.btn-add { width:100%;padding:12px;background:#D4A843;border-radius:12px;color:#0e0e0e;font-size:30px;font-weight:300;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.btn-add { width:100%;padding:12px;background:#D4A843;border-radius:12px;color:#0e0e0e;font-size:38px;font-weight:200;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .btn-add:active { background:#B89030;transform:scale(.97); }
-.btn-undo { width:100%;padding:12px;background:#181810;border-radius:12px;color:#A09870;font-size:30px;font-weight:300;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s; }
+.btn-undo { width:100%;padding:12px;background:#181810;border-radius:12px;color:#A09870;font-size:38px;font-weight:200;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s; }
 .btn-undo:active { background:#242018; }
 
 /* ── Category groups ── */
@@ -796,7 +796,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       await load();
       renderAllBudgetSections();
       refreshCatSelect();
+      // Tout fermer par défaut à l'ouverture
+      getCats().forEach(cat => collapsedCats.add(cat));
+      ['variable','logement','abonnements','epargne'].forEach(k => collapsedBudgetSections.add(k));
       recalc();
+      ['variable','logement','abonnements','epargne'].forEach(k =>
+        document.getElementById('bsec-'+k)?.classList.add('collapsed')
+      );
       setupCatDrag();
       await verifierNouveauMois();
     })();
