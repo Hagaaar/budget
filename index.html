@@ -7,17 +7,17 @@
 <title>Budget mensuel — Hicham</title>
 <style>
 /* ── Lock screen ── */
-#lock-screen { position:fixed;inset:0;background:#2c1e48;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem; }
+#lock-screen { position:fixed;inset:0;background:#0e0e0e;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem; }
 #lock-screen.hidden { display:none; }
-.lock-title { font-size:11px;color:#5a5080;letter-spacing:.14em;text-transform:uppercase; }
+.lock-title { font-size:11px;color:#5a5440;letter-spacing:.14em;text-transform:uppercase; }
 .pin-dots { display:flex;gap:16px; }
-.pin-dot { width:11px;height:11px;border-radius:50%;background:#3d3568;transition:background .15s; }
-.pin-dot.filled { background:#F0C38E; }
-.pin-dot.error { background:#F1AA9B; }
+.pin-dot { width:11px;height:11px;border-radius:50%;background:#242018;transition:background .15s; }
+.pin-dot.filled { background:#D4A843; }
+.pin-dot.error { background:#C07860; }
 .pin-pad { display:grid;grid-template-columns:repeat(3,74px);gap:12px; }
-.pin-key { width:74px;height:74px;border-radius:50%;background:#3d3568;color:#b0a8d8;font-size:22px;font-family:-apple-system,Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .12s,color .12s; }
-.pin-key:active { background:#48426D;color:#f0eaf8; }
-.pin-key.del { font-size:18px;color:#6a6090; }
+.pin-key { width:74px;height:74px;border-radius:50%;background:#1c1c14;color:#A09870;font-size:22px;font-family:-apple-system,Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .12s,color .12s; }
+.pin-key:active { background:#2a2618;color:#D4A843; }
+.pin-key.del { font-size:18px;color:#5a5440; }
 .pin-key.empty { background:transparent;cursor:default; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
 .shake { animation:shake .35s ease; }
@@ -25,97 +25,101 @@
 /* ── Base ── */
 *{box-sizing:border-box;margin:0;padding:0;border:none;}
 html,body{overflow-x:hidden;}
-body { font-family:-apple-system,Arial,sans-serif;background:#2c1e48;color:#f0eaf8;min-height:100vh;padding:.8rem .65rem; }
+body { font-family:-apple-system,Arial,sans-serif;background:#0e0e0e;color:#F5F0E8;min-height:100vh;padding:.8rem .65rem 100px; }
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 
 /* ── Header ── */
 .header { display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem; }
-.mois-label { font-size:16px;font-weight:300;color:#8878b0; }
-.sync-badge { font-size:10px;display:flex;align-items:center;gap:4px;color:#5a5080; }
-#sync-dot { width:5px;height:5px;border-radius:50%;background:#4a4278;flex-shrink:0;transition:background .3s; }
-#sync-dot.syncing { background:#F0C38E;animation:pulse .8s infinite; }
-#sync-dot.ok { background:#a0d8b8; }
-#sync-dot.err { background:#F1AA9B; }
+.mois-label { font-size:16px;font-weight:300;color:#A09870; }
+.sync-badge { font-size:10px;display:flex;align-items:center;gap:4px;color:#5a5440; }
+#sync-dot { width:5px;height:5px;border-radius:50%;background:#333;flex-shrink:0;transition:background .3s; }
+#sync-dot.syncing { background:#D4A843;animation:pulse .8s infinite; }
+#sync-dot.ok { background:#8AC878; }
+#sync-dot.err { background:#C07860; }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ── Toast ── */
-#toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#3d3568;border-radius:14px;padding:10px 20px;font-size:12px;color:#d0c8f0;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
+/* ── Toast — au-dessus de la nav bar ── */
+#toast { position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e16;border-radius:14px;padding:10px 20px;font-size:12px;color:#D0C890;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 
-/* ── Tabs ── */
-.tabs { display:flex;gap:4px;margin-bottom:.9rem;background:#231740;border-radius:14px;padding:4px; }
-.tab { flex:1;padding:9px 6px;border-radius:10px;background:transparent;cursor:pointer;font-size:13px;color:#6860a0;text-align:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s; }
-.tab.active { background:#48426D;color:#f0eaf8;font-weight:500; }
+/* ── Tabs — barre flottante en bas ── */
+.tabs {
+  position:fixed;bottom:20px;left:16px;right:16px;
+  display:flex;gap:6px;
+  background:#181810;
+  border-radius:22px;padding:6px;
+  z-index:100;
+  box-shadow:0 8px 32px rgba(0,0,0,.85),0 2px 12px rgba(212,168,67,.15);
+}
+.tab { flex:1;padding:11px 6px;border-radius:16px;background:transparent;cursor:pointer;font-size:13px;color:#5a5440;text-align:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s; }
+.tab.active { background:#D4A843;color:#0e0e0e;font-weight:700; }
 .panel { display:none; }
 .panel.active { display:block; }
 
 /* ── Metric cards ── */
 .cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem; }
-.card { background:#3d3568;border-radius:16px;padding:12px 14px;min-width:0; }
-.card-label { font-size:10px;color:#8070b0;margin-bottom:4px;letter-spacing:.04em; }
-.card-value { font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.card-value.green { color:#F0C38E; }
-.card-value.red { color:#F1AA9B; }
-.card-value.white { color:#f0eaf8; }
-.card.green-bg { background:#F0C38E; }
-.card.red-bg { background:#F1AA9B; }
-.card.green-bg .card-label { color:#8a6838; }
-.card.red-bg .card-label { color:#8a4a42; }
-.card.green-bg .card-value { color:#2c1e48; }
-.card.red-bg .card-value { color:#2c1e48; }
-.editable-val { background:none;color:#f0eaf8;font-size:19px;font-weight:700;font-family:-apple-system,Arial,sans-serif;width:95px;outline:none;appearance:textfield; }
+.card { background:#181810;border-radius:16px;padding:12px 14px;min-width:0; }
+.card-label { font-size:10px;color:#6a6448;margin-bottom:4px;letter-spacing:.05em; }
+.card-value { font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.card-value.green { color:#D4A843; }
+.card-value.red { color:#C07860; }
+.card-value.white { color:#F5F0E8; }
+.card.green-bg { background:#D4A843; }
+.card.red-bg { background:#C07860; }
+.card.green-bg .card-label { color:#7a5e18; }
+.card.red-bg .card-label { color:#7a3020; }
+.card.green-bg .card-value { color:#0e0e0e; }
+.card.red-bg .card-value { color:#0e0e0e; }
+.editable-val { background:none;color:#F5F0E8;font-size:20px;font-weight:700;font-family:-apple-system,Arial,sans-serif;width:100%;outline:none;appearance:textfield; }
 
 /* ── Entry form ── */
 .entry-form { margin-bottom:.8rem; }
 .entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
 .entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
 .entry-form input, .entry-form select {
-  padding:12px;background:#3d3568;color:#f0eaf8;font-size:14px;
+  padding:12px;background:#181810;color:#F5F0E8;font-size:14px;
   font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   border-radius:12px;-webkit-appearance:none;appearance:none;
 }
-.entry-form input::placeholder { color:#6860a0; }
+.entry-form input::placeholder { color:#5a5440; }
 .entry-form input[type=number] { appearance:textfield; }
-.btn-add { width:100%;padding:12px;background:#F0C38E;border-radius:12px;color:#2c1e48;font-size:22px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
-.btn-add:active { background:#e6b87e;transform:scale(.97); }
-.btn-undo { width:100%;padding:12px;background:#3d3568;border-radius:12px;color:#8070b0;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s; }
-.btn-undo:active { background:#48426D; }
+.btn-add { width:100%;padding:12px;background:#D4A843;border-radius:12px;color:#0e0e0e;font-size:24px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.btn-add:active { background:#B89030;transform:scale(.97); }
+.btn-undo { width:100%;padding:12px;background:#181810;border-radius:12px;color:#A09870;font-size:20px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s; }
+.btn-undo:active { background:#242018; }
 
 /* ── Category groups ── */
-.cat-group { margin-bottom:.55rem;border-radius:14px;overflow:hidden; }
-.cat-header { display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:#3d3568; }
-.cat-header-name { font-size:10px;font-weight:700;color:#9088c0;text-transform:uppercase;letter-spacing:.08em; }
+.cat-group { margin-bottom:.6rem;border-radius:14px;overflow:hidden; }
+.cat-header { display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:#1e1e14; }
+.cat-header-name { font-size:10px;font-weight:700;color:#A09870;text-transform:uppercase;letter-spacing:.08em; }
 .cat-header-right { display:flex;gap:10px;align-items:center; }
-.cat-budget { font-size:10px;color:#5a5080; }
-.cat-reste { font-size:12px;font-weight:700; }
-.cat-reste.green { color:#F0C38E; }
-.cat-reste.red { color:#F1AA9B; }
-.entry-row-item { display:flex;align-items:center;padding:9px 13px;background:#231740; }
-.entry-desc { flex:1;font-size:13px;color:#c0b8e0; }
-.entry-amount { font-size:13px;color:#9088c0;font-variant-numeric:tabular-nums;margin-right:8px;white-space:nowrap; }
-.btn-del { background:none;color:#3d3568;font-size:14px;cursor:pointer;padding:2px 4px;-webkit-tap-highlight-color:transparent;transition:color .15s; }
-.btn-del:active { color:#F1AA9B; }
-.cat-empty { padding:11px 13px;font-size:12px;color:#4a4278;background:#231740; }
+.cat-budget { font-size:10px;color:#5a5440; }
+.cat-reste { font-size:13px;font-weight:700; }
+.cat-reste.green { color:#D4A843; }
+.cat-reste.red { color:#C07860; }
+.entry-row-item { display:flex;align-items:center;padding:10px 13px;background:#141410; }
+.entry-desc { flex:1;font-size:13px;color:#D8D0A8;font-weight:400; }
+.entry-amount { font-size:13px;font-weight:600;color:#F5F0E8;font-variant-numeric:tabular-nums;margin-right:10px;white-space:nowrap; }
+.btn-del { background:#2a1810;color:#E8906A;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0; }
+.btn-del:active { background:#C07860;color:#0e0e0e; }
+.cat-empty { padding:11px 13px;font-size:12px;color:#3a3828;background:#141410; }
 
 /* ── Budget projeté ── */
 .budget-section { margin-bottom:.85rem; }
-.budget-section-title { font-size:10px;color:#6860a0;text-transform:uppercase;letter-spacing:.08em;padding:4px 2px;margin-bottom:6px; }
-.budget-row { display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:#3d3568;border-radius:10px;margin-bottom:4px; }
-.budget-row-label-input { flex:1;background:none;color:#c0b8e0;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;margin-right:8px;transition:color .15s; }
-.budget-row-label-input:focus { color:#f0eaf8; }
-.budget-input-wrap { position:relative;display:inline-block; }
-.budget-input { width:80px;text-align:right;padding:5px 24px 5px 6px;border-radius:6px;background:#2c1e48;color:#f0eaf8;font-size:13px;font-family:-apple-system,Arial,sans-serif;appearance:textfield;outline:none;transition:background .15s; }
-.budget-input:focus { background:#231740; }
-.budget-arrows { position:absolute;right:0;top:0;bottom:0;width:22px;display:flex;flex-direction:column;background:#2c1e48;border-radius:0 6px 6px 0; }
-.budget-arr { flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#5a5080;font-size:8px;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .1s,color .1s; }
-.budget-arr:active { background:#3d3568;color:#F0C38E; }
-.budget-arr:first-child { border-radius:0 6px 0 0; }
-.budget-arr:last-child { border-radius:0 0 6px 0; }
-.btn-row-del { background:none;color:#3d3568;font-size:13px;cursor:pointer;padding:2px 4px;margin-left:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:color .15s; }
-.btn-row-del:active { color:#F1AA9B; }
-.btn-sec-add { width:100%;padding:10px;background:#3d3568;border-radius:10px;color:#5a5080;font-size:12px;cursor:pointer;margin-top:4px;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
-.btn-sec-add:active { color:#F0C38E;background:#48426D; }
+.budget-section-title { font-size:10px;color:#6a6448;text-transform:uppercase;letter-spacing:.08em;padding:4px 2px;margin-bottom:6px; }
+.budget-row { display:flex;align-items:center;padding:10px 13px;background:#181810;border-radius:10px;margin-bottom:4px;gap:8px; }
+.budget-row-label-input { flex:1;background:none;color:#C8C0A0;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;transition:color .15s; }
+.budget-row-label-input:focus { color:#F5F0E8; }
+.budget-input-wrap { display:flex;align-items:center;gap:5px;flex-shrink:0; }
+.budget-btn-step { width:28px;height:28px;border-radius:8px;background:#242018;color:#D4A843;font-size:20px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .1s,color .1s;line-height:1;flex-shrink:0; }
+.budget-btn-step:active { background:#D4A843;color:#0e0e0e; }
+.budget-input { width:60px;text-align:center;padding:5px 4px;border-radius:6px;background:#242018;color:#F5F0E8;font-size:13px;font-weight:600;font-family:-apple-system,Arial,sans-serif;appearance:textfield;outline:none;transition:background .15s; }
+.budget-input:focus { background:#2e2a1c; }
+.btn-row-del { background:#2a1810;color:#E8906A;font-size:12px;font-weight:700;cursor:pointer;padding:5px 8px;border-radius:7px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s,color .15s; }
+.btn-row-del:active { background:#C07860;color:#0e0e0e; }
+.btn-sec-add { width:100%;padding:10px;background:#181810;border-radius:10px;color:#6a6448;font-size:12px;cursor:pointer;margin-top:4px;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
+.btn-sec-add:active { color:#D4A843;background:#242018; }
 </style>
 </head>
 <body>
@@ -142,16 +146,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   <!-- Header -->
   <div class="header">
     <div style="display:flex;align-items:baseline;gap:6px">
-      <span style="font-size:18px;font-weight:600;color:#f0eaf8;letter-spacing:.02em">BUDGET</span>
+      <span style="font-size:18px;font-weight:700;color:#D4A843;letter-spacing:.06em">BUDGET</span>
       <span class="mois-label" id="mois-input">Mai 2026</span>
     </div>
     <div class="sync-badge"><span id="sync-dot"></span><span id="sync-label">—</span></div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
-    <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
   </div>
 
   <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
@@ -172,7 +170,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     </div>
 
     <!-- Totaux -->
-    <div class="cards" style="margin-bottom:.75rem">
+    <div class="cards" style="margin-bottom:.85rem">
       <div class="card">
         <div class="card-label">Dépensé réel</div>
         <div class="card-value white" id="r-reel">0,00 €</div>
@@ -244,12 +242,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 </div>
 
+<!-- Tabs — floating bottom bar -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
+  <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
+</div>
+
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7KOFqysA2tM2Z8cLvonibuhULS7TSrLyTj77bRLn5undjoIlAooeY50RiicOedtixpg/exec';
 
-  // ── PIN (SHA-256 du code 6810) ────────────────────────────────────────────
-  // Pour changer le code : remplacer cette valeur par le SHA-256 du nouveau code
-  // sha256('6810') = cf96e7... calcul en ligne sur sha256.fr
   const PIN_HASH = '77264818a004f87091854cd1dd037092477a3eb340b05c1f31a76ad78988ace9';
 
   async function hashPin(pin) {
@@ -292,7 +293,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   const fmtR = n => Math.round(n) + ' €';
   const gv = id => parseFloat(document.getElementById(id)?.value) || 0;
 
-  // ── Toast ─────────────────────────────────────────────────────────────────
   let toastTimer = null;
   function showToast(msg, duration = 3500) {
     const t = document.getElementById('toast');
@@ -335,12 +335,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <input class="budget-row-label-input" type="text" value="${row.label}"
           onchange="updateBudgetRow(${row.id},'label',this.value)">
         <div class="budget-input-wrap">
+          <button class="budget-btn-step" onclick="stepBudgetRow(${row.id},-10)">−</button>
           <input class="budget-input" type="number" value="${row.value}"
             onchange="updateBudgetRow(${row.id},'value',this.value)">
-          <div class="budget-arrows">
-            <div class="budget-arr" onclick="stepBudgetRow(${row.id},10)">▲</div>
-            <div class="budget-arr" onclick="stepBudgetRow(${row.id},-10)">▼</div>
-          </div>
+          <button class="budget-btn-step" onclick="stepBudgetRow(${row.id},10)">+</button>
         </div>
         <button class="btn-row-del" onclick="removeBudgetRow('${secKey}',${row.id})">✕</button>`;
       container.appendChild(div);
@@ -440,7 +438,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         Object.values(grouped).forEach(g => {
           const row = document.createElement('div');
           row.className = 'entry-row-item';
-          const countBadge = g.ids.length > 1 ? ` <span style="font-size:10px;color:#6860a0;margin-left:4px">${g.ids.length}×</span>` : '';
+          const countBadge = g.ids.length > 1 ? ` <span style="font-size:10px;color:#8a8060;margin-left:4px">${g.ids.length}×</span>` : '';
           row.innerHTML = `
             <span class="entry-desc">${g.desc}${countBadge}</span>
             <span class="entry-amount">${fmt(g.total)}</span>
@@ -474,7 +472,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     recalc();
   }
 
-  // ── Sync ─────────────────────────────────────────────────────────────────
   function setSyncStatus(state, label) {
     const dot = document.getElementById('sync-dot');
     const lbl = document.getElementById('sync-label');
@@ -527,7 +524,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
   }
 
-  // ── Bascule automatique de mois ──────────────────────────────────────────
   const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
@@ -539,9 +535,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   async function verifierNouveauMois() {
     const moisActuel = document.getElementById('mois-input').textContent.trim();
     const moisAttendu = getMoisAttendu();
-    if (!moisActuel || moisActuel === moisAttendu) return; // même mois, rien à faire
+    if (!moisActuel || moisActuel === moisAttendu) return;
 
-    // Archivage silencieux du mois précédent
     setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
     showToast('📦 Archivage de ' + moisActuel + ' en cours…', 5000);
 
@@ -551,22 +546,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         mode: 'no-cors',
         body: JSON.stringify({ action: 'archive', mois: moisActuel, data: getPayload() })
       });
-      // Reset des dépenses, passage au nouveau mois
       entries = [];
       entryId = 0;
       document.getElementById('mois-input').textContent = moisAttendu;
-      recalc(); // recalc → save → sync du nouveau mois vide
+      recalc();
       setSyncStatus('ok');
       showToast('✓ ' + moisActuel + ' archivé — Bienvenue en ' + moisAttendu + ' !', 4000);
     } catch(e) {
       setSyncStatus('err');
       showToast('⚠ Archivage échoué — réessaie dans un instant', 5000);
-      // En cas d'erreur : on stocke localement une copie de secours de l'ancien mois
       localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
     }
   }
 
-  // ── PIN (hash SHA-256, PIN jamais en clair dans le code) ──────────────────
   let pinEntry = '';
 
   async function pinPress(d) {
@@ -599,11 +591,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       renderAllBudgetSections();
       refreshCatSelect();
       recalc();
-      await verifierNouveauMois(); // auto-bascule si nouveau mois
+      await verifierNouveauMois();
     })();
   }
 
-  // Fix iOS scroll shift
   document.addEventListener('focusin', e => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
       setTimeout(() => e.target.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
