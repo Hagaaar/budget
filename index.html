@@ -545,6 +545,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
     showToast('📦 Archivage de ' + moisActuel + ' en cours…', 5000);
 
+    // Sauvegarde locale garantie avant tout envoi réseau (no-cors ne lève jamais d'erreur côté JS)
+    localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
+
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST',
@@ -561,8 +564,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     } catch(e) {
       setSyncStatus('err');
       showToast('⚠ Archivage échoué — réessaie dans un instant', 5000);
-      // En cas d'erreur : on stocke localement une copie de secours de l'ancien mois
-      localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
     }
   }
 
