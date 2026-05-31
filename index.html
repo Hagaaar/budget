@@ -111,9 +111,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-form input:focus, .entry-form select:focus { border-color:#5c5028; }
 .entry-form input::placeholder { color:#5a5440; }
 .entry-form input[type=number] { appearance:textfield; }
-.btn-add { width:100%;padding:12px;background:#D4A843;border-radius:12px;color:#0e0e0e;font-size:38px;font-weight:200;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.btn-add { width:100%;padding:13px;background:#D4A843;border-radius:12px;color:#0e0e0e;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .btn-add:active { background:#B89030;transform:scale(.97); }
-.btn-undo { width:100%;padding:12px;background:#181810;border-radius:12px;color:#A09870;font-size:38px;font-weight:200;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s; }
+.btn-undo { width:100%;padding:13px;background:#181810;border-radius:12px;color:#A09870;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
 .btn-undo:active { background:#242018; }
 
 /* ── Category groups ── */
@@ -223,8 +223,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="entry-row2">
         <select id="e-cat"></select>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-          <button class="btn-add" onclick="addEntry()">+</button>
-          <button class="btn-undo" onclick="undoEntry()">&lt;</button>
+          <button class="btn-add" onclick="addEntry()">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <button class="btn-undo" onclick="undoEntry()">
+            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
         </div>
       </div>
     </div>
