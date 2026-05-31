@@ -43,6 +43,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 #toast { position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e16;border-radius:14px;padding:10px 20px;font-size:12px;color:#D0C890;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 
+/* ── Modal popup nouveau mois ── */
+#modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease; }
+#modal-overlay.show { opacity:1;pointer-events:all; }
+#modal-box { background:#181810;border-radius:24px;padding:28px 24px;width:100%;max-width:340px;text-align:center;transform:translateY(20px) scale(.96);transition:transform .3s cubic-bezier(.34,1.4,.64,1); }
+#modal-overlay.show #modal-box { transform:translateY(0) scale(1); }
+.modal-icon { font-size:38px;margin-bottom:12px; }
+.modal-title { font-size:17px;font-weight:700;color:#F5F0E8;margin-bottom:6px; }
+.modal-sub { font-size:13px;color:#A09870;line-height:1.5;margin-bottom:8px; }
+.modal-badge { display:inline-block;background:#D4A843;color:#0e0e0e;font-size:12px;font-weight:700;border-radius:20px;padding:4px 14px;margin-bottom:20px;letter-spacing:.04em; }
+.modal-status { font-size:11px;color:#5a5440;margin-bottom:20px; }
+.modal-btn { width:100%;padding:14px;background:#D4A843;border-radius:14px;color:#0e0e0e;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.modal-btn:active { background:#B89030;transform:scale(.97); }
+
 /* ── Tabs — barre flottante en bas ── */
 .tabs {
   position:fixed;bottom:20px;left:16px;right:16px;
@@ -152,6 +165,18 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <!-- Toast -->
 <div id="toast"></div>
+
+<!-- Modal nouveau mois -->
+<div id="modal-overlay">
+  <div id="modal-box">
+    <div class="modal-icon">📦</div>
+    <div class="modal-title" id="modal-title">Nouveau mois !</div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div class="modal-badge" id="modal-badge"></div>
+    <div class="modal-status" id="modal-status"></div>
+    <button class="modal-btn" onclick="closeModal()">C'est parti !</button>
+  </div>
+</div>
 
 <!-- PIN -->
 <div id="lock-screen">
@@ -654,13 +679,24 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     return MOIS_FR[now.getMonth()] + ' ' + now.getFullYear();
   }
 
+  function showModal(title, sub, badge, status) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-sub').textContent = sub;
+    document.getElementById('modal-badge').textContent = badge;
+    document.getElementById('modal-status').textContent = status;
+    document.getElementById('modal-overlay').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('show');
+  }
+
   async function verifierNouveauMois() {
     const moisActuel = document.getElementById('mois-input').textContent.trim();
     const moisAttendu = getMoisAttendu();
     if (!moisActuel || moisActuel === moisAttendu) return;
 
     setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
-    showToast('📦 Archivage de ' + moisActuel + ' en cours…', 5000);
 
     try {
       await fetch(SCRIPT_URL, {
@@ -673,11 +709,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       document.getElementById('mois-input').textContent = moisAttendu;
       recalc();
       setSyncStatus('ok');
-      showToast('✓ ' + moisActuel + ' archivé — Bienvenue en ' + moisAttendu + ' !', 4000);
+      showModal(
+        'Nouveau mois !',
+        moisActuel + ' a été archivé sur Google Sheets. Les dépenses réelles sont remises à zéro.',
+        '→ ' + moisAttendu,
+        '✓ Historique sauvegardé'
+      );
     } catch(e) {
       setSyncStatus('err');
-      showToast('⚠ Archivage échoué — réessaie dans un instant', 5000);
       localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
+      showModal(
+        'Archivage échoué',
+        'Impossible de joindre Google Sheets. Tes données ' + moisActuel + ' sont sauvegardées en local.',
+        moisActuel,
+        '⚠ Réessaie dans un instant'
+      );
     }
   }
 
