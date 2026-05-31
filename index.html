@@ -52,8 +52,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   z-index:100;
   box-shadow:0 8px 32px rgba(0,0,0,.85),0 2px 12px rgba(212,168,67,.15);
 }
-.tab { flex:1;padding:11px 6px;border-radius:16px;background:transparent;cursor:pointer;font-size:13px;color:#5a5440;text-align:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s; }
-.tab.active { background:#D4A843;color:#0e0e0e;font-weight:700; }
+/* Curseur glissant doré */
+.tab-slider {
+  position:absolute;top:6px;bottom:6px;left:6px;
+  width:calc(50% - 9px);
+  background:#D4A843;
+  border-radius:16px;
+  transition:left .32s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none;
+  z-index:0;
+}
+.tab-slider.right { left:calc(50% + 3px); }
+
+.tab { flex:1;padding:11px 6px;border-radius:16px;background:transparent;cursor:pointer;font-size:13px;color:#5a5440;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
+.tab.active { background:transparent;color:#0e0e0e;font-weight:700; }
 .panel { display:none; }
 .panel.active { display:block; }
 
@@ -78,10 +90,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
 .entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
 .entry-form input, .entry-form select {
-  padding:12px;background:#181810;color:#F5F0E8;font-size:14px;
+  padding:12px;background:#1a1a12;color:#F5F0E8;font-size:14px;
   font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   border-radius:12px;-webkit-appearance:none;appearance:none;
+  border:1.5px solid #38341e;transition:border-color .15s;
 }
+.entry-form input:focus, .entry-form select:focus { border-color:#5c5028; }
 .entry-form input::placeholder { color:#5a5440; }
 .entry-form input[type=number] { appearance:textfield; }
 .btn-add { width:100%;padding:12px;background:#D4A843;border-radius:12px;color:#0e0e0e;font-size:24px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
@@ -91,19 +105,31 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Category groups ── */
 .cat-group { margin-bottom:.6rem;border-radius:14px;overflow:hidden; }
-.cat-header { display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:#1e1e14; }
+.cat-header {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 13px;background:#1e1e14;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+}
 .cat-header-name { font-size:10px;font-weight:700;color:#A09870;text-transform:uppercase;letter-spacing:.08em; }
 .cat-header-right { display:flex;gap:10px;align-items:center; }
 .cat-budget { font-size:10px;color:#5a5440; }
 .cat-reste { font-size:13px;font-weight:700; }
 .cat-reste.green { color:#D4A843; }
 .cat-reste.red { color:#C07860; }
+/* Flèche accordéon */
+.cat-chevron { font-size:10px;color:#4a4630;display:inline-block;transition:transform .25s;margin-left:4px; }
+.cat-group.collapsed .cat-chevron { transform:rotate(-90deg); }
+/* Corps accordéon avec animation */
+.cat-body { overflow:hidden;max-height:800px;transition:max-height .3s ease; }
+.cat-group.collapsed .cat-body { max-height:0; }
 .entry-row-item { display:flex;align-items:center;padding:10px 13px;background:#141410; }
 .entry-desc { flex:1;font-size:13px;color:#D8D0A8;font-weight:400; }
 .entry-amount { font-size:13px;font-weight:600;color:#F5F0E8;font-variant-numeric:tabular-nums;margin-right:10px;white-space:nowrap; }
 .btn-del { background:#2a1810;color:#E8906A;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0; }
 .btn-del:active { background:#C07860;color:#0e0e0e; }
 .cat-empty { padding:11px 13px;font-size:12px;color:#3a3828;background:#141410; }
+/* Drag-to-reorder */
+.cat-group.dragging { opacity:.6;transform:scale(1.02);z-index:10;position:relative;box-shadow:0 12px 36px rgba(0,0,0,.7);border-radius:14px; }
 
 /* ── Budget projeté ── */
 .budget-section { margin-bottom:.85rem; }
@@ -244,6 +270,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <!-- Tabs — floating bottom bar -->
 <div class="tabs">
+  <div class="tab-slider" id="tab-slider"></div>
   <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
   <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
 </div>
@@ -259,6 +286,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let entries = [], entryId = 0, budgetRowId = 0;
+
+  // Accordion : ensemble des catégories réduites
+  const collapsedCats = new Set();
+  // Drag-to-reorder
+  let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
 
@@ -307,6 +339,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     el.classList.add('active');
+    // Déplacer le curseur glissant
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    document.getElementById('tab-slider').classList.toggle('right', tabs.indexOf(el) === 1);
   }
 
   function getFixesTotal() {
@@ -404,6 +439,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   function refreshCatList() {
+    // Ne pas re-render pendant un drag
+    if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
     getCats().forEach(cat => {
@@ -422,18 +459,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
       const grp = document.createElement('div');
       grp.className = 'cat-group';
+      grp.dataset.cat = cat;
+      if (collapsedCats.has(cat)) grp.classList.add('collapsed');
+
       const clrReste = reste >= 0 ? 'green' : 'red';
+      const catEsc = cat.replace(/'/g, "\\'");
       grp.innerHTML = `
-        <div class="cat-header">
+        <div class="cat-header" onclick="toggleCatCollapse('${catEsc}')">
           <span class="cat-header-name">${cat}</span>
           <div class="cat-header-right">
             <span class="cat-budget">budget ${fmtR(budget)}</span>
             <span class="cat-reste ${clrReste}">${reste >= 0 ? '+' : ''}${fmtR(reste)}</span>
+            <span class="cat-chevron">▾</span>
           </div>
         </div>`;
 
+      const body = document.createElement('div');
+      body.className = 'cat-body';
+
       if (Object.keys(grouped).length === 0) {
-        grp.innerHTML += `<div class="cat-empty">Aucune dépense</div>`;
+        body.innerHTML = `<div class="cat-empty">Aucune dépense</div>`;
       } else {
         Object.values(grouped).forEach(g => {
           const row = document.createElement('div');
@@ -442,12 +487,89 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           row.innerHTML = `
             <span class="entry-desc">${g.desc}${countBadge}</span>
             <span class="entry-amount">${fmt(g.total)}</span>
-            <button class="btn-del" onclick="removeGroup('${cat}','${g.desc.replace(/'/g,"\\'")}')">✕</button>`;
-          grp.appendChild(row);
+            <button class="btn-del" onclick="removeGroup('${catEsc}','${g.desc.replace(/'/g,"\\'")}')">✕</button>`;
+          body.appendChild(row);
         });
       }
+      grp.appendChild(body);
       container.appendChild(grp);
     });
+  }
+
+  // Bascule l'état accordéon d'une catégorie sans re-render complet
+  function toggleCatCollapse(cat) {
+    if (collapsedCats.has(cat)) collapsedCats.delete(cat);
+    else collapsedCats.add(cat);
+    const list = document.getElementById('cat-list');
+    for (const g of list.querySelectorAll('.cat-group')) {
+      if (g.dataset.cat === cat) {
+        g.classList.toggle('collapsed', collapsedCats.has(cat));
+        return;
+      }
+    }
+  }
+
+  // Réordonne budgetSections.variable selon le nouvel ordre DOM
+  function reorderCatsByDom(newOrder) {
+    const old = budgetSections.variable;
+    const reordered = newOrder
+      .map(cat => old.find(r => r.label.trim().toLowerCase() === cat.trim().toLowerCase()))
+      .filter(Boolean);
+    old.forEach(r => { if (!reordered.includes(r)) reordered.push(r); });
+    budgetSections.variable = reordered;
+    refreshCatSelect();
+    save();
+  }
+
+  // Initialise le drag-to-reorder par appui long sur les cat-groups
+  function setupCatDrag() {
+    const list = document.getElementById('cat-list');
+    if (!list || list._dragReady) return;
+    list._dragReady = true;
+
+    list.addEventListener('touchstart', e => {
+      const g = e.target.closest('.cat-group');
+      if (!g) return;
+      longPressTimer = setTimeout(() => {
+        dragEl = g;
+        g.classList.add('dragging');
+        if (navigator.vibrate) navigator.vibrate(45);
+      }, 480);
+    }, { passive: true });
+
+    list.addEventListener('touchmove', e => {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (!dragEl) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      // Masque brièvement l'élément pour lire l'élément en dessous
+      dragEl.style.visibility = 'hidden';
+      const under = document.elementFromPoint(touch.clientX, touch.clientY);
+      dragEl.style.visibility = '';
+      const target = under?.closest('.cat-group');
+      if (target && target !== dragEl) {
+        const all = Array.from(list.querySelectorAll('.cat-group'));
+        if (all.indexOf(dragEl) < all.indexOf(target)) {
+          list.insertBefore(dragEl, target.nextSibling);
+        } else {
+          list.insertBefore(dragEl, target);
+        }
+      }
+    }, { passive: false });
+
+    const endDrag = () => {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+      if (dragEl) {
+        dragEl.classList.remove('dragging');
+        const newOrder = Array.from(list.querySelectorAll('.cat-group')).map(g => g.dataset.cat);
+        reorderCatsByDom(newOrder);
+        dragEl = null;
+      }
+    };
+    list.addEventListener('touchend', endDrag);
+    list.addEventListener('touchcancel', endDrag);
   }
 
   function removeGroup(cat, desc) {
@@ -591,6 +713,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       renderAllBudgetSections();
       refreshCatSelect();
       recalc();
+      setupCatDrag();
       await verifierNouveauMois();
     })();
   }
