@@ -7,7 +7,7 @@
 <title>Budget mensuel — Hicham</title>
 <style>
 /* ── Lock screen ── */
-#lock-screen { position:fixed;inset:0;background:#0e0e0e;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem; }
+#lock-screen { position:fixed;inset:0;background:#161614;z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem; }
 #lock-screen.hidden { display:none; }
 .lock-title { font-size:11px;color:#5a5440;letter-spacing:.14em;text-transform:uppercase; }
 .pin-dots { display:flex;gap:16px; }
@@ -25,7 +25,7 @@
 /* ── Base ── */
 *{box-sizing:border-box;margin:0;padding:0;border:none;}
 html,body{overflow-x:hidden;}
-body { font-family:-apple-system,Arial,sans-serif;background:#0e0e0e;color:#F5F0E8;min-height:100vh;padding:.8rem .65rem 100px; }
+body { font-family:-apple-system,Arial,sans-serif;background:#161614;color:#F5F0E8;min-height:100vh;padding:.8rem .65rem 100px; }
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 
@@ -146,7 +146,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Budget projeté ── */
 .budget-section { margin-bottom:.85rem; }
-.budget-section-title { font-size:10px;color:#6a6448;text-transform:uppercase;letter-spacing:.08em;padding:4px 2px;margin-bottom:6px; }
+.budget-section-title {
+  font-size:10px;color:#6a6448;text-transform:uppercase;letter-spacing:.08em;
+  padding:8px 4px;margin-bottom:0;
+  display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+}
+.budget-section-chevron { font-size:10px;color:#4a4630;display:inline-block;transition:transform .25s; }
+.budget-section.collapsed .budget-section-chevron { transform:rotate(-90deg); }
+.budget-section-body { overflow:hidden;max-height:700px;transition:max-height .3s ease;padding-top:6px; }
+.budget-section.collapsed .budget-section-body { max-height:0;padding-top:0; }
 .budget-row { display:flex;align-items:center;padding:10px 13px;background:#181810;border-radius:10px;margin-bottom:4px;gap:8px; }
 .budget-row-label-input { flex:1;background:none;color:#C8C0A0;font-size:13px;font-family:-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;transition:color .15s; }
 .budget-row-label-input:focus { color:#F5F0E8; }
@@ -263,31 +272,51 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     </div>
 
     <!-- Variable -->
-    <div class="budget-section">
-      <div class="budget-section-title">Dépenses variables budgétées</div>
-      <div id="sec-variable"></div>
-      <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
+    <div class="budget-section" id="bsec-variable">
+      <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
+        Dépenses variables budgétées
+        <span class="budget-section-chevron">▾</span>
+      </div>
+      <div class="budget-section-body">
+        <div id="sec-variable"></div>
+        <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
+      </div>
     </div>
 
     <!-- Logement -->
-    <div class="budget-section">
-      <div class="budget-section-title">Logement</div>
-      <div id="sec-logement"></div>
-      <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
+    <div class="budget-section" id="bsec-logement">
+      <div class="budget-section-title" onclick="toggleBudgetSection('logement')">
+        Logement
+        <span class="budget-section-chevron">▾</span>
+      </div>
+      <div class="budget-section-body">
+        <div id="sec-logement"></div>
+        <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
+      </div>
     </div>
 
     <!-- Abonnements -->
-    <div class="budget-section">
-      <div class="budget-section-title">Abonnements &amp; services</div>
-      <div id="sec-abonnements"></div>
-      <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
+    <div class="budget-section" id="bsec-abonnements">
+      <div class="budget-section-title" onclick="toggleBudgetSection('abonnements')">
+        Abonnements &amp; services
+        <span class="budget-section-chevron">▾</span>
+      </div>
+      <div class="budget-section-body">
+        <div id="sec-abonnements"></div>
+        <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
+      </div>
     </div>
 
     <!-- Épargne -->
-    <div class="budget-section">
-      <div class="budget-section-title">Épargne</div>
-      <div id="sec-epargne"></div>
-      <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
+    <div class="budget-section" id="bsec-epargne">
+      <div class="budget-section-title" onclick="toggleBudgetSection('epargne')">
+        Épargne
+        <span class="budget-section-chevron">▾</span>
+      </div>
+      <div class="budget-section-body">
+        <div id="sec-epargne"></div>
+        <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
+      </div>
     </div>
   </div>
 
@@ -312,8 +341,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   let entries = [], entryId = 0, budgetRowId = 0;
 
-  // Accordion : ensemble des catégories réduites
+  // Accordion dépenses réelles
   const collapsedCats = new Set();
+  // Accordion budget projeté
+  const collapsedBudgetSections = new Set();
   // Drag-to-reorder
   let longPressTimer = null, dragEl = null;
 
@@ -519,6 +550,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       grp.appendChild(body);
       container.appendChild(grp);
     });
+  }
+
+  function toggleBudgetSection(secKey) {
+    if (collapsedBudgetSections.has(secKey)) collapsedBudgetSections.delete(secKey);
+    else collapsedBudgetSections.add(secKey);
+    const sec = document.getElementById('bsec-' + secKey);
+    if (sec) sec.classList.toggle('collapsed', collapsedBudgetSections.has(secKey));
   }
 
   // Bascule l'état accordéon d'une catégorie sans re-render complet
