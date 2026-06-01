@@ -83,8 +83,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .panel.active { display:block; }
 
 /* ── Metric cards ── */
-.cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem; }
-.card { background:#181810;border-radius:16px;padding:12px 14px;min-width:0; }
+.cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem;align-items:stretch; }
+.card { background:#181810;border-radius:16px;padding:12px 14px;min-width:0;min-height:64px;display:flex;flex-direction:column;justify-content:space-between; }
 .card-label { font-size:10px;color:#6a6448;margin-bottom:4px;letter-spacing:.05em; }
 .card-value { font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .card-value.green { color:#D4A843; }
@@ -103,7 +103,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
 .entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
 .entry-form input, .entry-form select {
-  padding:12px;background:#1a1a12;color:#DDD7C5;font-size:14px;
+  height:42px;padding:0 12px;background:#1a1a12;color:#DDD7C5;font-size:14px;
   font-family:-apple-system,Arial,sans-serif;outline:none;width:100%;
   border-radius:12px;-webkit-appearance:none;appearance:none;
   border:1.5px solid #38341e;transition:border-color .15s;
@@ -111,9 +111,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-form input:focus, .entry-form select:focus { border-color:#5c5028; }
 .entry-form input::placeholder { color:#5a5440; }
 .entry-form input[type=number] { appearance:textfield; }
-.btn-add { width:100%;padding:13px;background:#D4A843;border-radius:12px;color:#0e0e0e;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.btn-add { width:100%;height:42px;padding:0;background:#D4A843;border-radius:12px;color:#0e0e0e;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .btn-add:active { background:#B89030;transform:scale(.97); }
-.btn-undo { width:100%;padding:13px;background:#181810;border-radius:12px;color:#A09870;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
+.btn-undo { width:100%;height:42px;padding:0;background:#181810;border-radius:12px;color:#A09870;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
 .btn-undo:active { background:#242018; }
 
 /* ── Category groups ── */
@@ -130,7 +130,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .cat-reste.green { color:#D4A843; }
 .cat-reste.red { color:#C07860; }
 /* Flèche accordéon */
-.cat-chevron { font-size:10px;color:#4a4630;display:inline-block;transition:transform .25s;margin-left:4px; }
+.cat-chevron { font-size:16px;color:#8a7848;display:inline-block;transition:transform .25s;margin-left:4px; }
 .cat-group.collapsed .cat-chevron { transform:rotate(-90deg); }
 /* Corps accordéon avec animation */
 .cat-body { overflow:hidden;max-height:800px;transition:max-height .3s ease; }
@@ -152,7 +152,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   display:flex;justify-content:space-between;align-items:center;
   cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
 }
-.budget-section-chevron { font-size:10px;color:#4a4630;display:inline-block;transition:transform .25s; }
+.budget-section-chevron { font-size:16px;color:#8a7848;display:inline-block;transition:transform .25s; }
 .budget-section.collapsed .budget-section-chevron { transform:rotate(-90deg); }
 .budget-section-body { overflow:hidden;max-height:700px;transition:max-height .3s ease; }
 .budget-section.collapsed .budget-section-body { max-height:0; }
