@@ -24,23 +24,33 @@
 
 /* ── Base ── */
 *{box-sizing:border-box;margin:0;padding:0;border:none;}
-html,body{overflow-x:hidden;}
-body { font-family:-apple-system,Arial,sans-serif;background:#2e2e2a;color:#DDD7C5;min-height:100vh;padding:.8rem .65rem 100px; }
+html { height:100%; overflow:hidden; }
+body {
+  font-family:-apple-system,Arial,sans-serif;
+  background:#2e2e2a;
+  color:#DDD7C5;
+  height:100%;
+  height:100dvh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  padding:0;
+}
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 
 /* ── Header ── */
-.header { display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem; }
-.mois-label { font-size:16px;font-weight:300;color:#A09870; }
-.sync-badge { font-size:10px;display:flex;align-items:center;gap:4px;color:#5a5440; }
+.header { display:flex;justify-content:space-between;align-items:center;padding:.75rem .75rem .45rem;flex-shrink:0; }
+.mois-label { font-size:18px;font-weight:300;color:#D4A843;letter-spacing:.06em; }
+.sync-badge { font-size:10px;display:flex;align-items:center;gap:5px;color:#5a5440; }
 #sync-dot { width:5px;height:5px;border-radius:50%;background:#333;flex-shrink:0;transition:background .3s; }
 #sync-dot.syncing { background:#D4A843;animation:pulse .8s infinite; }
 #sync-dot.ok { background:#8AC878; }
 #sync-dot.err { background:#C07860; }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* ── Toast — au-dessus de la nav bar ── */
-#toast { position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e16;border-radius:14px;padding:10px 20px;font-size:12px;color:#D0C890;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
+/* ── Toast ── */
+#toast { position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e1e16;border-radius:14px;padding:10px 20px;font-size:12px;color:#D0C890;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 
 /* ── Modal popup nouveau mois ── */
@@ -56,34 +66,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn { width:100%;padding:14px;background:#D4A843;border-radius:14px;color:#0e0e0e;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .modal-btn:active { background:#B89030;transform:scale(.97); }
 
-/* ── Tabs — barre flottante en bas ── */
-.tabs {
-  position:fixed;bottom:20px;left:16px;right:16px;
-  display:flex;gap:6px;
-  background:#181810;
-  border-radius:22px;padding:6px;
-  z-index:100;
-  box-shadow:0 8px 32px rgba(0,0,0,.85),0 2px 12px rgba(212,168,67,.15);
-}
-/* Curseur glissant doré */
-.tab-slider {
-  position:absolute;top:6px;bottom:6px;left:6px;
-  width:calc(50% - 9px);
-  background:#D4A843;
-  border-radius:16px;
-  transition:left .35s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events:none;
-  z-index:0;
-}
-.tab-slider.right { left:calc(50% + 3px); }
-
-.tab { flex:1;padding:11px 6px;border-radius:16px;background:transparent;cursor:pointer;font-size:13px;color:#5a5440;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
-.tab.active { background:transparent;color:#0e0e0e;font-weight:700; }
+/* ── Panel area ── */
+.panel-area { flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0; }
 .panel { display:none; }
-.panel.active { display:block; }
+.panel.active { display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden; }
+
+/* ── Reel : zone fixe en haut ── */
+.reel-fixed { flex-shrink:0;padding:0 .75rem .5rem; }
 
 /* ── Metric cards ── */
-.cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.85rem;align-items:stretch; }
+.cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.5rem;align-items:stretch; }
 .card { background:#181810;border-radius:16px;padding:12px 14px;min-width:0;min-height:64px;display:flex;flex-direction:column;justify-content:space-between; }
 .card-label { font-size:10px;color:#6a6448;margin-bottom:4px;letter-spacing:.05em; }
 .card-value { font-size:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
@@ -98,8 +90,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .card.red-bg .card-value { color:#0e0e0e; }
 .editable-val { background:none;color:#DDD7C5;font-size:20px;font-weight:700;font-family:-apple-system,Arial,sans-serif;width:100%;outline:none;appearance:textfield; }
 
-/* ── Entry form ── */
-.entry-form { margin-bottom:.8rem; }
+/* ── Entry form — style barre de navigation ── */
+.entry-form {
+  background:#181810;
+  border-radius:18px;
+  padding:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.4),0 1px 6px rgba(212,168,67,.08);
+}
 .entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
 .entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
 .entry-form input, .entry-form select {
@@ -113,8 +110,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-form input[type=number] { appearance:textfield; }
 .btn-add { width:100%;height:42px;padding:0;background:#D4A843;border-radius:12px;color:#0e0e0e;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .btn-add:active { background:#B89030;transform:scale(.97); }
-.btn-undo { width:100%;height:42px;padding:0;background:#181810;border-radius:12px;color:#A09870;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
-.btn-undo:active { background:#242018; }
+.btn-undo { width:100%;height:42px;padding:0;background:#282820;border-radius:12px;color:#A09870;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
+.btn-undo:active { background:#323028; }
+
+/* ── Cat list scrollable ── */
+#cat-list { flex:1;overflow-y:auto;padding:.5rem .75rem .6rem;-webkit-overflow-scrolling:touch; }
 
 /* ── Category groups ── */
 .cat-group { margin-bottom:.6rem;border-radius:14px;overflow:hidden; }
@@ -129,10 +129,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .cat-reste { font-size:13px;font-weight:700; }
 .cat-reste.green { color:#D4A843; }
 .cat-reste.red { color:#C07860; }
-/* Flèche accordéon */
 .cat-chevron { font-size:16px;color:#8a7848;display:inline-block;transition:transform .25s;margin-left:4px; }
 .cat-group.collapsed .cat-chevron { transform:rotate(-90deg); }
-/* Corps accordéon avec animation */
 .cat-body { overflow:hidden;max-height:800px;transition:max-height .3s ease; }
 .cat-group.collapsed .cat-body { max-height:0; }
 .entry-row-item { display:flex;align-items:center;padding:10px 13px;background:#141410; }
@@ -141,10 +139,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-del { background:#2a1810;color:#E8906A;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0; }
 .btn-del:active { background:#C07860;color:#0e0e0e; }
 .cat-empty { padding:11px 13px;font-size:12px;color:#3a3828;background:#141410; }
-/* Drag-to-reorder */
 .cat-group.dragging { opacity:.6;transform:scale(1.02);z-index:10;position:relative;box-shadow:0 12px 36px rgba(0,0,0,.7);border-radius:14px; }
 
-/* ── Budget projeté ── */
+/* ── Budget projeté (scrollable) ── */
+#budget.active { overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 .75rem 1rem; }
 .budget-section { margin-bottom:.6rem;border-radius:14px;overflow:hidden; }
 .budget-section-title {
   font-size:10px;font-weight:700;color:#A09870;text-transform:uppercase;letter-spacing:.08em;
@@ -168,6 +166,30 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-row-del:active { background:#C07860;color:#0e0e0e; }
 .btn-sec-add { width:100%;padding:10px 13px;background:#141410;color:#5a5440;font-size:12px;cursor:pointer;font-family:-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:color .15s; }
 .btn-sec-add:active { color:#D4A843; }
+.budget-cards { margin-bottom:.5rem; }
+
+/* ── Tabs — barre flottante en bas (dans le flux flex) ── */
+.tabs {
+  position:relative;
+  flex-shrink:0;
+  margin:.4rem .75rem .75rem;
+  display:flex;gap:6px;
+  background:#181810;
+  border-radius:22px;padding:6px;
+  box-shadow:0 8px 32px rgba(0,0,0,.85),0 2px 12px rgba(212,168,67,.15);
+}
+.tab-slider {
+  position:absolute;top:6px;bottom:6px;left:6px;
+  width:calc(50% - 9px);
+  background:#D4A843;
+  border-radius:16px;
+  transition:left .35s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events:none;
+  z-index:0;
+}
+.tab-slider.right { left:calc(50% + 3px); }
+.tab { flex:1;padding:11px 6px;border-radius:16px;background:transparent;cursor:pointer;font-size:13px;color:#5a5440;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
+.tab.active { background:transparent;color:#0e0e0e;font-weight:700; }
 </style>
 </head>
 <body>
@@ -202,61 +224,67 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
-<div class="container">
-  <!-- Header -->
-  <div class="header">
-    <div style="display:flex;align-items:baseline;gap:6px">
-      <span style="font-size:18px;font-weight:700;color:#D4A843;letter-spacing:.06em">BUDGET</span>
-      <span class="mois-label" id="mois-input">Mai 2026</span>
-    </div>
-    <div class="sync-badge"><span id="sync-dot"></span><span id="sync-label">—</span></div>
+<!-- Header — toujours visible -->
+<div class="header">
+  <div style="display:flex;align-items:baseline;gap:6px">
+    <span style="font-size:18px;font-weight:700;color:#D4A843;letter-spacing:.06em">BUDGET</span>
+    <span class="mois-label" id="mois-input">Juin 2026</span>
   </div>
+  <!-- Dot à droite du label -->
+  <div class="sync-badge"><span id="sync-label">—</span><span id="sync-dot"></span></div>
+</div>
+
+<!-- Zone des panels -->
+<div class="panel-area">
 
   <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
   <div id="reel" class="panel active">
-    <!-- Formulaire de saisie -->
-    <div class="entry-form">
-      <div class="entry-row1">
-        <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-        <input type="text" id="e-desc" placeholder="Description">
+
+    <!-- Fixe : cartes + formulaire -->
+    <div class="reel-fixed">
+      <!-- Badges métriques -->
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">Dépensé réel</div>
+          <div class="card-value white" id="r-reel">0,00 €</div>
+        </div>
+        <div class="card green-bg">
+          <div class="card-label">Reste réel</div>
+          <div class="card-value green" id="r-reste-reel">0 €</div>
+        </div>
       </div>
-      <div class="entry-row2">
-        <select id="e-cat"></select>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-          <button class="btn-add" onclick="addEntry()">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
-          <button class="btn-undo" onclick="undoEntry()">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
+      <!-- Formulaire (style barre de nav) -->
+      <div class="entry-form">
+        <div class="entry-row1">
+          <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+          <input type="text" id="e-desc" placeholder="Description">
+        </div>
+        <div class="entry-row2">
+          <select id="e-cat"></select>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+            <button class="btn-add" onclick="addEntry()">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
+            <button class="btn-undo" onclick="undoEntry()">
+              <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Totaux -->
-    <div class="cards" style="margin-bottom:.85rem">
-      <div class="card">
-        <div class="card-label">Dépensé réel</div>
-        <div class="card-value white" id="r-reel">0,00 €</div>
-      </div>
-      <div class="card green-bg">
-        <div class="card-label">Reste réel</div>
-        <div class="card-value green" id="r-reste-reel">0 €</div>
-      </div>
-    </div>
-
-    <!-- Liste par catégorie -->
+    <!-- Scrollable : liste des catégories -->
     <div id="cat-list"></div>
   </div>
 
   <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
   <div id="budget" class="panel">
     <!-- Salaire / Fixes -->
-    <div class="cards">
+    <div class="cards budget-cards">
       <div class="card">
         <div class="card-label">Salaire net</div>
         <input class="editable-val" id="salaire" type="number" value="2779" oninput="recalc()">
@@ -266,9 +294,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="card-value red" id="b-fixes">1 806 €</div>
       </div>
     </div>
-
     <!-- Budget variable / Reste -->
-    <div class="cards">
+    <div class="cards budget-cards">
       <div class="card red-bg">
         <div class="card-label">Budget variable</div>
         <div class="card-value red" id="b-variable">660 €</div>
@@ -278,7 +305,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <div class="card-value green" id="b-reste">313 €</div>
       </div>
     </div>
-
     <!-- Variable -->
     <div class="budget-section" id="bsec-variable">
       <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
@@ -290,7 +316,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <button class="btn-sec-add" onclick="addBudgetRow('variable')">+ Ajouter une ligne</button>
       </div>
     </div>
-
     <!-- Logement -->
     <div class="budget-section" id="bsec-logement">
       <div class="budget-section-title" onclick="toggleBudgetSection('logement')">
@@ -302,7 +327,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <button class="btn-sec-add" onclick="addBudgetRow('logement')">+ Ajouter une ligne</button>
       </div>
     </div>
-
     <!-- Abonnements -->
     <div class="budget-section" id="bsec-abonnements">
       <div class="budget-section-title" onclick="toggleBudgetSection('abonnements')">
@@ -314,7 +338,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <button class="btn-sec-add" onclick="addBudgetRow('abonnements')">+ Ajouter une ligne</button>
       </div>
     </div>
-
     <!-- Épargne -->
     <div class="budget-section" id="bsec-epargne">
       <div class="budget-section-title" onclick="toggleBudgetSection('epargne')">
@@ -330,7 +353,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 </div>
 
-<!-- Tabs — floating bottom bar -->
+<!-- Barre d'onglets — dans le flux flex, plus position:fixed -->
 <div class="tabs">
   <div class="tab-slider" id="tab-slider"></div>
   <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
@@ -349,11 +372,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   let entries = [], entryId = 0, budgetRowId = 0;
 
-  // Accordion dépenses réelles
   const collapsedCats = new Set();
-  // Accordion budget projeté
   const collapsedBudgetSections = new Set();
-  // Drag-to-reorder
   let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -403,7 +423,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     el.classList.add('active');
-    // Déplacer le curseur glissant
     const tabs = Array.from(document.querySelectorAll('.tab'));
     document.getElementById('tab-slider').classList.toggle('right', tabs.indexOf(el) === 1);
   }
@@ -503,7 +522,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   function refreshCatList() {
-    // Ne pas re-render pendant un drag
     if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
@@ -540,7 +558,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
       const body = document.createElement('div');
       body.className = 'cat-body';
-
       if (Object.keys(grouped).length === 0) {
         body.innerHTML = `<div class="cat-empty">Aucune dépense</div>`;
       } else {
@@ -567,7 +584,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (sec) sec.classList.toggle('collapsed', collapsedBudgetSections.has(secKey));
   }
 
-  // Bascule l'état accordéon d'une catégorie sans re-render complet
   function toggleCatCollapse(cat) {
     if (collapsedCats.has(cat)) collapsedCats.delete(cat);
     else collapsedCats.add(cat);
@@ -580,7 +596,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
   }
 
-  // Réordonne budgetSections.variable selon le nouvel ordre DOM
   function reorderCatsByDom(newOrder) {
     const old = budgetSections.variable;
     const reordered = newOrder
@@ -592,7 +607,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     save();
   }
 
-  // Initialise le drag-to-reorder par appui long sur les cat-groups
   function setupCatDrag() {
     const list = document.getElementById('cat-list');
     if (!list || list._dragReady) return;
@@ -614,18 +628,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       if (!dragEl) return;
       e.preventDefault();
       const touch = e.touches[0];
-      // Masque brièvement l'élément pour lire l'élément en dessous
       dragEl.style.visibility = 'hidden';
       const under = document.elementFromPoint(touch.clientX, touch.clientY);
       dragEl.style.visibility = '';
       const target = under?.closest('.cat-group');
       if (target && target !== dragEl) {
         const all = Array.from(list.querySelectorAll('.cat-group'));
-        if (all.indexOf(dragEl) < all.indexOf(target)) {
-          list.insertBefore(dragEl, target.nextSibling);
-        } else {
-          list.insertBefore(dragEl, target);
-        }
+        if (all.indexOf(dragEl) < all.indexOf(target)) list.insertBefore(dragEl, target.nextSibling);
+        else list.insertBefore(dragEl, target);
       }
     }, { passive: false });
 
@@ -743,11 +753,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (!moisActuel || moisActuel === moisAttendu) return;
 
     setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
-
     try {
       await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
+        method: 'POST', mode: 'no-cors',
         body: JSON.stringify({ action: 'archive', mois: moisActuel, data: getPayload() })
       });
       entries = [];
@@ -755,21 +763,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       document.getElementById('mois-input').textContent = moisAttendu;
       recalc();
       setSyncStatus('ok');
-      showModal(
-        'Nouveau mois !',
+      showModal('Nouveau mois !',
         moisActuel + ' a été archivé sur Google Sheets. Les dépenses réelles sont remises à zéro.',
-        '→ ' + moisAttendu,
-        '✓ Historique sauvegardé'
-      );
+        '→ ' + moisAttendu, '✓ Historique sauvegardé');
     } catch(e) {
       setSyncStatus('err');
       localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
-      showModal(
-        'Archivage échoué',
+      showModal('Archivage échoué',
         'Impossible de joindre Google Sheets. Tes données ' + moisActuel + ' sont sauvegardées en local.',
-        moisActuel,
-        '⚠ Réessaie dans un instant'
-      );
+        moisActuel, '⚠ Réessaie dans un instant');
     }
   }
 
@@ -804,7 +806,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       await load();
       renderAllBudgetSections();
       refreshCatSelect();
-      // Tout fermer par défaut à l'ouverture
       getCats().forEach(cat => collapsedCats.add(cat));
       ['variable','logement','abonnements','epargne'].forEach(k => collapsedBudgetSections.add(k));
       recalc();
