@@ -72,47 +72,67 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn { width:100%;padding:14px;background:#FFB162;border-radius:14px;color:#1B2632;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .modal-btn:active { background:#A35139;color:#EEE9DF;transform:scale(.97); }
 
+/* ── Top bar (navigation + sync — maintenant EN HAUT) ── */
+.top-bar {
+  flex-shrink:0;
+  padding:.5rem .75rem;
+  position:relative;z-index:20;
+}
+
 /* ── Panel area ── */
 .panel-area { flex:1;overflow:hidden;position:relative; }
 .panel { display:none; }
 .panel.active { display:block;position:absolute;inset:0;overflow:hidden; }
 
-/* ── Reel : overlay fixe EN BAS (couvre jusqu'au fond incl. tabs) ── */
-.reel-fixed {
-  position:absolute;bottom:0;left:0;right:0;z-index:15;
-  padding:0 .75rem calc(72px + env(safe-area-inset-bottom,0px));
+/* ── Formulaire fixé en haut du panneau reel ── */
+.reel-form-fixed {
+  position:absolute;top:0;left:0;right:0;z-index:10;
+  padding:.5rem .75rem 0;
+  background:#1B2632;
   pointer-events:none;
-  /* fondu : transparent en haut → plein opaque après 80px, efface tout contenu derrière */
-  background:linear-gradient(to bottom, transparent 0, rgba(27,38,50,.97) 78px, #1B2632 95px);
 }
-.reel-fixed .cards,
-.reel-fixed .entry-form { pointer-events:auto; }
+.reel-form-fixed .entry-form { pointer-events:auto; }
+/* Fondu bas du formulaire (juste après l'arrondi du bas de la carte) */
+.form-fade {
+  height:20px;
+  background:linear-gradient(to bottom,#1B2632,transparent);
+  pointer-events:none;margin:0 -.75rem;
+}
+
+/* ── Fondu en haut des panels (bord supérieur du contenu) ── */
+.panel-fade-top {
+  position:absolute;top:0;left:0;right:0;height:18px;
+  background:linear-gradient(to bottom,#1B2632,transparent);
+  z-index:9;pointer-events:none;
+}
+/* ── Fondu en bas des panels (juste avant les badges) ── */
+.panel-fade-bottom {
+  position:absolute;bottom:0;left:0;right:0;height:52px;
+  background:linear-gradient(to bottom,transparent,#1B2632);
+  z-index:9;pointer-events:none;
+}
 
 /* ── Cat list — scrollable depuis le haut ── */
 #cat-list {
   position:absolute;inset:0;overflow-y:auto;
-  padding:.75rem .75rem calc(315px + env(safe-area-inset-bottom,0px));
+  /* top = form (111px) + .5rem padding + form-fade (20px) */
+  padding:143px .75rem calc(70px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
-
-/* ── Budget : overlay fixe EN BAS (même principe) ── */
-.budget-fixed {
-  position:absolute;bottom:0;left:0;right:0;z-index:15;
-  padding:0 .75rem calc(72px + env(safe-area-inset-bottom,0px));
-  pointer-events:none;
-  background:linear-gradient(to bottom, transparent 0, rgba(27,38,50,.97) 58px, #1B2632 72px);
-}
-.budget-fixed .card,
-.budget-fixed .editable-val { pointer-events:auto; }
 
 /* ── Budget scroll — depuis le haut ── */
 #budget-scroll {
   position:absolute;inset:0;overflow-y:auto;
-  padding:.75rem .75rem calc(200px + env(safe-area-inset-bottom,0px));
+  padding:12px .75rem calc(70px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
+
+/* ── Badges dans le scroll — section en bas de liste ── */
+.scroll-badges { margin-top:.8rem; }
+.scroll-badges .cards { gap:6px;margin-bottom:3px; }
+.scroll-badges .cards:last-child { margin-bottom:3px; }
 
 /* ── Metric cards — valeur à gauche (grande), label à droite (2 lignes) ── */
 .cards { display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:.5rem;align-items:stretch; }
@@ -305,18 +325,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add { width:100%;padding:10px 13px;background:rgba(44,59,77,.2);color:#C9C1B1;font-size:12px;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:color .15s; }
 .btn-sec-add:active { color:#FFB162; }
 
-/* ── Tabs ── */
-.tabs {
-  position:absolute;
-  bottom:calc(.75rem + env(safe-area-inset-bottom,0px));
-  left:.75rem;right:.75rem;
-  z-index:20;pointer-events:none;
-}
+/* ── Tab pill (maintenant dans .top-bar) ── */
 .tab-pill {
   display:flex;align-items:center;gap:6px;
   background:#2C3B4D;border-radius:44px;padding:6px;
   box-shadow:0 8px 40px rgba(0,0,0,.6),0 2px 16px rgba(255,177,98,.15);
-  pointer-events:auto;
 }
 /* Conteneur des deux onglets — le slider reste STRICTEMENT dedans */
 .tabs-container {
@@ -332,13 +345,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tab-slider.right { left:50%; }
 .tab { flex:1;padding:11px 6px;border-radius:38px;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#C9C1B1;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
 .tab.active { color:#1B2632;font-weight:700; }
-/* Rond dédié au voyant sync — jamais touché par le slider */
+/* Rond dédié au voyant sync — cliquable pour afficher l'état */
 .sync-circle {
   width:52px;height:52px;flex-shrink:0;
   border-radius:50%;background:#1B2632;
   display:flex;align-items:center;justify-content:center;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
   margin:-4px -2px;
+  transition:transform .1s;
 }
+.sync-circle:active { transform:scale(.92); }
 .sync-pip {
   width:22px;height:22px;border-radius:50%;
   background:#3a4f66;
@@ -348,14 +364,24 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sync-pip.ok      { background:#52B788;box-shadow:0 0 18px 7px rgba(82,183,136,.4),0 0 6px 2px rgba(82,183,136,.6); }
 .sync-pip.err     { background:#A35139;box-shadow:0 0 18px 7px rgba(163,81,57,.5),0 0 6px 2px rgba(163,81,57,.7); }
 
-/* ── Badges fins dans reel-fixed et budget-fixed ── */
-.reel-fixed .card, .budget-fixed .card { min-height:46px;padding:7px 10px; }
-.reel-fixed .cards, .budget-fixed .cards { gap:6px;margin-bottom:.4rem; }
-.budget-fixed .editable-val { font-size:20px; }
+/* ── Message d'état sync (apparaît à droite juste sous le bouton sync) ── */
+#sync-msg {
+  position:fixed;right:.75rem;
+  /* top calculé sous le top-bar (~68px) */
+  top:72px;
+  background:rgba(44,59,77,.92);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:7px 14px;font-size:11px;color:#C9C1B1;
+  z-index:300;opacity:0;pointer-events:none;
+  white-space:nowrap;backdrop-filter:blur(10px);
+  transition:opacity .25s,transform .25s;transform:translateY(-6px);
+}
+#sync-msg.show { opacity:1;transform:translateY(0); }
+#sync-msg.ok   { color:#52B788; }
+#sync-msg.err  { color:#EEE9DF;background:rgba(163,81,57,.25);border-color:rgba(163,81,57,.4); }
 
-/* ── Toast statut sync ── */
+/* ── Toast statut sync (bas d'écran, persistant si erreur) ── */
 #sync-status-toast {
-  position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,0px));left:50%;
+  position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;
   transform:translateX(-50%) translateY(16px);
   border-radius:20px;padding:7px 18px;font-size:11px;letter-spacing:.02em;
   z-index:400;transition:transform .35s ease,opacity .35s ease;opacity:0;
@@ -366,10 +392,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 #sync-status-toast.err-state {
   background:rgba(163,81,57,.22);border-color:rgba(163,81,57,.45);
   color:#EEE9DF;cursor:pointer;pointer-events:auto;
-}
-#sync-status-toast.ok-state {
-  background:rgba(82,183,136,.15);border-color:rgba(82,183,136,.35);
-  color:#52B788;
 }
 </style>
 </head>
@@ -410,15 +432,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
+<!-- Navigation — maintenant EN HAUT -->
+<div class="top-bar">
+  <div class="tab-pill">
+    <div class="tabs-container">
+      <div class="tab-slider" id="tab-slider"></div>
+      <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
+      <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
+    </div>
+    <div class="sync-circle" onclick="showSyncMsg()">
+      <span class="sync-pip" id="sync-dot"></span>
+    </div>
+  </div>
+</div>
+<!-- Message statut sync (juste sous le bouton sync, à droite) -->
+<div id="sync-msg"></div>
+
 <!-- Zone des panels -->
 <div class="panel-area">
 
   <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
   <div id="reel" class="panel active">
-
-    <div id="cat-list"></div>
-
-    <div class="reel-fixed">
+    <!-- Formulaire fixé en haut du panneau -->
+    <div class="reel-form-fixed">
       <div class="entry-form">
         <div class="entry-row1">
           <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
@@ -440,32 +476,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
         </div>
       </div>
-      <div class="cards" style="margin-top:.4rem">
-        <div class="card">
-          <div class="card-value white" id="r-global-reel">0 €</div>
-          <div class="card-label">Dépense<br>budget global</div>
-        </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="r-global-reste">0 €</div>
-          <div class="card-label">Reste<br>budget global</div>
-        </div>
-      </div>
-      <div class="cards" style="margin-bottom:0">
-        <div class="card">
-          <div class="card-value white" id="r-reel">0 €</div>
-          <div class="card-label">Dépense<br>variable</div>
-        </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="r-reste-reel">0 €</div>
-          <div class="card-label">Reste<br>variable</div>
-        </div>
-      </div>
+      <!-- fondu sous le formulaire -->
+      <div class="form-fade"></div>
     </div>
+    <!-- Liste défilante (catégories + section fixes + badges en bas) -->
+    <div id="cat-list"></div>
+    <!-- Fondu bas -->
+    <div class="panel-fade-bottom"></div>
   </div>
 
   <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
   <div id="budget" class="panel">
-
+    <!-- Fondu haut (bord panel) -->
+    <div class="panel-fade-top"></div>
     <div id="budget-scroll">
       <div class="budget-section" id="bsec-variable">
         <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
@@ -507,44 +530,32 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <button class="btn-sec-add" onclick="addBudgetRow('epargne')">+ Ajouter une ligne</button>
         </div>
       </div>
-    </div>
-
-    <div class="budget-fixed">
-      <div class="cards" style="margin-top:.4rem">
-        <div class="card">
-          <input class="editable-val" id="salaire" type="number" value="2779" oninput="recalc()">
-          <div class="card-label">Salaire<br>net</div>
+      <!-- Badges en bas du scroll -->
+      <div class="scroll-badges">
+        <div class="cards">
+          <div class="card">
+            <input class="editable-val" id="salaire" type="number" value="2779" oninput="recalc()">
+            <div class="card-label">Salaire<br>net</div>
+          </div>
+          <div class="card green-bg">
+            <div class="card-value green" id="b-reste">313 €</div>
+            <div class="card-label">Reste<br>projeté</div>
+          </div>
         </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="b-reste">313 €</div>
-          <div class="card-label">Reste<br>projeté</div>
+        <div class="cards" style="margin-bottom:0">
+          <div class="card">
+            <div class="card-value white" id="b-fixes">1 806 €</div>
+            <div class="card-label">Total<br>fixes</div>
+          </div>
+          <div class="card green-bg">
+            <div class="card-value green" id="b-variable">660 €</div>
+            <div class="card-label">Budget<br>variable</div>
+          </div>
         </div>
-      </div>
-      <div class="cards" style="margin-bottom:0">
-        <div class="card">
-          <div class="card-value white" id="b-fixes">1 806 €</div>
-          <div class="card-label">Total<br>fixes</div>
-        </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="b-variable">660 €</div>
-          <div class="card-label">Budget<br>variable</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab-pill">
-      <div class="tabs-container">
-        <div class="tab-slider" id="tab-slider"></div>
-        <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
-        <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
-      </div>
-      <div class="sync-circle">
-        <span class="sync-pip" id="sync-dot"></span>
       </div>
     </div>
+    <!-- Fondu bas -->
+    <div class="panel-fade-bottom"></div>
   </div>
 
 </div>
@@ -700,32 +711,22 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const reste = salaire - fixes - variable;
     const reelTotal = getReelTotal();
     const resteReel = salaire - fixes - reelTotal;
-
-    // badges globaux (fixes cochées + variable saisi)
     const globalReel = fixesCheckedTotal + reelTotal;
     const globalReste = salaire - fixesCheckedTotal - reelTotal;
 
+    // Badges Budget (toujours dans le DOM)
     document.getElementById('b-fixes').textContent = fmtR(fixes);
     document.getElementById('b-variable').textContent = fmtR(variable);
     document.getElementById('b-reste').textContent = fmtR(reste);
     document.getElementById('b-reste').className = 'card-value green';
     document.getElementById('b-reste').closest('.card').className = 'card green-bg';
 
-    document.getElementById('r-global-reel').textContent = fmtR(globalReel);
-    document.getElementById('r-global-reste').textContent = fmtR(globalReste);
-    document.getElementById('r-global-reste').className = 'card-value ' + (globalReste >= 0 ? 'green' : 'red');
-    document.getElementById('r-global-reste').closest('.card').className = 'card ' + (globalReste >= 0 ? 'green-bg' : 'red-bg');
-
-    document.getElementById('r-reel').textContent = fmtR(reelTotal);
-    document.getElementById('r-reste-reel').textContent = fmtR(resteReel);
-    document.getElementById('r-reste-reel').className = 'card-value ' + (resteReel >= 0 ? 'green' : 'red');
-    document.getElementById('r-reste-reel').closest('.card').className = 'card ' + (resteReel >= 0 ? 'green-bg' : 'red-bg');
-
-    refreshCatList();
+    // Render cat-list en premier (crée les badges reel en bas)
+    refreshCatList({ globalReel, globalReste, reelTotal, resteReel });
     save();
   }
 
-  function refreshCatList() {
+  function refreshCatList(vals) {
     if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
@@ -780,8 +781,39 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       container.appendChild(grp);
     });
 
-    // Section dépenses fixes tout en bas
+    // Section dépenses fixes
     renderFixedSection(container);
+
+    // Badges reel en bas de liste
+    if (vals) {
+      const { globalReel, globalReste, reelTotal, resteReel } = vals;
+      const badges = document.createElement('div');
+      badges.className = 'scroll-badges';
+      const grClr = globalReste >= 0 ? 'green' : 'red';
+      const rrClr = resteReel >= 0 ? 'green' : 'red';
+      badges.innerHTML = `
+        <div class="cards">
+          <div class="card">
+            <div class="card-value white" id="r-global-reel">${fmtR(globalReel)}</div>
+            <div class="card-label">Dépense<br>global</div>
+          </div>
+          <div class="card ${grClr}-bg">
+            <div class="card-value ${grClr}" id="r-global-reste">${fmtR(globalReste)}</div>
+            <div class="card-label">Reste<br>global</div>
+          </div>
+        </div>
+        <div class="cards" style="margin-bottom:0">
+          <div class="card">
+            <div class="card-value white" id="r-reel">${fmtR(reelTotal)}</div>
+            <div class="card-label">Dépense<br>variable</div>
+          </div>
+          <div class="card ${rrClr}-bg">
+            <div class="card-value ${rrClr}" id="r-reste-reel">${fmtR(resteReel)}</div>
+            <div class="card-label">Reste<br>variable</div>
+          </div>
+        </div>`;
+      container.appendChild(badges);
+    }
   }
 
   function renderFixedSection(container) {
@@ -1007,15 +1039,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     clearTimeout(syncOkTimer);
     if (state === 'ok') {
       t.textContent = 'Synchronisé ✓';
-      t.className = 'show ok-state';
+      t.className = 'show';
       syncOkTimer = setTimeout(() => t.className = '', 3000);
     } else if (state === 'err') {
       t.textContent = 'Hors ligne · données locales — tap pour fermer';
       t.className = 'show err-state';
       t.onclick = () => { t.className = ''; };
-    } else if (state === 'syncing') {
+    } else {
       t.className = '';
     }
+  }
+
+  let syncMsgTimer = null;
+  function showSyncMsg() {
+    const state = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
+    const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…', err:'Hors ligne · données locales' };
+    const msg = document.getElementById('sync-msg');
+    msg.textContent = labels[state] || '—';
+    msg.className = 'show ' + (state || '');
+    clearTimeout(syncMsgTimer);
+    syncMsgTimer = setTimeout(() => msg.className = '', 4000);
   }
 
   function getPayload() {
