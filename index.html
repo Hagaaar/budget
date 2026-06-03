@@ -388,22 +388,22 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="reel-fixed">
       <div class="cards">
         <div class="card">
-          <div class="card-value white" id="r-global-reel">0,00 €</div>
-          <div class="card-label">Dépense Réel<br>budget global</div>
+          <div class="card-value white" id="r-global-reel">0 €</div>
+          <div class="card-label">Dépense<br>budget global</div>
         </div>
         <div class="card green-bg">
           <div class="card-value green" id="r-global-reste">0 €</div>
-          <div class="card-label">Reste réel<br>budget global</div>
+          <div class="card-label">Reste<br>budget global</div>
         </div>
       </div>
       <div class="cards" style="margin-top:0">
         <div class="card">
-          <div class="card-value white" id="r-reel">0,00 €</div>
-          <div class="card-label">Dépense réel<br>variable</div>
+          <div class="card-value white" id="r-reel">0 €</div>
+          <div class="card-label">Dépense<br>variable</div>
         </div>
         <div class="card green-bg">
           <div class="card-value green" id="r-reste-reel">0 €</div>
-          <div class="card-label">Reste réel<br>variable</div>
+          <div class="card-label">Reste<br>variable</div>
         </div>
       </div>
       <div class="entry-form">
@@ -672,12 +672,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     document.getElementById('b-reste').textContent = fmtR(reste);
     document.getElementById('b-reste').className = 'card-value ' + (reste >= 0 ? 'green' : 'red');
 
-    document.getElementById('r-global-reel').textContent = fmt(globalReel);
+    document.getElementById('r-global-reel').textContent = fmtR(globalReel);
     document.getElementById('r-global-reste').textContent = fmtR(globalReste);
     document.getElementById('r-global-reste').className = 'card-value ' + (globalReste >= 0 ? 'green' : 'red');
     document.getElementById('r-global-reste').closest('.card').className = 'card ' + (globalReste >= 0 ? 'green-bg' : 'red-bg');
 
-    document.getElementById('r-reel').textContent = fmt(reelTotal);
+    document.getElementById('r-reel').textContent = fmtR(reelTotal);
     document.getElementById('r-reste-reel').textContent = fmtR(resteReel);
     document.getElementById('r-reste-reel').className = 'card-value ' + (resteReel >= 0 ? 'green' : 'red');
     document.getElementById('r-reste-reel').closest('.card').className = 'card ' + (resteReel >= 0 ? 'green-bg' : 'red-bg');
