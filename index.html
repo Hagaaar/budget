@@ -16,11 +16,11 @@
 .pin-dots { display:flex;gap:16px; }
 .pin-dot { width:11px;height:11px;border-radius:50%;background:#2C3B4D;transition:background .15s; }
 .pin-dot.filled { background:#FFB162; }
-.pin-dot.error { background:#A35139; }
+.pin-dot.error  { background:#A35139; }
 .pin-pad { display:grid;grid-template-columns:repeat(3,74px);gap:12px; }
 .pin-key { width:74px;height:74px;border-radius:50%;background:#2C3B4D;color:#EEE9DF;font-size:22px;font-family:'Inter',-apple-system,Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .12s,color .12s; }
 .pin-key:active { background:#FFB162;color:#1B2632; }
-.pin-key.del { font-size:18px;color:#A35139; }
+.pin-key.del   { font-size:18px;color:#A35139; }
 .pin-key.empty { background:transparent;cursor:default; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
 .shake { animation:shake .35s ease; }
@@ -42,14 +42,13 @@ body {
 }
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ── Toast ── */
 #toast { position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(80px);background:#2C3B4D;border-radius:14px;padding:10px 20px;font-size:12px;color:#EEE9DF;z-index:500;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap; }
 #toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 
-/* ── Modal popup ── */
+/* ── Modal ── */
 #modal-overlay { position:fixed;inset:0;background:rgba(27,38,50,.85);z-index:800;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease; }
 #modal-overlay.show { opacity:1;pointer-events:all; }
 #modal-box { background:#2C3B4D;border-radius:24px;padding:28px 24px;width:100%;max-width:340px;text-align:center;transform:translateY(20px) scale(.96);transition:transform .3s cubic-bezier(.34,1.4,.64,1); }
@@ -62,107 +61,108 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn { width:100%;padding:14px;background:#FFB162;border-radius:14px;color:#1B2632;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
 .modal-btn:active { background:#A35139;color:#EEE9DF;transform:scale(.97); }
 
-/* ── Top bar — réduit ── */
-.top-bar {
-  flex-shrink:0;
-  padding:6px 8px;
-  position:relative;
-  z-index:20;
-}
+/* ── Top bar ── */
+.top-bar { flex-shrink:0;padding:6px 8px;position:relative;z-index:20; }
 
 /* ── Panel area ── */
 .panel-area { flex:1;overflow:hidden;position:relative; }
 .panel { display:none; }
 .panel.active { display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden; }
 
-/* ── Zone fixée en haut de chaque panel ── */
+/* ── Zone fixée en haut (badges + éventuellement formulaire)
+     Le ::after crée un fondu vers le bas pour que les accordéons
+     disparaissent derrière les coins arrondis du cadre ── */
 .panel-top-fixed {
   flex-shrink:0;
   background:#1B2632;
+  position:relative;
+  z-index:5;
+}
+.panel-top-fixed::after {
+  content:'';
+  position:absolute;
+  bottom:-16px;left:0;right:0;
+  height:16px;
+  background:linear-gradient(to bottom,#1B2632,transparent);
+  pointer-events:none;
+  z-index:6;
 }
 
-/* Badges — espacement uniforme 6px partout */
-.panel-badges {
-  padding:0 8px 0;
-}
-
-/* Formulaire (onglet reel) */
-.entry-form-area {
-  padding:6px 8px 0;
-}
-
-/* ── Listes défilantes — même espacement 6px en haut ── */
-#cat-list {
-  flex:1;
-  overflow-y:auto;
-  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
-  -webkit-overflow-scrolling:touch;
-  -webkit-user-select:none;user-select:none;
-}
-#budget-scroll {
-  flex:1;
-  overflow-y:auto;
-  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
-  -webkit-overflow-scrolling:touch;
-  -webkit-user-select:none;user-select:none;
-}
-
-/* ── Fondu bas ── */
-.panel-fade-bottom {
-  position:absolute;bottom:0;left:0;right:0;height:40px;
-  background:linear-gradient(to bottom,transparent,#1B2632);
-  z-index:9;pointer-events:none;
-}
-
-/* ── Metric cards — tous identiques, layout centre-split ── */
-.cards { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;align-items:stretch; }
-.cards:last-child { margin-bottom:0; }
-.card {
+/* ── CADRE BADGE — même forme et dimensions exactes que le formulaire ── */
+.badge-frame {
+  margin:0 8px;
   background:#2C3B4D;
-  border-radius:40px;
-  padding:6px 12px;
-  min-width:0;
-  display:flex;flex-direction:row;align-items:center;justify-content:center;gap:5px;
+  border-radius:14px;
+  padding:8px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  /* rows sized to match form height */
 }
-/* Label : côté gauche du centre, texte aligné à droite vers le centre */
-.card-label {
-  order:1;
-  font-size:9px;font-weight:500;
+
+/* Chaque item : label + valeur, sans cadre individuel */
+.badge-item {
+  padding:5px 8px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+/* Séparateurs internes légers */
+.badge-item:nth-child(1),
+.badge-item:nth-child(2) {
+  border-bottom:1px solid rgba(238,233,223,.07);
+  padding-bottom:7px;
+}
+.badge-item:nth-child(3),
+.badge-item:nth-child(4) {
+  padding-top:7px;
+}
+.badge-item:nth-child(odd) {
+  border-right:1px solid rgba(238,233,223,.07);
+  padding-right:12px;
+}
+.badge-item:nth-child(even) {
+  padding-left:12px;
+}
+
+.badge-lbl {
+  font-size:8px;
+  font-weight:600;
   color:#C9C1B1;
-  line-height:1.4;
-  text-align:right;
-  min-width:0;
-  flex:0 1 auto;
-}
-/* Valeur : côté droit du centre, texte aligné à gauche */
-.card-value {
-  order:2;
-  font-size:18px;font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  line-height:1;
   white-space:nowrap;
-  flex-shrink:0;
-  font-variant-numeric:tabular-nums;
-  letter-spacing:-.015em;
-  text-align:left;
-  min-width:52px;
 }
-.card-value.green { color:#FFB162; }
-.card-value.red   { color:#A35139; }
-.card-value.white { color:#EEE9DF; }
-/* Input éditable (Salaire) — même position que card-value */
-.editable-val {
-  order:2;
-  background:none;color:#EEE9DF;
-  font-size:18px;font-weight:700;
+.badge-val {
+  font-size:20px;
+  font-weight:700;
+  color:#EEE9DF;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.badge-val.green { color:#FFB162; }
+.badge-val.red   { color:#A35139; }
+.badge-val.white { color:#EEE9DF; }
+/* Input salaire — même style que badge-val */
+.badge-input {
+  background:none;
+  color:#EEE9DF;
+  font-size:20px;font-weight:700;
   font-family:'Inter',-apple-system,Arial,sans-serif;
   font-variant-numeric:tabular-nums;
-  letter-spacing:-.015em;
-  width:70px;
-  text-align:left;
-  outline:none;appearance:textfield;
-  flex-shrink:0;
+  letter-spacing:-.02em;
+  line-height:1.1;
+  outline:none;
+  -moz-appearance:textfield;
+  appearance:textfield;
+  padding:0;
+  width:100%;
 }
 
-/* ── Entry form ── */
+/* ── Formulaire (onglet reel) — même marges que badge-frame ── */
+.entry-form-area { padding:6px 8px 0; }
 .entry-form {
   background:#2C3B4D;
   border-radius:14px;
@@ -181,14 +181,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   transition:box-shadow .15s;
 }
 .entry-form input:focus { box-shadow:inset 0 0 0 2px #FFB162; }
-.entry-form input::placeholder { color:#C9C1B1; opacity:0.6; }
+.entry-form input::placeholder { color:#C9C1B1;opacity:0.6; }
 .entry-form input[type=number] { appearance:textfield; }
 .entry-form select {
   background-color:#1B2632;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23FFB162'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  background-size:8px 5px;
+  background-repeat:no-repeat;background-position:right 10px center;background-size:8px 5px;
   padding-right:26px;
 }
 .entry-form select:focus { box-shadow:inset 0 0 0 2px #FFB162; }
@@ -196,6 +194,23 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-add:active  { background:#A35139;color:#EEE9DF;transform:scale(.97); }
 .btn-undo { width:100%;height:40px;padding:0;background:#1B2632;border-radius:10px;color:#C9C1B1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
 .btn-undo:active { background:#A35139;color:#EEE9DF; }
+
+/* ── Listes défilantes ── */
+#cat-list {
+  flex:1;overflow-y:auto;
+  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
+  -webkit-overflow-scrolling:touch;
+  -webkit-user-select:none;user-select:none;
+}
+#budget-scroll {
+  flex:1;overflow-y:auto;
+  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
+  -webkit-overflow-scrolling:touch;
+  -webkit-user-select:none;user-select:none;
+}
+
+/* ── Fondu bas ── */
+.panel-fade-bottom { position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to bottom,transparent,#1B2632);z-index:9;pointer-events:none; }
 
 /* ── Category groups ── */
 .cat-group { margin-bottom:6px;border-radius:12px;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none; }
@@ -257,55 +272,27 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-input:focus { background:#2C3B4D; }
 .btn-row-del { background:#2C3B4D;color:#A35139;font-size:12px;font-weight:700;cursor:pointer;height:26px;width:26px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center; }
 .btn-row-del:active { background:#A35139;color:#EEE9DF; }
-/* Bouton ajouter ligne — même style que btn-add */
 .btn-sec-add { width:100%;height:40px;padding:0;background:#FFB162;border-radius:0 0 12px 12px;color:#1B2632;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
 .btn-sec-add:active { background:#A35139;color:#EEE9DF; }
 
-/* ── Tab pill — réduit, sans ombre, overflow:hidden ── */
-.tab-pill {
-  display:flex;align-items:center;gap:4px;
-  background:#2C3B4D;border-radius:40px;padding:4px;
-  position:relative;
-  overflow:hidden;
-}
+/* ── Tab pill ── */
+.tab-pill { display:flex;align-items:center;gap:4px;background:#2C3B4D;border-radius:40px;padding:4px;position:relative;overflow:hidden; }
 .tabs-container { flex:1;position:relative;display:flex;min-width:0; }
 .tab-slider { position:absolute;top:0;bottom:0;left:0;width:50%;background:#FFB162;border-radius:36px;transition:left .35s cubic-bezier(0.4,0,0.2,1);pointer-events:none;z-index:0; }
 .tab-slider.right { left:50%; }
 .tab { flex:1;padding:8px 6px;border-radius:36px;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#C9C1B1;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
 .tab.active { color:#1B2632;font-weight:700; }
 
-/* ── Voyant sync — contenu dans le menu, sans débordement ── */
-.sync-circle {
-  width:34px;height:34px;flex-shrink:0;
-  border-radius:50%;background:#1B2632;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  margin:0 1px;
-  transition:transform .1s;
-}
+/* ── Voyant sync — dans le menu, sans débordement ── */
+.sync-circle { width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#1B2632;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s; }
 .sync-circle:active { transform:scale(.88); }
-.sync-pip {
-  width:18px;height:18px;border-radius:50%;
-  background:#3a4f66;
-  transition:background .4s;
-}
+.sync-pip { width:18px;height:18px;border-radius:50%;background:#3a4f66;transition:background .4s; }
 .sync-pip.syncing { background:#FFB162;animation:pulse .8s infinite; }
 .sync-pip.ok      { background:#52B788; }
 .sync-pip.err     { background:#A35139; }
 
-/* ── Overlay sync — slide sur le menu depuis la droite ── */
-#sync-overlay {
-  position:absolute;
-  top:0;right:0;bottom:0;
-  width:0;
-  border-radius:40px;
-  display:flex;align-items:center;justify-content:center;
-  z-index:15;
-  pointer-events:none;
-  overflow:hidden;
-  transition:width .45s cubic-bezier(0.4,0,0.2,1), background .3s;
-  background:#3a4f66;
-}
+/* ── Overlay sync ── */
+#sync-overlay { position:absolute;top:0;right:0;bottom:0;width:0;border-radius:40px;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;overflow:hidden;transition:width .45s cubic-bezier(0.4,0,0.2,1),background .3s;background:#3a4f66; }
 #sync-overlay.show { width:100%;pointer-events:auto; }
 #sync-overlay.ok      { background:#52B788; }
 #sync-overlay.syncing { background:#FFB162; }
@@ -314,14 +301,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 #sync-overlay.err #sync-overlay-text { color:#EEE9DF; }
 
 /* ── Toast statut sync ── */
-#sync-status-toast {
-  position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;
-  transform:translateX(-50%) translateY(16px);
-  border-radius:20px;padding:7px 18px;font-size:11px;letter-spacing:.02em;
-  z-index:400;transition:transform .35s ease,opacity .35s ease;opacity:0;
-  pointer-events:none;white-space:nowrap;backdrop-filter:blur(10px);cursor:default;
-  background:rgba(44,59,77,.85);border:1px solid rgba(255,255,255,.08);color:#C9C1B1;
-}
+#sync-status-toast { position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(16px);border-radius:20px;padding:7px 18px;font-size:11px;letter-spacing:.02em;z-index:400;transition:transform .35s ease,opacity .35s ease;opacity:0;pointer-events:none;white-space:nowrap;backdrop-filter:blur(10px);cursor:default;background:rgba(44,59,77,.85);border:1px solid rgba(255,255,255,.08);color:#C9C1B1; }
 #sync-status-toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 #sync-status-toast.err-state { background:rgba(163,81,57,.22);border-color:rgba(163,81,57,.45);color:#EEE9DF;cursor:pointer;pointer-events:auto; }
 </style>
@@ -332,7 +312,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <div id="toast"></div>
 <div id="sync-status-toast"></div>
 
-<!-- Modal nouveau mois -->
+<!-- Modal -->
 <div id="modal-overlay">
   <div id="modal-box">
     <div class="modal-icon">📦</div>
@@ -359,7 +339,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
-<!-- Navigation haut -->
+<!-- Navigation -->
 <div class="top-bar">
   <div class="tab-pill">
     <div class="tabs-container">
@@ -376,15 +356,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
-<!-- Panels -->
 <div class="panel-area">
 
-  <!-- ── ONGLET 1 : DÉPENSES RÉEL ── -->
+  <!-- ── DÉPENSES RÉEL ── -->
   <div id="reel" class="panel active">
     <div class="panel-top-fixed">
-      <!-- 4 badges fixes -->
-      <div id="reel-badges" class="panel-badges"></div>
-      <!-- Formulaire de saisie -->
+      <!-- Cadre unique des 4 métriques — même forme que le formulaire -->
+      <div id="reel-badges" class="badge-frame"></div>
+      <!-- Formulaire -->
       <div class="entry-form-area">
         <div class="entry-form">
           <div class="entry-row1">
@@ -409,38 +388,33 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         </div>
       </div>
     </div>
-    <!-- Liste défilante -->
     <div id="cat-list"></div>
     <div class="panel-fade-bottom"></div>
   </div>
 
-  <!-- ── ONGLET 2 : BUDGET PROJETÉ ── -->
+  <!-- ── BUDGET PROJETÉ ── -->
   <div id="budget" class="panel">
     <div class="panel-top-fixed">
-      <div id="budget-badges" class="panel-badges">
-        <div class="cards">
-          <div class="card">
-            <div class="card-label">Salaire<br>net</div>
-            <input class="editable-val" id="salaire" type="number" value="2779" oninput="recalc()">
-          </div>
-          <div class="card">
-            <div class="card-label">Reste<br>projeté</div>
-            <div class="card-value green" id="b-reste">313 €</div>
-          </div>
+      <!-- Cadre unique des 4 métriques budget -->
+      <div class="badge-frame">
+        <div class="badge-item">
+          <span class="badge-lbl">Salaire net</span>
+          <input class="badge-input" id="salaire" type="number" value="2779" oninput="recalc()">
         </div>
-        <div class="cards">
-          <div class="card">
-            <div class="card-label">Total<br>fixes</div>
-            <div class="card-value white" id="b-fixes">1 806 €</div>
-          </div>
-          <div class="card">
-            <div class="card-label">Budget<br>variable</div>
-            <div class="card-value green" id="b-variable">660 €</div>
-          </div>
+        <div class="badge-item">
+          <span class="badge-lbl">Reste projeté</span>
+          <span class="badge-val green" id="b-reste">313 €</span>
+        </div>
+        <div class="badge-item">
+          <span class="badge-lbl">Total fixes</span>
+          <span class="badge-val white" id="b-fixes">1 806 €</span>
+        </div>
+        <div class="badge-item">
+          <span class="badge-lbl">Budget variable</span>
+          <span class="badge-val green" id="b-variable">660 €</span>
         </div>
       </div>
     </div>
-    <!-- Sections budget défilantes -->
     <div id="budget-scroll">
       <div class="budget-section" id="bsec-variable">
         <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
@@ -533,9 +507,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   };
   budgetRowId = 21;
 
-  const fmt = n => n.toFixed(2).replace('.',',') + ' €';
+  const fmt  = n => n.toFixed(2).replace('.',',') + ' €';
   const fmtR = n => Math.round(n) + ' €';
-  const gv = id => parseFloat(document.getElementById(id)?.value) || 0;
+  const gv   = id => parseFloat(document.getElementById(id)?.value) || 0;
 
   let toastTimer = null;
   function showToast(msg, duration = 3500) {
@@ -568,59 +542,57 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const row = budgetSections.variable.find(r => r.label.trim().toLowerCase() === cat.trim().toLowerCase());
     return row ? row.value : 0;
   }
-  function getReelTotal() { return entries.reduce((s,e) => s + e.montant, 0); }
+  function getReelTotal()  { return entries.reduce((s,e) => s + e.montant, 0); }
   function getSpentByCat(cat) {
-    return entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase()).reduce((s,e) => s + e.montant, 0);
+    return entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase())
+                  .reduce((s,e) => s + e.montant, 0);
   }
 
+  /* Rendu du cadre métriques de l'onglet réel */
   function renderReelBadges(vals) {
-    const container = document.getElementById('reel-badges');
-    if (!container || !vals) return;
+    const frame = document.getElementById('reel-badges');
+    if (!frame || !vals) return;
     const { globalReel, globalReste, reelTotal, resteReel } = vals;
     const grClr = globalReste >= 0 ? 'green' : 'red';
-    const rrClr = resteReel >= 0 ? 'green' : 'red';
-    container.innerHTML = `
-      <div class="cards">
-        <div class="card">
-          <div class="card-label">Dépense<br>global</div>
-          <div class="card-value white" id="r-global-reel">${fmtR(globalReel)}</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Reste<br>global</div>
-          <div class="card-value ${grClr}" id="r-global-reste">${fmtR(globalReste)}</div>
-        </div>
+    const rrClr = resteReel   >= 0 ? 'green' : 'red';
+    frame.innerHTML = `
+      <div class="badge-item">
+        <span class="badge-lbl">Dépense global</span>
+        <span class="badge-val white" id="r-global-reel">${fmtR(globalReel)}</span>
       </div>
-      <div class="cards">
-        <div class="card">
-          <div class="card-label">Dépense<br>variable</div>
-          <div class="card-value white" id="r-reel">${fmtR(reelTotal)}</div>
-        </div>
-        <div class="card">
-          <div class="card-label">Reste<br>variable</div>
-          <div class="card-value ${rrClr}" id="r-reste-reel">${fmtR(resteReel)}</div>
-        </div>
+      <div class="badge-item">
+        <span class="badge-lbl">Reste global</span>
+        <span class="badge-val ${grClr}" id="r-global-reste">${fmtR(globalReste)}</span>
+      </div>
+      <div class="badge-item">
+        <span class="badge-lbl">Dépense variable</span>
+        <span class="badge-val white" id="r-reel">${fmtR(reelTotal)}</span>
+      </div>
+      <div class="badge-item">
+        <span class="badge-lbl">Reste variable</span>
+        <span class="badge-val ${rrClr}" id="r-reste-reel">${fmtR(resteReel)}</span>
       </div>`;
   }
 
   function recalc() {
-    const fixes = getFixesTotal();
-    const fixesCheckedTotal = getFixesCheckedTotal();
-    const variable = getVariableTotal();
-    const salaire = gv('salaire');
-    const reste = salaire - fixes - variable;
-    const reelTotal = getReelTotal();
-    const resteReel = salaire - fixes - reelTotal;
-    const globalReel = fixesCheckedTotal + reelTotal;
-    const globalReste = salaire - fixesCheckedTotal - reelTotal;
+    const fixes         = getFixesTotal();
+    const fixesChecked  = getFixesCheckedTotal();
+    const variable      = getVariableTotal();
+    const salaire       = gv('salaire');
+    const reste         = salaire - fixes - variable;
+    const reelTotal     = getReelTotal();
+    const resteReel     = salaire - fixes - reelTotal;
+    const globalReel    = fixesChecked + reelTotal;
+    const globalReste   = salaire - fixesChecked - reelTotal;
 
-    // Badges Budget (même style pour tous)
-    document.getElementById('b-fixes').textContent = fmtR(fixes);
+    // Métriques budget
+    document.getElementById('b-fixes').textContent    = fmtR(fixes);
     document.getElementById('b-variable').textContent = fmtR(variable);
     const resteEl = document.getElementById('b-reste');
     resteEl.textContent = fmtR(reste);
-    resteEl.className = 'card-value ' + (reste >= 0 ? 'green' : 'red');
+    resteEl.className   = 'badge-val ' + (reste >= 0 ? 'green' : 'red');
 
-    // Badges Reel
+    // Métriques réel
     renderReelBadges({ globalReel, globalReste, reelTotal, resteReel });
 
     refreshCatList();
@@ -631,10 +603,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
+
     getCats().forEach(cat => {
       const budget = getVariableBudgetForCat(cat);
-      const spent = getSpentByCat(cat);
-      const reste = budget - spent;
+      const spent  = getSpentByCat(cat);
+      const reste  = budget - spent;
       const catEntries = entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase());
 
       const grouped = {};
@@ -651,7 +624,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       if (collapsedCats.has(cat)) grp.classList.add('collapsed');
 
       const clrReste = reste >= 0 ? 'green' : 'red';
-      const catEsc = cat.replace(/'/g, "\\'");
+      const catEsc   = cat.replace(/'/g, "\\'");
       grp.innerHTML = `
         <div class="cat-header" onclick="toggleCatCollapse('${catEsc}')">
           <span class="cat-header-name">${cat}</span>
@@ -687,13 +660,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function renderFixedSection(container) {
     const fixedSecs = [
-      { key: 'logement', label: 'Logement' },
-      { key: 'abonnements', label: 'Abonnements & services' },
-      { key: 'epargne', label: 'Épargne' }
+      { key:'logement',     label:'Logement' },
+      { key:'abonnements',  label:'Abonnements & services' },
+      { key:'epargne',      label:'Épargne' }
     ];
-
-    const checkedTotal = getFixesCheckedTotal();
-    const fixesTotal = getFixesTotal();
 
     const section = document.createElement('div');
     section.className = 'fixed-section' + (fixedSectionCollapsed ? ' collapsed' : '');
@@ -701,7 +671,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="fixed-section-header" onclick="toggleFixedSection()">
         <span class="fixed-section-title">Dépenses fixes</span>
         <div class="fixed-section-right">
-          <span class="fixed-section-total">${fmtR(checkedTotal)} / ${fmtR(fixesTotal)}</span>
+          <span class="fixed-section-total">${fmtR(getFixesCheckedTotal())} / ${fmtR(getFixesTotal())}</span>
           <span class="fixed-section-chevron">▾</span>
         </div>
       </div>`;
@@ -848,8 +818,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }, { passive: true });
 
     list.addEventListener('touchmove', e => {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+      clearTimeout(longPressTimer); longPressTimer = null;
       if (!dragEl) return;
       e.preventDefault();
       const touch = e.touches[0];
@@ -865,8 +834,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }, { passive: false });
 
     const endDrag = () => {
-      clearTimeout(longPressTimer);
-      longPressTimer = null;
+      clearTimeout(longPressTimer); longPressTimer = null;
       if (dragEl) {
         dragEl.classList.remove('dragging');
         const newOrder = Array.from(list.querySelectorAll('.cat-group')).map(g => g.dataset.cat);
@@ -883,7 +851,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const container = document.getElementById('sec-' + secKey);
       if (!container || container._dragReady) return;
       container._dragReady = true;
-
       let dragRow = null, lpTimer = null;
 
       container.addEventListener('touchstart', e => {
@@ -898,8 +865,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       }, { passive: true });
 
       container.addEventListener('touchmove', e => {
-        clearTimeout(lpTimer);
-        lpTimer = null;
+        clearTimeout(lpTimer); lpTimer = null;
         if (!dragRow) return;
         e.preventDefault();
         const touch = e.touches[0];
@@ -915,18 +881,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       }, { passive: false });
 
       const endDragB = () => {
-        clearTimeout(lpTimer);
-        lpTimer = null;
+        clearTimeout(lpTimer); lpTimer = null;
         if (dragRow) {
           dragRow.classList.remove('dragging');
           const newIds = Array.from(container.querySelectorAll('.budget-row'))
             .map(r => parseInt(r.id.replace('brow-', '')));
           budgetSections[secKey] = newIds
-            .map(id => budgetSections[secKey].find(r => r.id === id))
-            .filter(Boolean);
+            .map(id => budgetSections[secKey].find(r => r.id === id)).filter(Boolean);
           if (secKey === 'variable') refreshCatSelect();
-          save();
-          dragRow = null;
+          save(); dragRow = null;
         }
       };
       container.addEventListener('touchend', endDragB);
@@ -935,18 +898,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   function removeGroup(cat, desc) {
-    entries = entries.filter(e => !(e.cat?.trim().toLowerCase() === cat.trim().toLowerCase() && (e.desc || '—').trim() === desc));
+    entries = entries.filter(e => !(
+      e.cat?.trim().toLowerCase() === cat.trim().toLowerCase() &&
+      (e.desc || '—').trim() === desc
+    ));
     recalc();
   }
 
   function addEntry() {
     const montant = parseFloat(document.getElementById('e-montant').value);
-    const desc = document.getElementById('e-desc').value.trim();
-    const cat = document.getElementById('e-cat').value;
+    const desc    = document.getElementById('e-desc').value.trim();
+    const cat     = document.getElementById('e-cat').value;
     if (!montant || montant <= 0) return;
     entries.push({ id: ++entryId, montant, desc, cat });
     document.getElementById('e-montant').value = '';
-    document.getElementById('e-desc').value = '';
+    document.getElementById('e-desc').value    = '';
     recalc();
   }
 
@@ -963,12 +929,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     clearTimeout(syncOkTimer);
     if (state === 'ok') {
       t.textContent = 'Synchronisé ✓';
-      t.className = 'show';
-      syncOkTimer = setTimeout(() => t.className = '', 3000);
+      t.className   = 'show';
+      syncOkTimer   = setTimeout(() => t.className = '', 3000);
     } else if (state === 'err') {
       t.textContent = 'Hors ligne · données locales — tap pour fermer';
-      t.className = 'show err-state';
-      t.onclick = () => { t.className = ''; };
+      t.className   = 'show err-state';
+      t.onclick     = () => { t.className = ''; };
     } else {
       t.className = '';
     }
@@ -976,37 +942,34 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   let syncMsgTimer = null;
   function showSyncMsg() {
-    const state = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
+    const state  = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
     const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…', err:'Hors ligne · données locales' };
     const overlay = document.getElementById('sync-overlay');
-    const overlayText = document.getElementById('sync-overlay-text');
-    overlayText.textContent = labels[state] || '—';
+    document.getElementById('sync-overlay-text').textContent = labels[state] || '—';
     overlay.className = 'show ' + (state || '');
     clearTimeout(syncMsgTimer);
     syncMsgTimer = setTimeout(hideSyncOverlay, 4000);
   }
-
   function hideSyncOverlay() {
     clearTimeout(syncMsgTimer);
     const overlay = document.getElementById('sync-overlay');
-    const state = overlay.className.replace('show','').trim();
-    overlay.className = state;
+    overlay.className = overlay.className.replace('show','').trim();
   }
 
   function getPayload() {
     return { entries, entryId, budgetSections, budgetRowId,
-      mois: document.getElementById('mois-input').textContent, salaire: gv('salaire'),
+      mois: document.getElementById('mois-input').textContent,
+      salaire: gv('salaire'),
       fixedChecked: Array.from(fixedChecked) };
   }
-
   function applyData(d) {
-    if (d.entries) entries = d.entries;
-    if (d.entryId) entryId = parseInt(d.entryId);
+    if (d.entries)        entries = d.entries;
+    if (d.entryId)        entryId = parseInt(d.entryId);
     if (d.budgetSections) budgetSections = d.budgetSections;
-    if (d.budgetRowId) budgetRowId = parseInt(d.budgetRowId);
-    if (d.mois) document.getElementById('mois-input').textContent = d.mois;
-    if (d.salaire) document.getElementById('salaire').value = d.salaire;
-    if (d.fixedChecked) fixedChecked = new Set(d.fixedChecked.map(Number));
+    if (d.budgetRowId)    budgetRowId = parseInt(d.budgetRowId);
+    if (d.mois)           document.getElementById('mois-input').textContent = d.mois;
+    if (d.salaire)        document.getElementById('salaire').value = d.salaire;
+    if (d.fixedChecked)   fixedChecked = new Set(d.fixedChecked.map(Number));
   }
 
   let saveTimer = null;
@@ -1042,41 +1005,30 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   const MOIS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
                    'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-
   function getMoisAttendu() {
     const now = new Date();
     return MOIS_FR[now.getMonth()] + ' ' + now.getFullYear();
   }
-
   function showModal(title, sub, badge, status) {
-    document.getElementById('modal-title').textContent = title;
-    document.getElementById('modal-sub').textContent = sub;
-    document.getElementById('modal-badge').textContent = badge;
+    document.getElementById('modal-title').textContent  = title;
+    document.getElementById('modal-sub').textContent    = sub;
+    document.getElementById('modal-badge').textContent  = badge;
     document.getElementById('modal-status').textContent = status;
     document.getElementById('modal-overlay').classList.add('show');
   }
-
-  function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('show');
-  }
+  function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
 
   async function verifierNouveauMois() {
-    const moisActuel = document.getElementById('mois-input').textContent.trim();
+    const moisActuel  = document.getElementById('mois-input').textContent.trim();
     const moisAttendu = getMoisAttendu();
     if (!moisActuel || moisActuel === moisAttendu) return;
-
     setSyncStatus('syncing');
     try {
-      await fetch(SCRIPT_URL, {
-        method: 'POST', mode: 'no-cors',
-        body: JSON.stringify({ action: 'archive', mois: moisActuel, data: getPayload() })
-      });
-      entries = [];
-      entryId = 0;
-      fixedChecked = new Set();
+      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
+        body: JSON.stringify({ action:'archive', mois:moisActuel, data:getPayload() }) });
+      entries = []; entryId = 0; fixedChecked = new Set();
       document.getElementById('mois-input').textContent = moisAttendu;
-      recalc();
-      setSyncStatus('ok');
+      recalc(); setSyncStatus('ok');
       showModal('Nouveau mois !',
         moisActuel + ' a été archivé sur Google Sheets. Les dépenses réelles sont remises à zéro.',
         '→ ' + moisAttendu, '✓ Historique sauvegardé');
@@ -1090,7 +1042,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let pinEntry = '';
-
   async function pinPress(d) {
     if (pinEntry.length >= 4) return;
     pinEntry += d; updateDots();
@@ -1133,9 +1084,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   document.addEventListener('focusin', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')
       setTimeout(() => e.target.scrollIntoView({ behavior:'smooth', block:'center' }), 300);
-    }
   });
 
   if (sessionStorage.getItem('bm_unlocked') === '1') {
