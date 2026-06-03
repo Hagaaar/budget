@@ -77,20 +77,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .panel { display:none; }
 .panel.active { display:block;position:absolute;inset:0;overflow:hidden; }
 
-/* ── Reel : overlay fixe en haut ── */
+/* ── Reel : overlay fixe EN BAS ── */
 .reel-fixed {
-  position:absolute;top:0;left:0;right:0;z-index:10;
-  padding:.5rem .75rem .5rem;
+  position:absolute;bottom:calc(68px + env(safe-area-inset-bottom,0px));left:0;right:0;z-index:15;
+  padding:0 .75rem .5rem;
   pointer-events:none;
-  background:transparent;
+  /* gradient : transparent en haut (le contenu défile dessous), opaque à partir de 56px */
+  background:linear-gradient(to bottom, transparent 0px, #1B2632 56px);
 }
 .reel-fixed .cards,
 .reel-fixed .entry-form { pointer-events:auto; }
 
-/* ── Cat list — pas de sélection de texte pendant le drag ── */
+/* ── Cat list — scrollable depuis le haut ── */
 #cat-list {
   position:absolute;inset:0;overflow-y:auto;
-  padding:300px .75rem calc(80px + env(safe-area-inset-bottom,0px));
+  padding:.75rem .75rem calc(230px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
@@ -334,12 +335,43 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .tab-slider.right { left:calc(50% + 3px); }
 .tab { flex:1;padding:11px 6px;border-radius:38px;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#C9C1B1;text-align:center;-webkit-tap-highlight-color:transparent;transition:color .2s;position:relative;z-index:1; }
 .tab.active { color:#1B2632;font-weight:700; }
+
+/* ── Sync pip dans le tab pill ── */
+.sync-pip {
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  margin:0 4px 0 -2px;align-self:center;
+  background:#3a4f66;transition:background .3s;
+  position:relative;z-index:1;
+}
+.sync-pip.syncing { background:#FFB162;animation:pulse .8s infinite; }
+.sync-pip.ok     { background:#52B788; }
+.sync-pip.err    { background:#A35139; }
+
+/* ── Badges fins dans reel-fixed ── */
+.reel-fixed .card { min-height:46px;padding:7px 10px; }
+.reel-fixed .cards { gap:6px;margin-bottom:.4rem; }
+
+/* ── Toast erreur sync ── */
+#sync-err-toast {
+  position:fixed;bottom:calc(72px + env(safe-area-inset-bottom,0px));left:50%;
+  transform:translateX(-50%) translateY(14px);
+  background:rgba(163,81,57,.18);border:1px solid rgba(163,81,57,.35);
+  border-radius:10px;padding:7px 14px;font-size:11px;color:#C9C1B1;
+  z-index:400;transition:transform .3s ease,opacity .3s ease;opacity:0;pointer-events:none;white-space:nowrap;
+  backdrop-filter:blur(8px);
+}
+#sync-err-toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 </style>
 </head>
 <body>
 
-<!-- Toast -->
+<!-- Mois courant (utilisé par JS) -->
+<span id="mois-input" style="display:none">Juin 2026</span>
+
+<!-- Toast générique -->
 <div id="toast"></div>
+<!-- Toast erreur sync -->
+<div id="sync-err-toast">Synchronisation impossible · données sauvegardées en local</div>
 
 <!-- Modal nouveau mois -->
 <div id="modal-overlay">
@@ -368,15 +400,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
-<!-- Header -->
-<div class="header">
-  <div class="header-brand">
-    <span class="brand-name">BUDGET</span>
-    <span class="mois-label" id="mois-input">Juin 2026</span>
-  </div>
-  <div class="sync-badge"><span id="sync-label">—</span><span id="sync-dot"></span></div>
-</div>
-
 <!-- Zone des panels -->
 <div class="panel-area">
 
@@ -386,26 +409,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div id="cat-list"></div>
 
     <div class="reel-fixed">
-      <div class="cards">
-        <div class="card">
-          <div class="card-value white" id="r-global-reel">0 €</div>
-          <div class="card-label">Dépense<br>budget global</div>
-        </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="r-global-reste">0 €</div>
-          <div class="card-label">Reste<br>budget global</div>
-        </div>
-      </div>
-      <div class="cards" style="margin-top:0">
-        <div class="card">
-          <div class="card-value white" id="r-reel">0 €</div>
-          <div class="card-label">Dépense<br>variable</div>
-        </div>
-        <div class="card green-bg">
-          <div class="card-value green" id="r-reste-reel">0 €</div>
-          <div class="card-label">Reste<br>variable</div>
-        </div>
-      </div>
       <div class="entry-form">
         <div class="entry-row1">
           <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
@@ -425,6 +428,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
               </svg>
             </button>
           </div>
+        </div>
+      </div>
+      <div class="cards" style="margin-top:.4rem">
+        <div class="card">
+          <div class="card-value white" id="r-global-reel">0 €</div>
+          <div class="card-label">Dépense<br>budget global</div>
+        </div>
+        <div class="card green-bg">
+          <div class="card-value green" id="r-global-reste">0 €</div>
+          <div class="card-label">Reste<br>budget global</div>
+        </div>
+      </div>
+      <div class="cards" style="margin-bottom:0">
+        <div class="card">
+          <div class="card-value white" id="r-reel">0 €</div>
+          <div class="card-label">Dépense<br>variable</div>
+        </div>
+        <div class="card green-bg">
+          <div class="card-value green" id="r-reste-reel">0 €</div>
+          <div class="card-label">Reste<br>variable</div>
         </div>
       </div>
     </div>
@@ -506,6 +529,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="tab-slider" id="tab-slider"></div>
       <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
       <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
+      <span class="sync-pip" id="sync-dot"></span>
     </div>
   </div>
 
@@ -961,11 +985,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     recalc();
   }
 
-  function setSyncStatus(state, label) {
+  let syncErrTimer = null;
+  function setSyncStatus(state) {
     const dot = document.getElementById('sync-dot');
-    const lbl = document.getElementById('sync-label');
-    dot.className = state;
-    lbl.textContent = label || (state === 'syncing' ? 'Sync…' : state === 'ok' ? 'Synchronisé' : 'Hors ligne');
+    dot.className = 'sync-pip ' + state;
+    if (state === 'err') {
+      const t = document.getElementById('sync-err-toast');
+      t.classList.add('show');
+      clearTimeout(syncErrTimer);
+      syncErrTimer = setTimeout(() => t.classList.remove('show'), 5000);
+    }
   }
 
   function getPayload() {
@@ -1040,7 +1069,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const moisAttendu = getMoisAttendu();
     if (!moisActuel || moisActuel === moisAttendu) return;
 
-    setSyncStatus('syncing', 'Archivage ' + moisActuel + '…');
+    setSyncStatus('syncing');
     try {
       await fetch(SCRIPT_URL, {
         method: 'POST', mode: 'no-cors',
