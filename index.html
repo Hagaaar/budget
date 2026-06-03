@@ -90,7 +90,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 /* ── Cat list — pas de sélection de texte pendant le drag ── */
 #cat-list {
   position:absolute;inset:0;overflow-y:auto;
-  padding:215px .75rem calc(80px + env(safe-area-inset-bottom,0px));
+  padding:300px .75rem calc(80px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
@@ -220,6 +220,39 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-del:active { background:#A35139;color:#EEE9DF; }
 .cat-empty { padding:11px 13px;font-size:12px;color:#C9C1B1;background:rgba(44,59,77,.4); opacity:0.8; }
 .cat-group.dragging { opacity:.5;transform:scale(1.02);z-index:10;position:relative;box-shadow:0 12px 36px rgba(0,0,0,.5);border-radius:14px; }
+
+/* ── Dépenses fixes section ── */
+.fixed-section { margin-top:.6rem;border-radius:14px;overflow:hidden; }
+.fixed-section-header {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 13px;background:#2C3B4D;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.fixed-section-title { font-size:10px;font-weight:700;color:#EEE9DF;text-transform:uppercase;letter-spacing:.08em; }
+.fixed-section-right { display:flex;gap:10px;align-items:center; }
+.fixed-section-total { font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:#FFB162; }
+.fixed-section-chevron { font-size:16px;color:#C9C1B1;display:inline-block;transition:transform .25s; }
+.fixed-section.collapsed .fixed-section-chevron { transform:rotate(-90deg); }
+.fixed-section-body { overflow:hidden;max-height:1200px;transition:max-height .35s ease; }
+.fixed-section.collapsed .fixed-section-body { max-height:0; }
+.fixed-subsection-title {
+  font-size:9px;font-weight:700;color:#C9C1B1;text-transform:uppercase;letter-spacing:.08em;
+  padding:7px 13px 4px;background:rgba(44,59,77,.15);
+}
+.fixed-item { display:flex;align-items:center;padding:10px 13px;background:rgba(44,59,77,.4);gap:11px;-webkit-user-select:none;user-select:none; }
+.fixed-check {
+  width:22px;height:22px;border-radius:6px;border:2px solid #C9C1B1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.fixed-check.checked { background:#FFB162;border-color:#FFB162; }
+.fixed-check-mark { font-size:13px;color:#1B2632;display:none; }
+.fixed-check.checked .fixed-check-mark { display:block; }
+.fixed-item-label { flex:1;font-size:13px;color:#C9C1B1;transition:color .15s; }
+.fixed-item-label.checked { color:#EEE9DF;opacity:.55;text-decoration:line-through; }
+.fixed-item-amount { font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#EEE9DF;white-space:nowrap;transition:color .15s; }
+.fixed-item-amount.checked { color:#FFB162; }
 
 /* ── Budget sections ── */
 .budget-section { margin-bottom:.6rem;border-radius:14px;overflow:hidden; }
@@ -355,12 +388,22 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="reel-fixed">
       <div class="cards">
         <div class="card">
+          <div class="card-value white" id="r-global-reel">0,00 €</div>
+          <div class="card-label">Dépense Réel<br>budget global</div>
+        </div>
+        <div class="card green-bg">
+          <div class="card-value green" id="r-global-reste">0 €</div>
+          <div class="card-label">Reste réel<br>budget global</div>
+        </div>
+      </div>
+      <div class="cards" style="margin-top:0">
+        <div class="card">
           <div class="card-value white" id="r-reel">0,00 €</div>
-          <div class="card-label">Dépensé réel</div>
+          <div class="card-label">Dépense réel<br>variable</div>
         </div>
         <div class="card green-bg">
           <div class="card-value green" id="r-reste-reel">0 €</div>
-          <div class="card-label">Reste réel</div>
+          <div class="card-label">Reste réel<br>variable</div>
         </div>
       </div>
       <div class="entry-form">
@@ -480,6 +523,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   let entries = [], entryId = 0, budgetRowId = 0;
   const collapsedCats = new Set();
   const collapsedBudgetSections = new Set();
+  let fixedChecked = new Set();
+  let fixedSectionCollapsed = false;
   let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -536,6 +581,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function getFixesTotal() {
     return ['logement','abonnements','epargne'].reduce((s,sec) =>
       s + budgetSections[sec].reduce((ss,r) => ss + r.value, 0), 0);
+  }
+  function getFixesCheckedTotal() {
+    return ['logement','abonnements','epargne'].reduce((s,sec) =>
+      s + budgetSections[sec].filter(r => fixedChecked.has(r.id)).reduce((ss,r) => ss + r.value, 0), 0);
   }
   function getVariableTotal() { return budgetSections.variable.reduce((s,r) => s + r.value, 0); }
   function getVariableBudgetForCat(cat) {
@@ -607,16 +656,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function recalc() {
     const fixes = getFixesTotal();
+    const fixesCheckedTotal = getFixesCheckedTotal();
     const variable = getVariableTotal();
     const salaire = gv('salaire');
     const reste = salaire - fixes - variable;
     const reelTotal = getReelTotal();
     const resteReel = salaire - fixes - reelTotal;
 
+    // badges globaux (fixes cochées + variable saisi)
+    const globalReel = fixesCheckedTotal + reelTotal;
+    const globalReste = salaire - fixesCheckedTotal - reelTotal;
+
     document.getElementById('b-fixes').textContent = fmtR(fixes);
     document.getElementById('b-variable').textContent = fmtR(variable);
     document.getElementById('b-reste').textContent = fmtR(reste);
     document.getElementById('b-reste').className = 'card-value ' + (reste >= 0 ? 'green' : 'red');
+
+    document.getElementById('r-global-reel').textContent = fmt(globalReel);
+    document.getElementById('r-global-reste').textContent = fmtR(globalReste);
+    document.getElementById('r-global-reste').className = 'card-value ' + (globalReste >= 0 ? 'green' : 'red');
+    document.getElementById('r-global-reste').closest('.card').className = 'card ' + (globalReste >= 0 ? 'green-bg' : 'red-bg');
 
     document.getElementById('r-reel').textContent = fmt(reelTotal);
     document.getElementById('r-reste-reel').textContent = fmtR(resteReel);
@@ -681,6 +740,68 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       grp.appendChild(body);
       container.appendChild(grp);
     });
+
+    // Section dépenses fixes tout en bas
+    renderFixedSection(container);
+  }
+
+  function renderFixedSection(container) {
+    const fixedSecs = [
+      { key: 'logement', label: 'Logement' },
+      { key: 'abonnements', label: 'Abonnements & services' },
+      { key: 'epargne', label: 'Épargne' }
+    ];
+
+    const checkedTotal = getFixesCheckedTotal();
+    const fixesTotal = getFixesTotal();
+
+    const section = document.createElement('div');
+    section.className = 'fixed-section' + (fixedSectionCollapsed ? ' collapsed' : '');
+    section.innerHTML = `
+      <div class="fixed-section-header" onclick="toggleFixedSection()">
+        <span class="fixed-section-title">Dépenses fixes</span>
+        <div class="fixed-section-right">
+          <span class="fixed-section-total">${fmtR(checkedTotal)} / ${fmtR(fixesTotal)}</span>
+          <span class="fixed-section-chevron">▾</span>
+        </div>
+      </div>`;
+
+    const body = document.createElement('div');
+    body.className = 'fixed-section-body';
+
+    fixedSecs.forEach(({ key, label }) => {
+      const sub = document.createElement('div');
+      sub.className = 'fixed-subsection-title';
+      sub.textContent = label;
+      body.appendChild(sub);
+
+      budgetSections[key].forEach(row => {
+        const isChecked = fixedChecked.has(row.id);
+        const item = document.createElement('div');
+        item.className = 'fixed-item';
+        item.innerHTML = `
+          <div class="fixed-check${isChecked ? ' checked' : ''}" onclick="toggleFixedCheck(${row.id})">
+            <span class="fixed-check-mark">✓</span>
+          </div>
+          <span class="fixed-item-label${isChecked ? ' checked' : ''}">${row.label}</span>
+          <span class="fixed-item-amount${isChecked ? ' checked' : ''}">${fmtR(row.value)}</span>`;
+        body.appendChild(item);
+      });
+    });
+
+    section.appendChild(body);
+    container.appendChild(section);
+  }
+
+  function toggleFixedSection() {
+    fixedSectionCollapsed = !fixedSectionCollapsed;
+    refreshCatList();
+  }
+
+  function toggleFixedCheck(rowId) {
+    if (fixedChecked.has(rowId)) fixedChecked.delete(rowId);
+    else fixedChecked.add(rowId);
+    recalc();
   }
 
   function toggleBudgetSection(secKey) {
@@ -849,7 +970,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function getPayload() {
     return { entries, entryId, budgetSections, budgetRowId,
-      mois: document.getElementById('mois-input').textContent, salaire: gv('salaire') };
+      mois: document.getElementById('mois-input').textContent, salaire: gv('salaire'),
+      fixedChecked: Array.from(fixedChecked) };
   }
 
   function applyData(d) {
@@ -859,6 +981,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (d.budgetRowId) budgetRowId = parseInt(d.budgetRowId);
     if (d.mois) document.getElementById('mois-input').textContent = d.mois;
     if (d.salaire) document.getElementById('salaire').value = d.salaire;
+    if (d.fixedChecked) fixedChecked = new Set(d.fixedChecked.map(Number));
   }
 
   let saveTimer = null;
@@ -925,6 +1048,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       });
       entries = [];
       entryId = 0;
+      fixedChecked = new Set();
       document.getElementById('mois-input').textContent = moisAttendu;
       recalc();
       setSyncStatus('ok');
