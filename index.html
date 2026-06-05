@@ -228,6 +228,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-row-item { display:flex;align-items:center;padding:10px 12px;background:rgba(44,59,77,.4); }
 .entry-desc { flex:1;font-size:13px;color:#C9C1B1;font-weight:400; }
 .entry-amount { font-size:13px;font-weight:600;color:#EEE9DF;font-variant-numeric:tabular-nums;margin-right:10px;white-space:nowrap; }
+.entry-amount.plus  { color:#52B788; }
+.entry-amount.minus { color:#A35139; }
 .btn-del { background:#2C3B4D;color:#A35139;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0; }
 .btn-del:active { background:#A35139;color:#EEE9DF; }
 .cat-empty { padding:11px 12px;font-size:12px;color:#C9C1B1;background:rgba(44,59,77,.4);opacity:0.8; }
@@ -646,7 +648,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           const countBadge = g.ids.length > 1 ? ` <span style="font-size:10px;color:#C9C1B1;margin-left:4px;opacity:0.7">${g.ids.length}×</span>` : '';
           row.innerHTML = `
             <span class="entry-desc">${g.desc}${countBadge}</span>
-            <span class="entry-amount">${fmt(g.total)}</span>
+            <span class="entry-amount${g.total > 0 ? ' plus' : g.total < 0 ? ' minus' : ''}">${fmt(g.total)}</span>
             <button class="btn-del" onclick="removeGroup('${catEsc}','${g.desc.replace(/'/g,"\\'")}')">✕</button>`;
           body.appendChild(row);
         });
