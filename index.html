@@ -24,6 +24,9 @@
 .pin-key.empty { background:transparent;cursor:default; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
 .shake { animation:shake .35s ease; }
+.trust-toggle { position:absolute;bottom:3rem;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;transition:opacity .2s; }
+.trust-toggle.off { opacity:0.3; }
+.trust-label { font-size:11px;color:#C9C1B1;letter-spacing:.08em; }
 
 /* ── Base ── */
 *{box-sizing:border-box;margin:0;padding:0;border:none;}
@@ -340,6 +343,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="pin-key" onclick="pinPress('4')">4</div><div class="pin-key" onclick="pinPress('5')">5</div><div class="pin-key" onclick="pinPress('6')">6</div>
     <div class="pin-key" onclick="pinPress('7')">7</div><div class="pin-key" onclick="pinPress('8')">8</div><div class="pin-key" onclick="pinPress('9')">9</div>
     <div class="pin-key empty"></div><div class="pin-key" onclick="pinPress('0')">0</div><div class="pin-key del" onclick="pinDel()">⌫</div>
+  </div>
+  <div class="trust-toggle" id="trust-toggle" onclick="toggleTrust()">
+    <svg id="trust-lock-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#C9C1B1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0"/>
+    </svg>
+    <span class="trust-label">Faire confiance à cet appareil</span>
   </div>
 </div>
 
@@ -1050,6 +1060,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
   }
 
+  let trustDevice = true;
+  function toggleTrust() {
+    trustDevice = !trustDevice;
+    document.getElementById('trust-toggle').classList.toggle('off', !trustDevice);
+    document.getElementById('trust-lock-svg').querySelector('path').setAttribute('d',
+      trustDevice ? 'M7 11V7a5 5 0 0 1 10 0' : 'M7 11V7a5 5 0 0 1 10 0v4');
+  }
+
   let pinEntry = '';
   async function pinPress(d) {
     if (pinEntry.length >= 4) return;
@@ -1057,7 +1075,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (pinEntry.length === 4) {
       const h = await hashPin(pinEntry);
       if (h === PIN_HASH) {
-        localStorage.setItem('bm_device_ok', String(Date.now() + 30*24*60*60*1000));
+        if (trustDevice) localStorage.setItem('bm_device_ok', String(Date.now() + 30*24*60*60*1000));
         sessionStorage.setItem('bm_unlocked','1');
         document.getElementById('lock-screen').classList.add('hidden');
         initApp();
