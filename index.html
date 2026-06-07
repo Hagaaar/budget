@@ -998,26 +998,36 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     saveTimer = setTimeout(async () => {
       setSyncStatus('syncing');
       try {
-        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(getPayload()) });
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 10000);
+        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(getPayload()), signal: ctrl.signal });
+        clearTimeout(tid);
         setSyncStatus('ok');
       } catch(e) { setSyncStatus('err'); }
     }, 800);
   }
 
   async function load() {
+    // Charger les données locales immédiatement — l'utilisateur voit ses données sans attendre le réseau
+    const bk = localStorage.getItem('bm_bak');
+    if (bk) { try { applyData(JSON.parse(bk)); } catch(_) {} }
+
     setSyncStatus('syncing');
     try {
-      const r = await fetch(SCRIPT_URL);
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 10000);
+      // redirect:'follow' + credentials:'omit' corrigent le blocage de redirection dans Safari PWA
+      const r = await fetch(SCRIPT_URL, {
+        redirect: 'follow',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: ctrl.signal
+      });
+      clearTimeout(tid);
       const d = await r.json();
-      if (d && Object.keys(d).length > 0) { applyData(d); setSyncStatus('ok'); }
-      else {
-        const bk = localStorage.getItem('bm_bak');
-        if (bk) applyData(JSON.parse(bk));
-        setSyncStatus('ok');
-      }
+      if (d && Object.keys(d).length > 0) applyData(d);
+      setSyncStatus('ok');
     } catch(e) {
-      const bk = localStorage.getItem('bm_bak');
-      if (bk) applyData(JSON.parse(bk));
       setSyncStatus('err');
     }
   }
