@@ -1145,6 +1145,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     document.getElementById('lock-screen').classList.add('hidden');
     initApp();
   }
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
