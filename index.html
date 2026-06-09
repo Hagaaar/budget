@@ -310,6 +310,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 #sync-status-toast { position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(16px);border-radius:20px;padding:7px 18px;font-size:11px;letter-spacing:.02em;z-index:400;transition:transform .35s ease,opacity .35s ease;opacity:0;pointer-events:none;white-space:nowrap;backdrop-filter:blur(10px);cursor:default;background:rgba(44,59,77,.85);border:1px solid rgba(255,255,255,.08);color:#C9C1B1; }
 #sync-status-toast.show { transform:translateX(-50%) translateY(0);opacity:1; }
 #sync-status-toast.err-state { background:rgba(163,81,57,.22);border-color:rgba(163,81,57,.45);color:#EEE9DF;cursor:pointer;pointer-events:auto; }
+
+/* ── Sync splash ── */
+@keyframes ss-spin { to { transform:rotate(360deg); } }
+#sync-splash {
+  position:fixed;inset:0;background:#1B2632;z-index:950;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px;gap:0;transition:opacity .35s ease;
+}
+#sync-splash.hidden { display:none; }
+#sync-splash .ss-loading { display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center; }
+#sync-splash .ss-err-content { display:none;flex-direction:column;align-items:center;gap:16px;text-align:center;width:100%;max-width:300px; }
+#sync-splash.ss-error .ss-loading { display:none; }
+#sync-splash.ss-error .ss-err-content { display:flex; }
+.ss-spinner { width:44px;height:44px;border-radius:50%;border:3px solid #2C3B4D;border-top-color:#FFB162;animation:ss-spin .75s linear infinite; }
+.ss-title { font-size:18px;font-weight:600;color:#EEE9DF; }
+.ss-sub { font-size:13px;color:#C9C1B1; }
+.ss-err-circle { width:60px;height:60px;border-radius:50%;background:rgba(163,81,57,.12);border:1.5px solid rgba(163,81,57,.35);display:flex;align-items:center;justify-content:center; }
+.ss-reason { font-size:13px;color:#C9C1B1;background:#2C3B4D;border-radius:12px;padding:12px 16px;line-height:1.5;width:100%; }
+.ss-actions { display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px; }
+.ss-btn-primary { width:100%;padding:15px;background:#FFB162;border-radius:14px;color:#1B2632;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.ss-btn-primary:active { background:#E09A4F;transform:scale(.97); }
+.ss-btn-secondary { width:100%;padding:14px;border-radius:14px;color:#C9C1B1;font-size:14px;font-weight:400;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;background:transparent;border:1px solid rgba(201,193,177,.18);-webkit-tap-highlight-color:transparent;transition:background .12s; }
+.ss-btn-secondary:active { background:#2C3B4D; }
 </style>
 </head>
 <body>
@@ -327,6 +350,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="modal-badge" id="modal-badge"></div>
     <div class="modal-status" id="modal-status"></div>
     <button class="modal-btn" onclick="closeModal()">C'est parti !</button>
+  </div>
+</div>
+
+<!-- Sync splash -->
+<div id="sync-splash" class="hidden">
+  <div class="ss-loading">
+    <div class="ss-spinner"></div>
+    <p class="ss-title" id="ss-main-title">Synchronisation en cours</p>
+    <p class="ss-sub" id="ss-sub-title">Récupération de vos données…</p>
+  </div>
+  <div class="ss-err-content">
+    <div class="ss-err-circle">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#A35139" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <p class="ss-title">Connexion impossible</p>
+    <p class="ss-reason" id="ss-reason"></p>
+    <div class="ss-actions">
+      <button class="ss-btn-primary" onclick="ssReconnect()">Se reconnecter</button>
+      <button class="ss-btn-secondary" onclick="ssContinueOffline()">Continuer hors ligne</button>
+    </div>
   </div>
 </div>
 
@@ -976,6 +1022,33 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     overlay.className = overlay.className.replace('show','').trim();
   }
 
+  function splashState(state) {
+    const s = document.getElementById('sync-splash');
+    s.style.opacity = '';
+    s.className = 'ss-' + state;
+    document.getElementById('ss-main-title').textContent =
+      state === 'connecting' ? 'Connexion en cours…' : 'Synchronisation en cours';
+    document.getElementById('ss-sub-title').textContent =
+      state === 'connecting' ? 'Tentative de reconnexion à Google Sheets…' : 'Récupération de vos données…';
+  }
+  function splashHide() {
+    const s = document.getElementById('sync-splash');
+    s.style.opacity = '0';
+    setTimeout(() => { s.classList.add('hidden'); s.style.opacity = ''; }, 350);
+  }
+  function splashError(e) {
+    const s = document.getElementById('sync-splash');
+    if (s.classList.contains('hidden')) return;
+    document.getElementById('ss-reason').textContent =
+      !navigator.onLine        ? 'Aucune connexion internet détectée sur cet appareil.' :
+      e?.name === 'AbortError' ? 'Le serveur ne répond pas — délai de 10 s dépassé.' :
+      e instanceof SyntaxError ? 'Réponse inattendue du serveur (format invalide).' :
+                                 'Impossible de joindre Google Sheets. Vérifiez votre connexion.';
+    s.className = 'ss-error';
+  }
+  function ssReconnect() { splashState('connecting'); setTimeout(load, 150); }
+  function ssContinueOffline() { splashHide(); }
+
   function getPayload() {
     return { entries, entryId, budgetSections, budgetRowId,
       mois: document.getElementById('mois-input').textContent,
@@ -1028,8 +1101,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const d = await r.json();
       if (d && Object.keys(d).length > 0) applyData(d);
       setSyncStatus('ok');
+      splashHide();
     } catch(e) {
       setSyncStatus('err');
+      splashError(e);
     }
   }
 
@@ -1114,6 +1189,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function initApp() {
     (async () => {
+      splashState('syncing');
       await load();
       renderAllBudgetSections();
       refreshCatSelect();
