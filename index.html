@@ -950,7 +950,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       t.className   = 'show';
       syncOkTimer   = setTimeout(() => t.className = '', 3000);
     } else if (state === 'err') {
-      t.textContent = 'Hors ligne · données locales — tap pour fermer';
+      t.textContent = navigator.onLine
+        ? 'Erreur de synchronisation · données locales — tap pour fermer'
+        : 'Hors ligne · données locales — tap pour fermer';
       t.className   = 'show err-state';
       t.onclick     = () => { t.className = ''; };
     } else {
@@ -961,7 +963,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   let syncMsgTimer = null;
   function showSyncMsg() {
     const state  = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
-    const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…', err:'Hors ligne · données locales' };
+    const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…', err: navigator.onLine ? 'Erreur de synchronisation · données locales' : 'Hors ligne · données locales' };
     const overlay = document.getElementById('sync-overlay');
     document.getElementById('sync-overlay-text').textContent = labels[state] || '—';
     overlay.className = 'show ' + (state || '');
@@ -1149,6 +1151,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
+
+  window.addEventListener('offline', () => setSyncStatus('err'));
+  window.addEventListener('online', () => {
+    if (document.getElementById('lock-screen').classList.contains('hidden')) load();
+  });
 </script>
 </body>
 </html>
