@@ -236,6 +236,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-del:active { background:#A35139;color:#EEE9DF; }
 .cat-empty { padding:11px 12px;font-size:12px;color:#C9C1B1;background:rgba(44,59,77,.4);opacity:0.8; }
 .cat-group.dragging { opacity:.5;transform:scale(1.02);z-index:10;position:relative;border-radius:12px; }
+/* ── Sous-accordéons par intitulé ── */
+.desc-header { display:flex;align-items:center;padding:10px 12px 10px 16px;background:rgba(44,59,77,.25);cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.desc-body { overflow:hidden;max-height:800px;transition:max-height .3s ease; }
+.desc-group.collapsed .desc-body { max-height:0; }
+.desc-chevron { font-size:13px;color:#C9C1B1;display:inline-block;transition:transform .25s;margin-left:8px;flex-shrink:0; }
+.desc-group.collapsed .desc-chevron { transform:rotate(-90deg); }
+.desc-item { display:flex;align-items:center;padding:8px 12px 8px 26px;background:rgba(27,38,50,.25); }
+.count-badge { font-size:10px;color:#C9C1B1;opacity:0.6;margin-left:4px; }
 
 /* ── Dépenses fixes ── */
 .fixed-section { margin-top:6px;border-radius:12px;overflow:hidden; }
@@ -538,6 +546,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   let entries = [], entryId = 0, budgetRowId = 0;
   const collapsedCats = new Set();
   const collapsedBudgetSections = new Set();
+  const collapsedDescGroups = new Set();
   let fixedChecked = new Set();
   let fixedSectionCollapsed = false;
   let longPressTimer = null, dragEl = null;
@@ -705,14 +714,51 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         body.innerHTML = `<div class="cat-empty">Aucune dépense</div>`;
       } else {
         Object.values(grouped).forEach(g => {
-          const row = document.createElement('div');
-          row.className = 'entry-row-item';
-          const countBadge = g.ids.length > 1 ? ` <span style="font-size:10px;color:#C9C1B1;margin-left:4px;opacity:0.7">${g.ids.length}×</span>` : '';
-          row.innerHTML = `
-            <span class="entry-desc">${g.desc}${countBadge}</span>
-            <span class="entry-amount${g.total > 0 ? ' plus' : g.total < 0 ? ' minus' : ''}">${fmt(g.total)}</span>
-            <button class="btn-del" onclick="removeGroup('${catEsc}','${g.desc.replace(/'/g,"\\'")}')">✕</button>`;
-          body.appendChild(row);
+          const amtClass = g.total > 0 ? ' plus' : g.total < 0 ? ' minus' : '';
+
+          if (g.ids.length === 1) {
+            // Achat unique — ligne simple avec suppression directe
+            const row = document.createElement('div');
+            row.className = 'entry-row-item';
+            row.innerHTML = `
+              <span class="entry-desc">${g.desc}</span>
+              <span class="entry-amount${amtClass}">${fmt(g.total)}</span>
+              <button class="btn-del" onclick="removeEntry(${g.ids[0]})">✕</button>`;
+            body.appendChild(row);
+          } else {
+            // Plusieurs achats — sous-accordéon avec détail individuel
+            const descKey = cat + '::' + g.desc;
+            const isCollapsed = collapsedDescGroups.has(descKey);
+            const descGrp = document.createElement('div');
+            descGrp.className = 'desc-group' + (isCollapsed ? ' collapsed' : '');
+            descGrp.dataset.desc = g.desc;
+
+            const header = document.createElement('div');
+            header.className = 'desc-header';
+            header.onclick = () => toggleDescGroup(cat, g.desc);
+            header.innerHTML = `
+              <span class="entry-desc">${g.desc}<span class="count-badge">${g.ids.length}×</span></span>
+              <span class="entry-amount${amtClass}">${fmt(g.total)}</span>
+              <span class="desc-chevron">▾</span>`;
+
+            const descBody = document.createElement('div');
+            descBody.className = 'desc-body';
+            g.ids.forEach(id => {
+              const e = entries.find(x => x.id === id);
+              if (!e) return;
+              const item = document.createElement('div');
+              item.className = 'desc-item';
+              item.innerHTML = `
+                <span class="entry-desc" style="font-size:12px">${e.desc || '—'}</span>
+                <span class="entry-amount${e.montant > 0 ? ' plus' : e.montant < 0 ? ' minus' : ''}" style="font-size:12px">${fmt(e.montant)}</span>
+                <button class="btn-del" onclick="removeEntry(${e.id})">✕</button>`;
+              descBody.appendChild(item);
+            });
+
+            descGrp.appendChild(header);
+            descGrp.appendChild(descBody);
+            body.appendChild(descGrp);
+          }
         });
       }
       grp.appendChild(body);
@@ -795,6 +841,28 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         return;
       }
     }
+  }
+
+  function toggleDescGroup(cat, desc) {
+    const key = cat + '::' + desc;
+    if (collapsedDescGroups.has(key)) collapsedDescGroups.delete(key);
+    else collapsedDescGroups.add(key);
+    const list = document.getElementById('cat-list');
+    for (const g of list.querySelectorAll('.cat-group')) {
+      if (g.dataset.cat === cat) {
+        for (const d of g.querySelectorAll('.desc-group')) {
+          if (d.dataset.desc === desc) {
+            d.classList.toggle('collapsed', collapsedDescGroups.has(key));
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  function removeEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    recalc();
   }
 
   function renderBudgetSection(secKey) {
