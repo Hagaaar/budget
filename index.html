@@ -304,6 +304,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sync-pip.err     { background:#A35139; }
 .lock-btn { width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#1B2632;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s; }
 .lock-btn:active { transform:scale(.88); }
+.export-btn { width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#1B2632;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s; }
+.export-btn:active { transform:scale(.88); }
 
 /* ── Overlay sync ── */
 #sync-overlay { position:absolute;top:0;right:0;bottom:0;width:0;border-radius:40px;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;overflow:hidden;transition:width .45s cubic-bezier(0.4,0,0.2,1),background .3s;background:#3a4f66; }
@@ -416,6 +418,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     </div>
     <div class="sync-circle" onclick="showSyncMsg()">
       <span class="sync-pip" id="sync-dot"></span>
+    </div>
+    <div class="export-btn" onclick="exportJSON()" title="Exporter les données">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C9C1B1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
     </div>
     <div class="lock-btn" onclick="lockApp()">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#C9C1B1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1118,10 +1125,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function ssContinueOffline() { splashHide(); }
 
   function getPayload() {
+    const storedHwm = parseInt(localStorage.getItem('bm_hwm') || '0');
     return { entries, entryId, budgetSections, budgetRowId,
       mois: document.getElementById('mois-input').textContent,
       salaire: gv('salaire'),
-      fixedChecked: Array.from(fixedChecked) };
+      fixedChecked: Array.from(fixedChecked),
+      savedAt: Date.now(),
+      hwm: Math.max(entries.length, storedHwm) };
   }
   function applyData(d) {
     if (d.entries)        entries = d.entries;
@@ -1133,16 +1143,89 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (d.fixedChecked)   fixedChecked = new Set(d.fixedChecked.map(Number));
   }
 
+  // ── Backup secondaire IndexedDB (survit au "vider les cookies") ──
+  let _idb = null;
+  async function openIDB() {
+    if (_idb) return _idb;
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('budget_db', 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore('data', { keyPath: 'k' });
+      r.onsuccess = e => { _idb = e.target.result; res(_idb); };
+      r.onerror = rej;
+    });
+  }
+  async function idbSave(payload) {
+    try { const db = await openIDB(); db.transaction('data','readwrite').objectStore('data').put({k:'bm_bak',v:payload}); } catch(_) {}
+  }
+  async function idbLoad() {
+    try {
+      const db = await openIDB();
+      return new Promise(res => {
+        const req = db.transaction('data','readonly').objectStore('data').get('bm_bak');
+        req.onsuccess = e => res(e.target?.result?.v || null);
+        req.onerror = () => res(null);
+      });
+    } catch(_) { return null; }
+  }
+  // ── Snapshots versionnés (3 dernières sauvegardes) ──
+  function saveSnapshot(payload) {
+    try {
+      const snaps = JSON.parse(localStorage.getItem('bm_snaps') || '[]');
+      snaps.unshift({ t: Date.now(), d: payload });
+      snaps.length = Math.min(snaps.length, 3);
+      localStorage.setItem('bm_snaps', JSON.stringify(snaps));
+    } catch(_) {}
+  }
+  // ── Export / Import JSON ──
+  function exportJSON() {
+    const payload = getPayload();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'budget_' + (payload.mois || 'backup').replace(' ','_') + '_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Sauvegarde téléchargée ✓');
+    localStorage.setItem('bm_last_export', Date.now());
+  }
+  function importJSON() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.onchange = async e => {
+      const file = e.target.files[0]; if (!file) return;
+      try {
+        const d = JSON.parse(await file.text());
+        if (!d.entries || !d.budgetSections) throw new Error('Format invalide');
+        applyData(d); save(); recalc();
+        showToast('Données restaurées ✓');
+      } catch(_) { showToast('⚠ Fichier invalide'); }
+    };
+    input.click();
+  }
+
   let saveTimer = null;
   function save() {
-    localStorage.setItem('bm_bak', JSON.stringify(getPayload()));
+    const payload = getPayload();
+    localStorage.setItem('bm_bak', JSON.stringify(payload));
+    saveSnapshot(payload);
+    idbSave(payload);
+    const curHwm = parseInt(localStorage.getItem('bm_hwm') || '0');
+    if (entries.length > curHwm) localStorage.setItem('bm_hwm', entries.length);
     clearTimeout(saveTimer);
     saveTimer = setTimeout(async () => {
+      // Garde anti-effacement : bloque si on a déjà eu ≥5 entrées mais qu'on en a 0 maintenant
+      const hwm = parseInt(localStorage.getItem('bm_hwm') || '0');
+      if (hwm >= 5 && entries.length === 0) {
+        setSyncStatus('err');
+        showToast('⚠ Sync annulée · données vides détectées — rechargez');
+        return;
+      }
       setSyncStatus('syncing');
       try {
         const ctrl = new AbortController();
         const tid = setTimeout(() => ctrl.abort(), 10000);
-        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(getPayload()), signal: ctrl.signal });
+        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload), signal: ctrl.signal });
         clearTimeout(tid);
         setSyncStatus('ok');
       } catch(e) { setSyncStatus('err'); }
@@ -1150,9 +1233,22 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   async function load() {
-    // Charger les données locales immédiatement — l'utilisateur voit ses données sans attendre le réseau
+    // 1. localStorage (source primaire)
+    let localData = null;
     const bk = localStorage.getItem('bm_bak');
-    if (bk) { try { applyData(JSON.parse(bk)); } catch(_) {} }
+    if (bk) { try { localData = JSON.parse(bk); applyData(localData); } catch(_) {} }
+    // 2. IndexedDB (survit au "vider les cookies")
+    if (!localData) {
+      const idbData = await idbLoad();
+      if (idbData) { localData = idbData; applyData(idbData); localStorage.setItem('bm_bak', JSON.stringify(idbData)); }
+    }
+    // 3. Snapshots versionnés (3 dernières sauvegardes)
+    if (!localData) {
+      try {
+        const snaps = JSON.parse(localStorage.getItem('bm_snaps') || '[]');
+        if (snaps.length > 0) { localData = snaps[0].d; applyData(snaps[0].d); }
+      } catch(_) {}
+    }
 
     setSyncStatus('syncing');
     try {
@@ -1167,7 +1263,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       });
       clearTimeout(tid);
       const d = await r.json();
-      if (d && Object.keys(d).length > 0) applyData(d);
+      if (d && Object.keys(d).length > 0) {
+        // Propagation du high-water mark depuis Google Sheets
+        const remoteHwm = d.hwm || (d.entries||[]).length;
+        const localHwm = parseInt(localStorage.getItem('bm_hwm') || '0');
+        localStorage.setItem('bm_hwm', Math.max(remoteHwm, localHwm));
+        // Merge intelligent : on garde la version la plus récente
+        const localTs = localData?.savedAt || 0;
+        const remoteTs = d.savedAt || 0;
+        if (remoteTs >= localTs) {
+          applyData(d);
+          localStorage.setItem('bm_bak', JSON.stringify(d));
+          idbSave(d);
+        }
+      }
       setSyncStatus('ok');
       splashHide();
     } catch(e) {
@@ -1259,6 +1368,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     (async () => {
       splashState('syncing');
       await load();
+      // Rappel hebdomadaire d'export
+      const lastExport = parseInt(localStorage.getItem('bm_last_export') || '0');
+      if (Date.now() - lastExport > 7 * 24 * 60 * 60 * 1000) {
+        setTimeout(() => showToast('Exporte une sauvegarde (bouton ↓ en haut)'), 4000);
+      }
       renderAllBudgetSections();
       refreshCatSelect();
       getCats().forEach(cat => collapsedCats.add(cat));
