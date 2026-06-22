@@ -288,15 +288,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add:active { background:#A35139;color:#EEE9DF; }
 
 /* ── Graphiques ── */
-.charts-row { padding:6px 0 4px; }
-.chart-donut-wrap { display:flex;justify-content:center;align-items:center;margin-bottom:10px; }
-.chart-canvas { display:block; }
-.chart-legend-wrap { display:grid;grid-template-columns:1fr 1fr;gap:5px 16px; }
-.chart-legend-item { display:flex;align-items:center;gap:6px;min-width:0; }
+.charts-row { padding:6px 0 8px;display:flex;flex-direction:row;align-items:center;gap:12px; }
+.chart-donut-svg { flex-shrink:0; }
+.chart-legend-wrap { flex:1;display:flex;flex-direction:column;gap:4px;min-width:0; }
+.chart-legend-item { display:flex;align-items:center;gap:6px;min-width:0;padding:2px 0;transition:opacity 0.18s;cursor:pointer;-webkit-tap-highlight-color:transparent; }
 .chart-legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
 .chart-legend-name { flex:1;font-size:10px;color:#C9C1B1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .chart-legend-amt { font-size:10px;font-weight:600;color:#EEE9DF;font-variant-numeric:tabular-nums;white-space:nowrap; }
-.chart-empty-lbl { font-size:10px;color:#C9C1B1;text-align:center;grid-column:1/-1; }
+.chart-empty-lbl { font-size:10px;color:#C9C1B1;text-align:center; }
 
 /* ── Remboursements ── */
 .refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
@@ -819,7 +818,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     renderRefundSection(container);
   }
 
-  const PIE_COLORS = ['#FFB162','#7DB9E8','#E87D9A','#7DE8A0','#E8D07D','#C17DE8','#7DE8D5','#E87D7D'];
+  const PIE_COLORS = ['#FCB162','#5479FE','#FDCD9A','#002BC1','#FA8204','#99AFFF','#FEE6CC','#CCD7FE'];
 
   function renderCharts(container) {
     const catTotals = {};
@@ -833,90 +832,137 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const row = document.createElement('div');
     row.className = 'charts-row';
 
-    // Donut pleine largeur
-    const pieWrap = document.createElement('div');
-    pieWrap.className = 'chart-donut-wrap';
-    const pieCanvas = document.createElement('canvas');
-    pieCanvas.className = 'chart-canvas';
-    pieWrap.appendChild(pieCanvas);
-
-    // Légende en 2 colonnes sous le donut
-    const legendWrap = document.createElement('div');
-    legendWrap.className = 'chart-legend-wrap';
     if (cats.length === 0) {
-      legendWrap.innerHTML = '<div class="chart-empty-lbl">Aucune dépense</div>';
-    } else {
-      cats.forEach((cat, i) => {
-        const item = document.createElement('div');
-        item.className = 'chart-legend-item';
-        item.innerHTML = `<span class="chart-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span><span class="chart-legend-name">${cat}</span><span class="chart-legend-amt">${fmtR(catTotals[cat])}</span>`;
-        legendWrap.appendChild(item);
-      });
-    }
-
-    row.appendChild(pieWrap);
-    row.appendChild(legendWrap);
-    container.appendChild(row);
-
-    requestAnimationFrame(() => drawDonut(pieCanvas, cats, catTotals, total));
-  }
-
-  function drawDonut(canvas, cats, catTotals, total) {
-    const dpr = window.devicePixelRatio || 1;
-    const W   = Math.min(canvas.parentElement.clientWidth || 200, 200);
-    const H   = W;
-    canvas.width  = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width  = W + 'px';
-    canvas.style.height = H + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    const cx = W / 2, cy = H / 2;
-    const sw = Math.round(W * 0.17);   // épaisseur du segment (~17% du diamètre)
-    const r  = W / 2 - sw / 2 - 4;    // centre du trait, garanti dans le canvas
-
-    // Track de fond subtil
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-    ctx.lineWidth = sw;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    if (!total) {
-      ctx.fillStyle = '#C9C1B1';
-      ctx.font = '9px Inter,sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('Aucune dépense', cx, cy);
+      const empty = document.createElement('div');
+      empty.className = 'chart-empty-lbl';
+      empty.textContent = 'Aucune dépense';
+      row.appendChild(empty);
+      container.appendChild(row);
       return;
     }
 
-    // Segments pilule avec espaces angulaires
-    const GAP = 0.10;
-    let angle = -Math.PI / 2;
+    const NS = 'http://www.w3.org/2000/svg';
+    const SIZE = 160, CX = 80, CY = 80, R = 58, SW = 18, GAP = 18;
+    function mk(t) { return document.createElementNS(NS, t); }
+    function ff(n) { return n.toFixed(3); }
+    function pxy(deg) {
+      const a = (deg - 90) * Math.PI / 180;
+      return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
+    }
+
+    // SVG
+    const svg = mk('svg');
+    svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
+    svg.setAttribute('width', String(SIZE));
+    svg.setAttribute('height', String(SIZE));
+    svg.className = 'chart-donut-svg';
+
+    // Track fond
+    const track = mk('circle');
+    track.setAttribute('cx', String(CX)); track.setAttribute('cy', String(CY));
+    track.setAttribute('r', String(R));   track.setAttribute('fill', 'none');
+    track.setAttribute('stroke', 'rgba(255,255,255,0.06)');
+    track.setAttribute('stroke-width', String(SW));
+    svg.appendChild(track);
+
+    const vizG = mk('g'), hitG = mk('g');
+    const vizEls = [], hitEls = [];
+    let cum = 0;
+
     cats.forEach((cat, i) => {
-      const sweep = (catTotals[cat] / total) * Math.PI * 2;
-      const start = angle + GAP / 2;
-      const end   = angle + sweep - GAP / 2;
-      if (end > start + 0.02) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, start, end);
-        ctx.strokeStyle = PIE_COLORS[i % PIE_COLORS.length];
-        ctx.lineWidth = sw;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+      const color  = PIE_COLORS[i % PIE_COLORS.length];
+      const full   = (catTotals[cat] / total) * 360;
+      const startA = cum + GAP / 2;
+      const drawD  = full - GAP;
+      const endA   = startA + Math.max(0, drawD);
+      const midA   = cum + full / 2;
+      cum += full;
+
+      let viz, hit;
+      if (drawD > 0) {
+        const [sx, sy] = pxy(startA), [ex, ey] = pxy(endA);
+        const la = drawD > 180 ? 1 : 0;
+        const d  = `M ${ff(sx)} ${ff(sy)} A ${R} ${R} 0 ${la} 1 ${ff(ex)} ${ff(ey)}`;
+        viz = mk('path'); viz.setAttribute('d', d); viz.setAttribute('fill', 'none');
+        viz.setAttribute('stroke', color); viz.setAttribute('stroke-width', String(SW));
+        viz.setAttribute('stroke-linecap', 'round');
+        hit = mk('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
+        hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', String(SW + 16));
+        hit.setAttribute('stroke-linecap', 'round');
+      } else {
+        const maxR = R * Math.sin((full / 2) * Math.PI / 180);
+        const dr   = Math.min(SW / 2 - 1, maxR * 0.82);
+        const [mx, my] = pxy(midA);
+        viz = mk('circle'); viz.setAttribute('cx', ff(mx)); viz.setAttribute('cy', ff(my));
+        viz.setAttribute('r', ff(dr)); viz.setAttribute('fill', color);
+        hit = mk('circle'); hit.setAttribute('cx', ff(mx)); hit.setAttribute('cy', ff(my));
+        hit.setAttribute('r', ff(dr + 9)); hit.setAttribute('fill', 'transparent');
       }
-      angle += sweep;
+      viz.style.transition = 'opacity 0.18s';
+      vizG.appendChild(viz); vizEls.push(viz);
+      hit.style.cursor = 'pointer';
+      hitG.appendChild(hit); hitEls.push(hit);
     });
 
-    // Total au centre
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#EEE9DF';
-    ctx.font = `bold ${Math.round(r * 0.38)}px Inter,sans-serif`;
-    ctx.fillText(fmtR(total), cx, cy);
+    // Texte centre
+    const lblEl = mk('text');
+    lblEl.setAttribute('x', String(CX)); lblEl.setAttribute('y', String(CY - 7));
+    lblEl.setAttribute('text-anchor', 'middle'); lblEl.setAttribute('font-size', '9');
+    lblEl.setAttribute('fill', '#C9C1B1');
+    lblEl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+    lblEl.textContent = 'Total';
+
+    const amtEl = mk('text');
+    amtEl.setAttribute('x', String(CX)); amtEl.setAttribute('y', String(CY + 11));
+    amtEl.setAttribute('text-anchor', 'middle'); amtEl.setAttribute('font-size', '15');
+    amtEl.setAttribute('font-weight', '700'); amtEl.setAttribute('fill', '#EEE9DF');
+    amtEl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+    amtEl.setAttribute('font-variant-numeric', 'tabular-nums');
+    amtEl.textContent = fmtR(total);
+
+    svg.appendChild(vizG); svg.appendChild(hitG);
+    svg.appendChild(lblEl); svg.appendChild(amtEl);
+
+    // Légende verticale à droite
+    const legendWrap = document.createElement('div');
+    legendWrap.className = 'chart-legend-wrap';
+    const legendEls = [];
+    cats.forEach((cat, i) => {
+      const item = document.createElement('div');
+      item.className = 'chart-legend-item';
+      item.innerHTML = `<span class="chart-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span><span class="chart-legend-name">${cat}</span><span class="chart-legend-amt">${fmtR(catTotals[cat])}</span>`;
+      legendEls.push(item);
+      legendWrap.appendChild(item);
+    });
+
+    // Interaction tap
+    let sel = null;
+    function hilite(idx) {
+      sel = idx;
+      lblEl.textContent = cats[idx];
+      amtEl.textContent = fmtR(catTotals[cats[idx]]);
+      vizEls.forEach((e, j)   => e.style.opacity = j === idx ? '1' : '0.12');
+      legendEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.25');
+    }
+    function resetSel() {
+      sel = null;
+      lblEl.textContent = 'Total';
+      amtEl.textContent = fmtR(total);
+      vizEls.forEach(e   => e.style.opacity = '1');
+      legendEls.forEach(e => e.style.opacity = '1');
+    }
+
+    hitEls.forEach((hit, i) => {
+      hit.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
+    });
+    legendEls.forEach((item, i) => {
+      item.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
+    });
+    svg.addEventListener('click', () => { if (sel !== null) resetSel(); });
+
+    row.appendChild(svg);
+    row.appendChild(legendWrap);
+    container.appendChild(row);
   }
 
   function renderRefundSection(container) {
