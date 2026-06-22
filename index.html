@@ -287,6 +287,23 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add { width:100%;height:40px;padding:0;background:#FFB162;border-radius:0 0 12px 12px;color:#1B2632;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
 .btn-sec-add:active { background:#A35139;color:#EEE9DF; }
 
+/* ── Remboursements ── */
+.refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
+.refund-section-header { display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#152B1E;cursor:pointer;-webkit-tap-highlight-color:transparent; }
+.refund-section-title { font-size:10px;font-weight:700;color:#4ADE80;text-transform:uppercase;letter-spacing:.08em; }
+.refund-section-right { display:flex;gap:10px;align-items:center; }
+.refund-section-total { font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:#4ADE80; }
+.refund-section-chevron { font-size:16px;color:#4ADE80;display:inline-block;transition:transform .25s; }
+.refund-section.collapsed .refund-section-chevron { transform:rotate(-90deg); }
+.refund-section-body { overflow:hidden;max-height:1200px;transition:max-height .35s ease; }
+.refund-section.collapsed .refund-section-body { max-height:0; }
+.refund-item { display:flex;align-items:center;padding:10px 12px;background:rgba(21,43,30,.5);gap:11px; }
+.refund-item-desc { flex:1;font-size:13px;color:#86EFAC; }
+.refund-item-amount { font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#4ADE80;white-space:nowrap; }
+.btn-refund-toggle { width:100%;height:40px;padding:0;background:#1B2632;border-radius:10px;color:#C9C1B1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s,box-shadow .2s; }
+.btn-refund-toggle.active { background:#152B1E;color:#4ADE80;box-shadow:inset 0 0 0 1.5px #4ADE80; }
+.entry-form.refund-active input,.entry-form.refund-active select { box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.45); }
+
 /* ── Tab pill ── */
 .tab-pill { display:flex;align-items:center;gap:4px;background:#2C3B4D;border-radius:40px;padding:4px;position:relative;overflow:hidden; }
 .tabs-container { flex:1;position:relative;display:flex;min-width:0; }
@@ -451,10 +468,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           </div>
           <div class="entry-row2">
             <select id="e-cat"></select>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
               <button class="btn-add" onclick="addEntry()">
                 <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+              <button id="btn-refund-toggle" class="btn-refund-toggle" onclick="toggleRefundMode()">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
                 </svg>
               </button>
               <button class="btn-undo" onclick="undoEntry()">
@@ -556,6 +578,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   const collapsedDescGroups = new Set();
   let fixedChecked = new Set();
   let fixedSectionCollapsed = false;
+  let refundSectionCollapsed = false;
+  let refundMode = false;
   let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -622,9 +646,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const row = budgetSections.variable.find(r => r.label.trim().toLowerCase() === cat.trim().toLowerCase());
     return row ? row.value : 0;
   }
-  function getReelTotal()  { return entries.reduce((s,e) => s + e.montant, 0); }
+  function getReelTotal()   { return entries.filter(e => !e.refund).reduce((s,e) => s + e.montant, 0); }
+  function getRefundTotal() { return entries.filter(e =>  e.refund).reduce((s,e) => s + e.montant, 0); }
   function getSpentByCat(cat) {
-    return entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase())
+    return entries.filter(e => !e.refund && e.cat?.trim().toLowerCase() === cat.trim().toLowerCase())
                   .reduce((s,e) => s + e.montant, 0);
   }
 
@@ -632,9 +657,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function renderReelBadges(vals) {
     const frame = document.getElementById('reel-badges');
     if (!frame || !vals) return;
-    const { globalReel, globalReste, reelTotal, resteReel } = vals;
+    const { globalReel, globalReste, reelTotal, resteReel, refundTotal } = vals;
     const grClr = globalReste >= 0 ? 'green' : 'red';
     const rrClr = resteReel   >= 0 ? 'green' : 'red';
+    const refundBadge = refundTotal > 0
+      ? `<div class="badge-item">
+          <span class="badge-lbl">Remboursé</span>
+          <span class="badge-val green" id="r-refund">+ ${fmtR(refundTotal)}</span>
+        </div>` : '';
     frame.innerHTML = `
       <div class="badge-item">
         <span class="badge-lbl">Dépense global</span>
@@ -651,7 +681,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="badge-item">
         <span class="badge-lbl">Reste variable</span>
         <span class="badge-val ${rrClr}" id="r-reste-reel">${fmtR(resteReel)}</span>
-      </div>`;
+      </div>${refundBadge}`;
   }
 
   function recalc() {
@@ -661,9 +691,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const salaire       = gv('salaire');
     const reste         = salaire - fixes - variable;
     const reelTotal     = getReelTotal();
-    const resteReel     = salaire - fixes - reelTotal;
-    const globalReel    = fixesChecked + reelTotal;
-    const globalReste   = salaire - fixesChecked - reelTotal;
+    const refundTotal   = getRefundTotal();
+    const resteReel     = salaire - fixes - reelTotal + refundTotal;
+    const globalReel    = fixesChecked + reelTotal - refundTotal;
+    const globalReste   = salaire - fixesChecked - reelTotal + refundTotal;
 
     // Métriques budget
     document.getElementById('b-fixes').textContent    = fmtR(fixes);
@@ -673,7 +704,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     resteEl.className   = 'badge-val ' + (reste >= 0 ? 'green' : 'red');
 
     // Métriques réel
-    renderReelBadges({ globalReel, globalReste, reelTotal, resteReel });
+    renderReelBadges({ globalReel, globalReste, reelTotal, resteReel, refundTotal });
 
     refreshCatList();
     save();
@@ -688,7 +719,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const budget = getVariableBudgetForCat(cat);
       const spent  = getSpentByCat(cat);
       const reste  = budget - spent;
-      const catEntries = entries.filter(e => e.cat?.trim().toLowerCase() === cat.trim().toLowerCase());
+      const catEntries = entries.filter(e => !e.refund && e.cat?.trim().toLowerCase() === cat.trim().toLowerCase());
 
       const grouped = {};
       catEntries.forEach(e => {
@@ -773,6 +804,52 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     });
 
     renderFixedSection(container);
+    renderRefundSection(container);
+  }
+
+  function renderRefundSection(container) {
+    const refunds = entries.filter(e => e.refund);
+    const total   = refunds.reduce((s,e) => s + e.montant, 0);
+    const section = document.createElement('div');
+    section.className = 'refund-section' + (refundSectionCollapsed ? ' collapsed' : '');
+    section.innerHTML = `
+      <div class="refund-section-header" onclick="toggleRefundSection()">
+        <span class="refund-section-title">Remboursements</span>
+        <div class="refund-section-right">
+          <span class="refund-section-total">${total > 0 ? '+ ' + fmtR(total) : '—'}</span>
+          <span class="refund-section-chevron">▾</span>
+        </div>
+      </div>`;
+    const body = document.createElement('div');
+    body.className = 'refund-section-body';
+    if (refunds.length === 0) {
+      body.innerHTML = `<div class="cat-empty">Aucun remboursement ce mois</div>`;
+    } else {
+      refunds.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'refund-item';
+        item.innerHTML = `
+          <span class="refund-item-desc">${r.desc || '—'}</span>
+          <span class="refund-item-amount">+ ${fmtR(r.montant)}</span>
+          <button class="btn-del" onclick="removeEntry(${r.id})">✕</button>`;
+        body.appendChild(item);
+      });
+    }
+    section.appendChild(body);
+    container.appendChild(section);
+  }
+
+  function toggleRefundSection() {
+    refundSectionCollapsed = !refundSectionCollapsed;
+    refreshCatList();
+  }
+
+  function toggleRefundMode() {
+    refundMode = !refundMode;
+    const btn  = document.getElementById('btn-refund-toggle');
+    const form = document.querySelector('.entry-form');
+    if (btn)  btn.classList.toggle('active', refundMode);
+    if (form) form.classList.toggle('refund-active', refundMode);
   }
 
   function renderFixedSection(container) {
@@ -1049,7 +1126,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const desc    = document.getElementById('e-desc').value.trim();
     const cat     = document.getElementById('e-cat').value;
     if (!montant || montant <= 0) return;
-    entries.push({ id: ++entryId, montant, desc, cat });
+    const entry = { id: ++entryId, montant, desc, cat };
+    if (refundMode) entry.refund = true;
+    entries.push(entry);
     document.getElementById('e-montant').value = '';
     document.getElementById('e-desc').value    = '';
     recalc();
