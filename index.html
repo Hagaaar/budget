@@ -200,13 +200,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 /* ── Listes défilantes ── */
 #cat-list {
   flex:1;overflow-y:auto;
-  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
+  padding:6px 8px calc(80px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
 #budget-scroll {
   flex:1;overflow-y:auto;
-  padding:6px 8px calc(env(safe-area-inset-bottom,0px));
+  padding:6px 8px calc(80px + env(safe-area-inset-bottom,0px));
   -webkit-overflow-scrolling:touch;
   -webkit-user-select:none;user-select:none;
 }
@@ -486,10 +486,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
               </button>
               <button id="btn-refund-toggle" class="btn-refund-toggle" onclick="toggleRefundMode()">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                  <!-- arc 300° CCW centré (12,12) r=7.5 : de 12h → 2h en CCW -->
                   <path d="M12 4.5A7.5 7.5 0 1 0 18.5 8.25"/>
-                  <!-- arrowhead au départ (12,4.5) pointant à gauche (direction CCW) -->
-                  <polyline points="9 2 12 4.5 9 7"/>
+                  <polyline points="12 1 12 4.5 8 4.5"/>
                 </svg>
               </button>
               <button class="btn-undo" onclick="undoEntry()">
