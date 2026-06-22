@@ -170,8 +170,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   border-radius:14px;
   padding:8px;
 }
-.entry-row1 { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px; }
-.entry-row2 { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
+.entry-form-grid { display:grid;grid-template-columns:1fr auto;gap:6px; }
+.entry-inputs { display:flex;flex-direction:column;gap:6px; }
+.entry-btns { display:flex;flex-direction:column;gap:6px; }
 .entry-form input, .entry-form select {
   height:40px;padding:0 11px;
   background:#141D26;
@@ -192,10 +193,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   padding-right:26px;
 }
 .entry-form select:focus { box-shadow:inset 0 0 0 2px #C51F5D; }
-.btn-add  { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#C51F5D;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .15s,transform .1s; }
-.btn-add:active  { color:#8B1540;transform:scale(.97); }
-.btn-undo { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#C51F5D;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .15s; }
-.btn-undo:active { color:#8B1540; }
+.btn-pill { display:flex;align-items:center;gap:8px;width:100%;height:40px;padding:0 14px 0 12px;background:#C51F5D;border-radius:40px;color:#E2E2D2;font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;white-space:nowrap;font-family:'Inter',-apple-system,Arial,sans-serif; }
+.btn-pill:active { background:#8B1540;transform:scale(.97); }
 
 /* ── Listes défilantes ── */
 #cat-list {
@@ -309,8 +308,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .refund-item { display:flex;align-items:center;padding:10px 12px;background:rgba(26,37,53,.5);gap:11px; }
 .refund-item-desc { flex:1;font-size:13px;color:rgba(226,226,210,0.65); }
 .refund-item-amount { font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#C51F5D;white-space:nowrap; }
-.btn-refund-toggle { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#C51F5D;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .2s; }
-.btn-refund-toggle.active { color:#C51F5D; }
+#btn-refund-toggle.active { background:#8B1540; }
 .entry-form.refund-active input,.entry-form.refund-active select { box-shadow:inset 0 0 0 1.5px rgba(197,31,93,.45); }
 
 /* ── Tab pill ── */
@@ -471,28 +469,31 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <!-- Formulaire -->
       <div class="entry-form-area">
         <div class="entry-form">
-          <div class="entry-row1">
-            <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-            <input type="text" id="e-desc" placeholder="Description">
-          </div>
-          <div class="entry-row2">
-            <select id="e-cat"></select>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-              <button class="btn-add" onclick="addEntry()">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-              </button>
-              <button id="btn-refund-toggle" class="btn-refund-toggle" onclick="toggleRefundMode()">
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <div class="entry-form-grid">
+            <div class="entry-inputs">
+              <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+              <input type="text" id="e-desc" placeholder="Description">
+              <select id="e-cat"></select>
+            </div>
+            <div class="entry-btns">
+              <button id="btn-refund-toggle" class="btn-pill" onclick="toggleRefundMode()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
                   <polyline points="15.75 1.5 15.75 5.5 11.75 5.5"/>
                 </svg>
+                remboursement
               </button>
-              <button class="btn-undo" onclick="undoEntry()">
-                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+              <button class="btn-pill" onclick="undoEntry()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
                   <polyline points="15 6 9 12 15 18"/>
                 </svg>
+                retour
+              </button>
+              <button class="btn-pill" onclick="addEntry()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                ajouter
               </button>
             </div>
           </div>
