@@ -192,10 +192,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   padding-right:26px;
 }
 .entry-form select:focus { box-shadow:inset 0 0 0 2px #FFB162; }
-.btn-add  { width:100%;height:40px;padding:0;background:#FFB162;border-radius:10px;color:#1B2632;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
-.btn-add:active  { background:#A35139;color:#EEE9DF;transform:scale(.97); }
-.btn-undo { width:100%;height:40px;padding:0;background:#1B2632;border-radius:10px;color:#C9C1B1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s; }
-.btn-undo:active { background:#A35139;color:#EEE9DF; }
+.btn-add  { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#FFB162;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .15s,transform .1s; }
+.btn-add:active  { color:#A35139;transform:scale(.97); }
+.btn-undo { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#FFB162;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .15s; }
+.btn-undo:active { color:#A35139; }
 
 /* ── Listes défilantes ── */
 #cat-list {
@@ -310,8 +310,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .refund-item { display:flex;align-items:center;padding:10px 12px;background:rgba(21,43,30,.5);gap:11px; }
 .refund-item-desc { flex:1;font-size:13px;color:#86EFAC; }
 .refund-item-amount { font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#4ADE80;white-space:nowrap; }
-.btn-refund-toggle { width:100%;height:40px;padding:0;background:#1B2632;border-radius:10px;color:#C9C1B1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s,box-shadow .2s; }
-.btn-refund-toggle.active { background:#152B1E;color:#4ADE80;box-shadow:inset 0 0 0 1.5px #4ADE80; }
+.btn-refund-toggle { width:100%;height:40px;padding:0;background:transparent;border-radius:10px;color:#FFB162;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:color .2s; }
+.btn-refund-toggle.active { color:#4ADE80; }
 .entry-form.refund-active input,.entry-form.refund-active select { box-shadow:inset 0 0 0 1.5px rgba(74,222,128,.45); }
 
 /* ── Tab pill ── */
@@ -486,8 +486,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
               </button>
               <button id="btn-refund-toggle" class="btn-refund-toggle" onclick="toggleRefundMode()">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 12a9 9 0 1 0 2.38-6.13"/>
-                  <polyline points="3 6 3 12 9 12"/>
+                  <!-- arc 300° CCW centré (12,12) r=7.5 : de 12h → 2h en CCW -->
+                  <path d="M12 4.5A7.5 7.5 0 1 0 18.5 8.25"/>
+                  <!-- arrowhead au départ (12,4.5) pointant à gauche (direction CCW) -->
+                  <polyline points="9 2 12 4.5 9 7"/>
                 </svg>
               </button>
               <button class="btn-undo" onclick="undoEntry()">
