@@ -287,6 +287,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add { width:100%;height:40px;padding:0;background:#FFB162;border-radius:0 0 12px 12px;color:#1B2632;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
 .btn-sec-add:active { background:#A35139;color:#EEE9DF; }
 
+/* ── Graphiques ── */
+.charts-row { display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px 0 4px; }
+.chart-box { background:#2C3B4D;border-radius:12px;padding:8px 8px 6px;overflow:hidden; }
+.chart-title { font-size:9px;font-weight:700;color:#C9C1B1;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px; }
+.chart-canvas { width:100%;display:block; }
+.chart-legend { display:flex;flex-wrap:wrap;gap:3px 7px;margin-top:5px; }
+.chart-legend-item { display:flex;align-items:center;gap:3px; }
+.chart-legend-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
+.chart-legend-lbl { font-size:8px;color:#C9C1B1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:58px; }
+
 /* ── Remboursements ── */
 .refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
 .refund-section-header { display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#152B1E;cursor:pointer;-webkit-tap-highlight-color:transparent; }
@@ -715,6 +725,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
 
+    renderCharts(container);
+
     getCats().forEach(cat => {
       const budget = getVariableBudgetForCat(cat);
       const spent  = getSpentByCat(cat);
@@ -805,6 +817,170 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     renderFixedSection(container);
     renderRefundSection(container);
+  }
+
+  const PIE_COLORS = ['#FFB162','#7DB9E8','#E87D9A','#7DE8A0','#E8D07D','#C17DE8','#7DE8D5','#E87D7D'];
+
+  function renderCharts(container) {
+    const catTotals = {};
+    entries.filter(e => !e.refund).forEach(e => {
+      if (!e.cat) return;
+      catTotals[e.cat] = (catTotals[e.cat] || 0) + e.montant;
+    });
+    const cats  = Object.keys(catTotals).filter(c => catTotals[c] > 0);
+    const total = cats.reduce((s,c) => s + catTotals[c], 0);
+
+    const dayTotals = {};
+    entries.filter(e => !e.refund && e.date).forEach(e => {
+      try { const d = new Date(e.date).getDate(); dayTotals[d] = (dayTotals[d]||0) + e.montant; } catch(_) {}
+    });
+
+    const row = document.createElement('div');
+    row.className = 'charts-row';
+
+    // Camembert
+    const pieBox = document.createElement('div');
+    pieBox.className = 'chart-box';
+    pieBox.innerHTML = '<div class="chart-title">Par catégorie</div>';
+    const pieCanvas = document.createElement('canvas');
+    pieCanvas.className = 'chart-canvas';
+    pieBox.appendChild(pieCanvas);
+    if (cats.length > 0) {
+      const legend = document.createElement('div');
+      legend.className = 'chart-legend';
+      cats.forEach((cat, i) => {
+        const item = document.createElement('div');
+        item.className = 'chart-legend-item';
+        item.innerHTML = `<span class="chart-legend-dot" style="background:${PIE_COLORS[i % PIE_COLORS.length]}"></span><span class="chart-legend-lbl">${cat}</span>`;
+        legend.appendChild(item);
+      });
+      pieBox.appendChild(legend);
+    }
+
+    // Barres par jour
+    const dayBox = document.createElement('div');
+    dayBox.className = 'chart-box';
+    dayBox.innerHTML = '<div class="chart-title">Par jour</div>';
+    const dayCanvas = document.createElement('canvas');
+    dayCanvas.className = 'chart-canvas';
+    dayBox.appendChild(dayCanvas);
+
+    row.appendChild(pieBox);
+    row.appendChild(dayBox);
+    container.appendChild(row);
+
+    requestAnimationFrame(() => {
+      drawDonut(pieCanvas, cats, catTotals, total);
+      drawDayBars(dayCanvas, dayTotals);
+    });
+  }
+
+  function _rrect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawDonut(canvas, cats, catTotals, total) {
+    const dpr = window.devicePixelRatio || 1;
+    const W   = canvas.offsetWidth || canvas.parentElement.clientWidth - 16;
+    const H   = 110;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.height = H + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    if (!total) {
+      ctx.fillStyle = '#C9C1B1'; ctx.font = '10px Inter,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Aucune dépense', W / 2, H / 2);
+      return;
+    }
+
+    const cx = W / 2, cy = H / 2;
+    const r  = Math.min(cx, cy) - 5;
+    const ri = r * 0.54;
+    let angle = -Math.PI / 2;
+
+    cats.forEach((cat, i) => {
+      const slice = (catTotals[cat] / total) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, angle, angle + slice);
+      ctx.closePath();
+      ctx.fillStyle = PIE_COLORS[i % PIE_COLORS.length];
+      ctx.fill();
+      angle += slice;
+    });
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, ri, 0, Math.PI * 2);
+    ctx.fillStyle = '#2C3B4D';
+    ctx.fill();
+
+    ctx.fillStyle = '#EEE9DF';
+    ctx.font = `bold ${Math.max(9, Math.round(r * 0.27))}px Inter,sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(fmtR(total), cx, cy);
+  }
+
+  function drawDayBars(canvas, dayTotals) {
+    const dpr  = window.devicePixelRatio || 1;
+    const W    = canvas.offsetWidth || canvas.parentElement.clientWidth - 16;
+    const H    = 110;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.height = H + 'px';
+    const ctx  = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const days = Object.keys(dayTotals).map(Number).sort((a, b) => a - b);
+    if (!days.length) {
+      ctx.fillStyle = '#C9C1B1'; ctx.font = '10px Inter,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Aucune donnée', W / 2, H / 2);
+      return;
+    }
+
+    const maxVal = Math.max(...days.map(d => dayTotals[d]));
+    const pL = 4, pR = 4, pT = 16, pB = 16;
+    const cW = W - pL - pR;
+    const cH = H - pT - pB;
+    const barW = Math.max(4, Math.floor(cW / days.length) - 2);
+    const gap  = (cW - barW * days.length) / (days.length + 1);
+    const fs   = Math.max(6, Math.min(9, Math.floor(barW * 1.1)));
+
+    days.forEach((day, i) => {
+      const val = dayTotals[day];
+      const bh  = Math.max(3, (val / maxVal) * cH);
+      const x   = pL + gap + i * (barW + gap);
+      const y   = pT + cH - bh;
+
+      ctx.fillStyle = '#FFB162';
+      _rrect(ctx, x, y, barW, bh, Math.min(2, barW / 2));
+      ctx.fill();
+
+      ctx.fillStyle = '#EEE9DF';
+      ctx.font = `bold ${fs}px Inter,sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(Math.round(val), x + barW / 2, y - 1);
+
+      ctx.fillStyle = '#C9C1B1';
+      ctx.font = `${fs}px Inter,sans-serif`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(day, x + barW / 2, pT + cH + 3);
+    });
   }
 
   function renderRefundSection(container) {
@@ -1126,7 +1302,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const desc    = document.getElementById('e-desc').value.trim();
     const cat     = document.getElementById('e-cat').value;
     if (!montant || montant <= 0) return;
-    const entry = { id: ++entryId, montant, desc, cat };
+    const entry = { id: ++entryId, montant, desc, cat, date: new Date().toISOString() };
     if (refundMode) entry.refund = true;
     entries.push(entry);
     document.getElementById('e-montant').value = '';
