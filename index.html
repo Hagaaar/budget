@@ -288,15 +288,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add:active { background:#A35139;color:#EEE9DF; }
 
 /* ── Graphiques ── */
-.charts-row { display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:6px 0 2px;align-items:center; }
-.chart-donut-wrap { display:flex;justify-content:center;align-items:center; }
-.chart-canvas { width:100%;display:block; }
-.chart-legend-wrap { display:flex;flex-direction:column;justify-content:center;gap:6px; }
-.chart-legend-item { display:flex;align-items:center;gap:5px; }
+.charts-row { padding:6px 0 4px; }
+.chart-donut-wrap { display:flex;justify-content:center;align-items:center;margin-bottom:10px; }
+.chart-canvas { display:block; }
+.chart-legend-wrap { display:grid;grid-template-columns:1fr 1fr;gap:5px 16px; }
+.chart-legend-item { display:flex;align-items:center;gap:6px;min-width:0; }
 .chart-legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
 .chart-legend-name { flex:1;font-size:10px;color:#C9C1B1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
 .chart-legend-amt { font-size:10px;font-weight:600;color:#EEE9DF;font-variant-numeric:tabular-nums;white-space:nowrap; }
-.chart-empty-lbl { font-size:10px;color:#C9C1B1;text-align:center; }
+.chart-empty-lbl { font-size:10px;color:#C9C1B1;text-align:center;grid-column:1/-1; }
 
 /* ── Remboursements ── */
 .refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
@@ -833,14 +833,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const row = document.createElement('div');
     row.className = 'charts-row';
 
-    // Colonne gauche : donut (sans fond)
+    // Donut pleine largeur
     const pieWrap = document.createElement('div');
     pieWrap.className = 'chart-donut-wrap';
     const pieCanvas = document.createElement('canvas');
     pieCanvas.className = 'chart-canvas';
     pieWrap.appendChild(pieCanvas);
 
-    // Colonne droite : légende (sans fond)
+    // Légende en 2 colonnes sous le donut
     const legendWrap = document.createElement('div');
     legendWrap.className = 'chart-legend-wrap';
     if (cats.length === 0) {
@@ -863,22 +863,23 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function drawDonut(canvas, cats, catTotals, total) {
     const dpr = window.devicePixelRatio || 1;
-    const W   = canvas.offsetWidth || canvas.parentElement.clientWidth;
+    const W   = canvas.parentElement.clientWidth || 220;
     const H   = W;
     canvas.width  = W * dpr;
     canvas.height = H * dpr;
+    canvas.style.width  = W + 'px';
     canvas.style.height = H + 'px';
     const ctx = canvas.getContext('2d');
     ctx.scale(dpr, dpr);
 
     const cx = W / 2, cy = H / 2;
-    const r  = W / 2 - 10;
-    const sw = Math.max(10, r * 0.30); // épaisseur des arcs
+    const r  = W / 2 - 14;
+    const sw = Math.round(r * 0.38); // segments épais (style pilule)
 
-    // Track de fond
+    // Track de fond subtil
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
     ctx.lineWidth = sw;
     ctx.lineCap = 'butt';
     ctx.stroke();
@@ -892,15 +893,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       return;
     }
 
-    // Segments arrondis avec petits espaces
-    const GAP = 0.035;
+    // Segments avec grands espaces pour l'effet pilule
+    const GAP = 0.12;
     let angle = -Math.PI / 2;
     cats.forEach((cat, i) => {
       const sweep = (catTotals[cat] / total) * Math.PI * 2;
-      const half  = GAP / 2;
-      if (sweep - GAP > 0.01) {
+      const start = angle + GAP / 2;
+      const end   = angle + sweep - GAP / 2;
+      if (end > start + 0.02) {
         ctx.beginPath();
-        ctx.arc(cx, cy, r, angle + half, angle + sweep - half);
+        ctx.arc(cx, cy, r, start, end);
         ctx.strokeStyle = PIE_COLORS[i % PIE_COLORS.length];
         ctx.lineWidth = sw;
         ctx.lineCap = 'round';
@@ -913,7 +915,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#EEE9DF';
-    ctx.font = `bold ${Math.round(r * 0.30)}px Inter,sans-serif`;
+    ctx.font = `bold ${Math.round(r * 0.32)}px Inter,sans-serif`;
     ctx.fillText(fmtR(total), cx, cy);
   }
 
