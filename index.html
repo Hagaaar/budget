@@ -293,7 +293,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .chart-legend-wrap { flex:1;display:flex;flex-direction:column;gap:4px;min-width:0; }
 .chart-legend-item { display:flex;align-items:center;gap:6px;min-width:0;padding:2px 0;transition:opacity 0.18s;cursor:pointer;-webkit-tap-highlight-color:transparent; }
 .chart-legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
-.chart-legend-name { flex:1;font-size:10px;color:#C9C1B1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.chart-legend-name { font-size:10px;color:#C9C1B1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .chart-legend-amt { font-size:10px;font-weight:600;color:#EEE9DF;font-variant-numeric:tabular-nums;white-space:nowrap; }
 .chart-empty-lbl { font-size:10px;color:#C9C1B1;text-align:center; }
 
@@ -845,7 +845,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
 
     const NS = 'http://www.w3.org/2000/svg';
-    const SIZE = 160, CX = 80, CY = 80, R = 58, SW = 18, GAP = 18;
+    const SIZE = 200, CX = 100, CY = 100, R = 73, SW = 22, GAP = 18;
     function mk(t) { return document.createElementNS(NS, t); }
     function ff(n) { return n.toFixed(3); }
     function pxy(deg) {
@@ -859,14 +859,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     svg.setAttribute('width', String(SIZE));
     svg.setAttribute('height', String(SIZE));
     svg.className = 'chart-donut-svg';
-
-    // Track fond
-    const track = mk('circle');
-    track.setAttribute('cx', String(CX)); track.setAttribute('cy', String(CY));
-    track.setAttribute('r', String(R));   track.setAttribute('fill', 'none');
-    track.setAttribute('stroke', 'rgba(255,255,255,0.06)');
-    track.setAttribute('stroke-width', String(SW));
-    svg.appendChild(track);
 
     const vizG = mk('g'), hitG = mk('g');
     const vizEls = [], hitEls = [];
@@ -909,15 +901,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     // Texte centre
     const lblEl = mk('text');
-    lblEl.setAttribute('x', String(CX)); lblEl.setAttribute('y', String(CY - 7));
-    lblEl.setAttribute('text-anchor', 'middle'); lblEl.setAttribute('font-size', '9');
+    lblEl.setAttribute('x', String(CX)); lblEl.setAttribute('y', String(CY - 9));
+    lblEl.setAttribute('text-anchor', 'middle'); lblEl.setAttribute('font-size', '11');
     lblEl.setAttribute('fill', '#C9C1B1');
     lblEl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
     lblEl.textContent = 'Total';
 
     const amtEl = mk('text');
-    amtEl.setAttribute('x', String(CX)); amtEl.setAttribute('y', String(CY + 11));
-    amtEl.setAttribute('text-anchor', 'middle'); amtEl.setAttribute('font-size', '15');
+    amtEl.setAttribute('x', String(CX)); amtEl.setAttribute('y', String(CY + 14));
+    amtEl.setAttribute('text-anchor', 'middle'); amtEl.setAttribute('font-size', '18');
     amtEl.setAttribute('font-weight', '700'); amtEl.setAttribute('fill', '#EEE9DF');
     amtEl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
     amtEl.setAttribute('font-variant-numeric', 'tabular-nums');
