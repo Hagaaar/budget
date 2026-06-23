@@ -163,15 +163,16 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   width:100%;
 }
 
-/* ── Formulaire (onglet reel) — même marges que badge-frame ── */
-.entry-form-area { padding:6px 8px 0; }
+/* ── Formulaire (onglet reel) ── */
+.form-legend-row { display:flex;flex-direction:row;align-items:flex-start;gap:8px;padding:6px 8px 0; }
+.entry-form-area { flex:0 0 auto; }
 .entry-form {
   background:#243447;
   border-radius:14px;
   padding:8px;
   display:flex;flex-direction:column;gap:6px;
 }
-.entry-form-grid { display:grid;grid-template-columns:2fr 1fr;gap:6px; }
+.entry-form-grid { display:grid;grid-template-columns:1fr auto;gap:6px; }
 .entry-btns { display:flex;flex-direction:column;gap:6px; }
 .entry-form input, .entry-form select {
   height:40px;padding:0 11px;
@@ -193,8 +194,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   padding-right:26px;
 }
 .entry-form select:focus { box-shadow:inset 0 0 0 2px #C51F5D; }
-.btn-pill { display:flex;align-items:center;justify-content:space-between;width:100%;height:40px;padding:0 14px 0 12px;background:#C51F5D;border-radius:40px;color:#E2E2D2;font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;white-space:nowrap;font-family:'Inter',-apple-system,Arial,sans-serif; }
-.btn-pill:active { background:#8B1540;transform:scale(.97); }
+.btn-circle { width:40px;height:40px;border-radius:50%;background:#C51F5D;color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s; }
+.btn-circle:active { background:#8B1540;transform:scale(.95); }
 
 /* ── Listes défilantes ── */
 #cat-list {
@@ -287,13 +288,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add:active { background:#8B1540;color:#E2E2D2; }
 
 /* ── Graphiques ── */
-.charts-row { padding:6px 0 8px;display:flex;flex-direction:row;align-items:center;gap:12px; }
-.chart-donut-svg { flex:1;min-width:0;aspect-ratio:1/1;max-width:240px; }
-.chart-legend-wrap { flex:0 0 auto;display:grid;grid-template-columns:8px auto auto;gap:3px 8px;align-items:center;align-content:center; }
-.chart-legend-dot { width:8px;height:8px;border-radius:50%; }
-.chart-legend-name { font-size:10px;color:rgba(226,226,210,0.5);white-space:nowrap; }
-.chart-legend-amt { font-size:10px;font-weight:600;color:#E2E2D2;font-variant-numeric:tabular-nums;white-space:nowrap; }
-.chart-empty-lbl { font-size:10px;color:rgba(226,226,210,0.5);text-align:center; }
+.charts-row { padding:10px 8px 4px; }
+.chart-donut-svg { width:100%;aspect-ratio:1/1;display:block; }
+.chart-empty-lbl { font-size:10px;color:rgba(226,226,210,0.5);text-align:center;padding:16px 0; }
+/* Légende dans le header */
+#reel-legend { flex:1;display:flex;flex-direction:column;gap:5px;align-items:flex-end;padding-top:4px; }
+.reel-legend-item { display:flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .18s;-webkit-tap-highlight-color:transparent; }
+.reel-legend-name { font-size:10px;color:rgba(226,226,210,0.65);white-space:nowrap; }
+.reel-legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
 
 /* ── Remboursements ── */
 .refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
@@ -466,36 +468,36 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="panel-top-fixed">
       <!-- Cadre unique des 4 métriques — même forme que le formulaire -->
       <div id="reel-badges" class="badge-frame"></div>
-      <!-- Formulaire -->
-      <div class="entry-form-area">
-        <div class="entry-form-grid">
-          <div class="entry-form">
-            <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-            <input type="text" id="e-desc" placeholder="Description">
-            <select id="e-cat"></select>
-          </div>
-          <div class="entry-btns">
-            <button id="btn-refund-toggle" class="btn-pill" onclick="toggleRefundMode()">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
-                <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
-              </svg>
-              remboursement
-            </button>
-            <button class="btn-pill" onclick="undoEntry()">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 6 9 12 15 18"/>
-              </svg>
-              retour
-            </button>
-            <button class="btn-pill" onclick="addEntry()">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              ajouter
-            </button>
+      <!-- Formulaire + légende -->
+      <div class="form-legend-row">
+        <div class="entry-form-area">
+          <div class="entry-form-grid">
+            <div class="entry-form">
+              <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+              <input type="text" id="e-desc" placeholder="Description">
+              <select id="e-cat"></select>
+            </div>
+            <div class="entry-btns">
+              <button id="btn-refund-toggle" class="btn-circle" onclick="toggleRefundMode()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
+                  <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
+                </svg>
+              </button>
+              <button class="btn-circle" onclick="undoEntry()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 6 9 12 15 18"/>
+                </svg>
+              </button>
+              <button class="btn-circle" onclick="addEntry()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
+        <div id="reel-legend"></div>
       </div>
     </div>
     <div id="cat-list"></div>
@@ -722,6 +724,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
+    const legendEl = document.getElementById('reel-legend');
+    if (legendEl) legendEl.innerHTML = '';
 
     renderCharts(container);
 
@@ -912,26 +916,23 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     svg.appendChild(vizG); svg.appendChild(hitG);
     svg.appendChild(lblEl); svg.appendChild(amtEl);
 
-    // Légende grille (dot | nom | montant) — colonnes auto-width
-    const legendWrap = document.createElement('div');
-    legendWrap.className = 'chart-legend-wrap';
-    const legendEls = []; // [dot, name, amt] par catégorie
+    // Légende dans #reel-legend (nom | dot)
+    const legendContainer = document.getElementById('reel-legend');
+    const legendEls = [];
     cats.forEach((cat, i) => {
       const color = PIE_COLORS[i % PIE_COLORS.length];
-      const dot = document.createElement('span');
-      dot.className = 'chart-legend-dot';
-      dot.style.cssText = `background:${color};transition:opacity .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;`;
+      const item = document.createElement('div');
+      item.className = 'reel-legend-item';
       const name = document.createElement('span');
-      name.className = 'chart-legend-name';
-      name.style.cssText = 'transition:opacity .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+      name.className = 'reel-legend-name';
       name.textContent = cat;
-      const amt = document.createElement('span');
-      amt.className = 'chart-legend-amt';
-      amt.style.cssText = 'transition:opacity .18s;cursor:pointer;-webkit-tap-highlight-color:transparent;';
-      amt.textContent = fmtR(catTotals[cat]);
-      const cells = [dot, name, amt];
-      legendEls.push(cells);
-      cells.forEach(c => legendWrap.appendChild(c));
+      const dot = document.createElement('span');
+      dot.className = 'reel-legend-dot';
+      dot.style.background = color;
+      item.appendChild(name);
+      item.appendChild(dot);
+      legendEls.push(item);
+      if (legendContainer) legendContainer.appendChild(item);
     });
 
     // Interaction tap
@@ -940,27 +941,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       sel = idx;
       lblEl.textContent = cats[idx];
       amtEl.textContent = fmtR(catTotals[cats[idx]]);
-      vizEls.forEach((e, j)       => e.style.opacity = j === idx ? '1' : '0.12');
-      legendEls.forEach((cells, j) => cells.forEach(c => c.style.opacity = j === idx ? '1' : '0.25'));
+      vizEls.forEach((e, j)   => e.style.opacity = j === idx ? '1' : '0.12');
+      legendEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.25');
     }
     function resetSel() {
       sel = null;
       lblEl.textContent = 'Total';
       amtEl.textContent = fmtR(total);
-      vizEls.forEach(e     => e.style.opacity = '1');
-      legendEls.forEach(cells => cells.forEach(c => c.style.opacity = '1'));
+      vizEls.forEach(e   => e.style.opacity = '1');
+      legendEls.forEach(e => e.style.opacity = '1');
     }
 
     hitEls.forEach((hit, i) => {
       hit.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
     });
-    legendEls.forEach((cells, i) => {
-      cells.forEach(c => c.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); }));
+    legendEls.forEach((item, i) => {
+      item.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
     });
     svg.addEventListener('click', () => { if (sel !== null) resetSel(); });
 
     row.appendChild(svg);
-    row.appendChild(legendWrap);
     container.appendChild(row);
   }
 
