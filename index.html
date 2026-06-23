@@ -608,6 +608,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   let fixedSectionCollapsed = false;
   let refundSectionCollapsed = false;
   let refundMode = false;
+  let chartState = { selCat: null, varGroups: {}, donutEls: {}, hiliteDonut: null, resetDonut: null };
+
+  function chartHilite(catName) {
+    chartState.selCat = catName;
+    Object.entries(chartState.varGroups).forEach(([c, g]) => {
+      g.style.opacity = c === catName ? '1' : '0.12';
+    });
+    if (chartState.hiliteDonut) chartState.hiliteDonut(catName);
+  }
+
+  function chartReset() {
+    chartState.selCat = null;
+    Object.values(chartState.varGroups).forEach(g => { g.style.opacity = '1'; });
+    if (chartState.resetDonut) chartState.resetDonut();
+  }
   let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -742,6 +757,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
 
+    chartState = { selCat: null, varGroups: {}, donutEls: {}, hiliteDonut: null, resetDonut: null };
     renderVarianceChart();
     renderCharts();
 
@@ -884,8 +900,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     zl.setAttribute('stroke-width', '0.7');
     svg.appendChild(zl);
 
-    let selBar = null;
-    const groups = [];
+    // Sort: largest variance (most remaining) at top, most negative at bottom
+    items.sort((a, b) => b.variance - a.variance);
+
+    chartState.varGroups = {};
 
     items.forEach((d, i) => {
       const rawBw = Math.abs(d.variance) / maxAbs * BAR_MAX_W;
@@ -899,7 +917,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const numW = numStr.length * 4.5; // approx text width in viewBox units
 
       const g = document.createElementNS(NS, 'g');
-      groups.push(g);
+      chartState.varGroups[d.cat] = g;
 
       // Bar path: square at zero side, rounded semicircle at tip
       let barPath;
@@ -969,13 +987,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       hit.setAttribute('fill', 'transparent');
       hit.style.cursor = 'pointer';
       hit.addEventListener('click', () => {
-        if (selBar === i) {
-          selBar = null;
-          groups.forEach(gg => { gg.style.opacity = '1'; });
-        } else {
-          selBar = i;
-          groups.forEach((gg, j) => { gg.style.opacity = j === i ? '1' : '0.12'; });
-        }
+        chartState.selCat === d.cat ? chartReset() : chartHilite(d.cat);
       });
       g.appendChild(hit);
 
@@ -1076,24 +1088,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     svg.appendChild(vizG); svg.appendChild(hitG);
     svg.appendChild(lblEl); svg.appendChild(amtEl);
 
-    let sel = null;
-    function hilite(idx) {
-      sel = idx;
-      lblEl.textContent = cats[idx];
-      amtEl.textContent = fmtR(catTotals[cats[idx]]);
+    // Register donut elements by category name for cross-chart linking
+    chartState.donutEls = {};
+    cats.forEach((cat, i) => { chartState.donutEls[cat] = vizEls[i]; });
+
+    chartState.hiliteDonut = (catName) => {
+      const idx = cats.indexOf(catName);
+      lblEl.textContent = catName;
+      amtEl.textContent = fmtR(catTotals[catName] || 0);
       vizEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.12');
-    }
-    function resetSel() {
-      sel = null;
+    };
+    chartState.resetDonut = () => {
       lblEl.textContent = 'Total';
       amtEl.textContent = fmtR(total);
       vizEls.forEach(e => e.style.opacity = '1');
-    }
+    };
 
     hitEls.forEach((hit, i) => {
-      hit.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
+      hit.addEventListener('click', e => {
+        e.stopPropagation();
+        chartState.selCat === cats[i] ? chartReset() : chartHilite(cats[i]);
+      });
     });
-    svg.addEventListener('click', () => { if (sel !== null) resetSel(); });
+    svg.addEventListener('click', () => { if (chartState.selCat) chartReset(); });
 
     donutArea.appendChild(svg);
   }
