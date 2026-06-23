@@ -287,6 +287,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add { width:100%;height:40px;padding:0;background:#C51F5D;border-radius:0 0 12px 12px;color:#141D26;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
 .btn-sec-add:active { background:#8B1540;color:#E2E2D2; }
 
+/* ── Graphique écarts budget ── */
+.variance-chart-wrap { padding:6px 8px 2px; }
+.variance-chart-svg { width:100%;display:block; }
+
 /* ── Graphiques ── */
 .charts-row { padding:10px 8px 4px; }
 .chart-donut-svg { width:100%;aspect-ratio:1/1;display:block; }
@@ -727,6 +731,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const legendEl = document.getElementById('reel-legend');
     if (legendEl) legendEl.innerHTML = '';
 
+    renderVarianceChart(container);
     renderCharts(container);
 
     getCats().forEach(cat => {
@@ -822,6 +827,87 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   const PIE_COLORS = ['#C51F5D','#E2E2D2','#D4537E','#4A6A85','#F07098','#A8A898','#8B2547','#5A85A5'];
+
+  function renderVarianceChart(container) {
+    // Dépenses par catégorie
+    const spent = {};
+    entries.filter(e => !e.refund).forEach(e => {
+      if (!e.cat) return;
+      spent[e.cat] = (spent[e.cat] || 0) + e.montant;
+    });
+    // Union des catégories (budget OU dépenses)
+    const allCats = [...new Set([...Object.keys(spent), ...getCats()])]
+      .filter(c => getVariableBudgetForCat(c) > 0 || (spent[c] || 0) > 0);
+    if (allCats.length === 0) return;
+
+    // Couleurs alignées sur l'ordre du donut
+    const donutCats = Object.keys(spent).filter(c => spent[c] > 0);
+    const colorMap = {};
+    donutCats.forEach((c, i) => { colorMap[c] = PIE_COLORS[i % PIE_COLORS.length]; });
+
+    const items = allCats.map((c, i) => ({
+      cat: c,
+      variance: getVariableBudgetForCat(c) - (spent[c] || 0),
+      color: colorMap[c] || PIE_COLORS[i % PIE_COLORS.length]
+    }));
+
+    const maxAbs = Math.max(...items.map(d => Math.abs(d.variance)), 1);
+    const NS = 'http://www.w3.org/2000/svg';
+    const W = 300, H = 82, MID = 44, MAXH = 36;
+    const n = items.length;
+    const barW = Math.max(6, Math.min(22, (W - 20) / n - 5));
+    const gap  = Math.max(3, (W - 20 - n * barW) / Math.max(n - 1, 1));
+    const x0   = (W - (n * barW + (n - 1) * gap)) / 2;
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.className = 'variance-chart-svg';
+
+    // Ligne zéro
+    const zl = document.createElementNS(NS, 'line');
+    zl.setAttribute('x1', '2'); zl.setAttribute('x2', String(W - 2));
+    zl.setAttribute('y1', String(MID)); zl.setAttribute('y2', String(MID));
+    zl.setAttribute('stroke', 'rgba(226,226,210,0.22)');
+    zl.setAttribute('stroke-width', '0.8');
+    svg.appendChild(zl);
+
+    items.forEach((d, i) => {
+      const bh  = Math.max(3, Math.abs(d.variance) / maxAbs * MAXH);
+      const x   = x0 + i * (barW + gap);
+      const pos = d.variance >= 0;
+      const y   = pos ? MID - bh : MID;
+      const rx  = Math.min(barW / 2, 4);
+
+      const bar = document.createElementNS(NS, 'rect');
+      bar.setAttribute('x', x.toFixed(1));
+      bar.setAttribute('y', y.toFixed(1));
+      bar.setAttribute('width', barW.toFixed(1));
+      bar.setAttribute('height', bh.toFixed(1));
+      bar.setAttribute('rx', rx.toFixed(1));
+      bar.setAttribute('fill', d.color);
+      bar.setAttribute('opacity', pos ? '0.65' : '1');
+      svg.appendChild(bar);
+
+      // Label montant
+      const amt = Math.round(Math.abs(d.variance));
+      if (amt > 0) {
+        const lbl = document.createElementNS(NS, 'text');
+        lbl.setAttribute('x', (x + barW / 2).toFixed(1));
+        lbl.setAttribute('y', pos ? (MID - bh - 3).toFixed(1) : (MID + bh + 9).toFixed(1));
+        lbl.setAttribute('text-anchor', 'middle');
+        lbl.setAttribute('font-size', '7.5');
+        lbl.setAttribute('fill', 'rgba(226,226,210,0.6)');
+        lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+        lbl.textContent = (pos ? '+' : '−') + amt;
+        svg.appendChild(lbl);
+      }
+    });
+
+    const wrap = document.createElement('div');
+    wrap.className = 'variance-chart-wrap';
+    wrap.appendChild(svg);
+    container.appendChild(wrap);
+  }
 
   function renderCharts(container) {
     const catTotals = {};
