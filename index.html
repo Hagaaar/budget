@@ -613,14 +613,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function chartHilite(catName) {
     chartState.selCat = catName;
     Object.entries(chartState.varGroups).forEach(([c, g]) => {
-      g.style.opacity = c === catName ? '1' : '0.12';
+      g.setAttribute('opacity', c === catName ? '1' : '0.12');
     });
     if (chartState.hiliteDonut) chartState.hiliteDonut(catName);
   }
 
   function chartReset() {
     chartState.selCat = null;
-    Object.values(chartState.varGroups).forEach(g => { g.style.opacity = '1'; });
+    Object.values(chartState.varGroups).forEach(g => { g.setAttribute('opacity', '1'); });
     if (chartState.resetDonut) chartState.resetDonut();
   }
   let longPressTimer = null, dragEl = null;
@@ -900,8 +900,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     zl.setAttribute('stroke-width', '0.7');
     svg.appendChild(zl);
 
-    // Sort: largest variance (most remaining) at top, most negative at bottom
-    items.sort((a, b) => b.variance - a.variance);
+    // Sort: largest absolute variance (biggest bar) at top
+    items.sort((a, b) => Math.abs(b.variance) - Math.abs(a.variance));
 
     chartState.varGroups = {};
 
@@ -917,6 +917,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const numW = numStr.length * 4.5; // approx text width in viewBox units
 
       const g = document.createElementNS(NS, 'g');
+      g.style.transition = 'opacity 0.18s';
       chartState.varGroups[d.cat] = g;
 
       // Bar path: square at zero side, rounded semicircle at tip
@@ -985,6 +986,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       hit.setAttribute('width', String(W));
       hit.setAttribute('height', String(ROW_H));
       hit.setAttribute('fill', 'transparent');
+      hit.setAttribute('pointer-events', 'all');
       hit.style.cursor = 'pointer';
       hit.addEventListener('click', () => {
         chartState.selCat === d.cat ? chartReset() : chartHilite(d.cat);
@@ -1055,6 +1057,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         hit = mk('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
         hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', String(SW + 16));
         hit.setAttribute('stroke-linecap', 'round');
+        hit.setAttribute('pointer-events', 'all');
       } else {
         const maxR = R * Math.sin((full / 2) * Math.PI / 180);
         const dr   = Math.min(SW / 2 - 1, maxR * 0.82);
@@ -1063,6 +1066,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         viz.setAttribute('r', ff(dr)); viz.setAttribute('fill', color);
         hit = mk('circle'); hit.setAttribute('cx', ff(mx)); hit.setAttribute('cy', ff(my));
         hit.setAttribute('r', ff(dr + 9)); hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('pointer-events', 'all');
       }
       viz.style.transition = 'opacity 0.18s';
       vizG.appendChild(viz); vizEls.push(viz);
