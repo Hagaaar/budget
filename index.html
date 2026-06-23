@@ -163,8 +163,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   width:100%;
 }
 
-/* ── Formulaire (onglet reel) ── */
-.form-legend-row { display:flex;flex-direction:row;align-items:flex-start;gap:8px;padding:6px 8px 0;height:148px;overflow:visible; }
+/* ── Layout deux-colonnes (onglet reel) ── */
+.reel-body-row { display:flex;flex-direction:row;align-items:flex-start; }
+.variance-col { flex:0 0 44%;overflow:hidden;padding:4px 0 4px 8px; }
+.reel-right-col { flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 8px 4px;gap:6px; }
+#reel-badges { margin:0; }
+#donut-area { flex:0 0 auto; }
 .entry-form-area { flex:0 0 auto; }
 .entry-form {
   background:#243447;
@@ -287,19 +291,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add { width:100%;height:40px;padding:0;background:#C51F5D;border-radius:0 0 12px 12px;color:#141D26;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s; }
 .btn-sec-add:active { background:#8B1540;color:#E2E2D2; }
 
-/* ── Graphique écarts budget ── */
-.variance-chart-wrap { padding:4px 8px 0; }
+/* ── Graphique variance (colonne gauche) ── */
 .variance-chart-svg { width:100%;display:block; }
 
-/* ── Graphiques ── */
-.charts-row { padding:0 8px 4px; }
+/* ── Donut ── */
 .chart-donut-svg { width:100%;aspect-ratio:1/1;display:block; }
 .chart-empty-lbl { font-size:10px;color:rgba(226,226,210,0.5);text-align:center;padding:16px 0; }
-/* Légende dans le header */
-#reel-legend { flex:1;display:flex;flex-direction:column;gap:5px;align-items:flex-start;padding-top:4px; }
-.reel-legend-item { display:flex;align-items:center;gap:5px;cursor:pointer;transition:opacity .18s;-webkit-tap-highlight-color:transparent; }
-.reel-legend-name { font-size:10px;color:rgba(226,226,210,0.65);white-space:nowrap; }
-.reel-legend-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
 
 /* ── Remboursements ── */
 .refund-section { margin-top:6px;border-radius:12px;overflow:hidden; }
@@ -470,37 +467,40 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   <!-- ── DÉPENSES RÉEL ── -->
   <div id="reel" class="panel active">
     <div class="panel-top-fixed">
-      <!-- Cadre unique des 4 métriques — même forme que le formulaire -->
-      <div id="reel-badges" class="badge-frame"></div>
-      <!-- Formulaire + légende -->
-      <div class="form-legend-row">
-        <div id="reel-legend"></div>
-        <div class="entry-form-area">
-          <div class="entry-form-grid">
-            <div class="entry-form">
-              <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-              <input type="text" id="e-desc" placeholder="Description">
-              <select id="e-cat"></select>
-            </div>
-            <div class="entry-btns">
-              <button id="btn-refund-toggle" class="btn-circle" onclick="toggleRefundMode()">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
-                  <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
-                </svg>
-              </button>
-              <button class="btn-circle" onclick="undoEntry()">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="15 6 9 12 15 18"/>
-                </svg>
-              </button>
-              <button class="btn-circle" onclick="addEntry()">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-              </button>
+      <div class="reel-body-row">
+        <!-- Colonne gauche : graphique variance horizontal -->
+        <div class="variance-col" id="variance-col"></div>
+        <!-- Colonne droite : badges + formulaire + donut -->
+        <div class="reel-right-col">
+          <div id="reel-badges" class="badge-frame"></div>
+          <div class="entry-form-area">
+            <div class="entry-form-grid">
+              <div class="entry-form">
+                <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+                <input type="text" id="e-desc" placeholder="Description">
+                <select id="e-cat"></select>
+              </div>
+              <div class="entry-btns">
+                <button id="btn-refund-toggle" class="btn-circle" onclick="toggleRefundMode()">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
+                    <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
+                  </svg>
+                </button>
+                <button class="btn-circle" onclick="undoEntry()">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 6 9 12 15 18"/>
+                  </svg>
+                </button>
+                <button class="btn-circle" onclick="addEntry()">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
+          <div id="donut-area"></div>
         </div>
       </div>
     </div>
@@ -728,11 +728,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (dragEl) return;
     const container = document.getElementById('cat-list');
     container.innerHTML = '';
-    const legendEl = document.getElementById('reel-legend');
-    if (legendEl) legendEl.innerHTML = '';
 
-    renderVarianceChart(container);
-    renderCharts(container);
+    renderVarianceChart();
+    renderCharts();
 
     getCats().forEach(cat => {
       const budget = getVariableBudgetForCat(cat);
@@ -828,7 +826,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   const PIE_COLORS = ['#C51F5D','#E2E2D2','#D4537E','#4A6A85','#F07098','#A8A898','#8B2547','#5A85A5'];
 
-  function renderVarianceChart(container) {
+  function renderVarianceChart() {
+    const varCol = document.getElementById('variance-col');
+    if (!varCol) return;
+    varCol.innerHTML = '';
+
     const spent = {};
     entries.filter(e => !e.refund).forEach(e => {
       if (!e.cat) return;
@@ -850,101 +852,81 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     const maxAbs = Math.max(...items.map(d => Math.abs(d.variance)), 1);
     const NS = 'http://www.w3.org/2000/svg';
-    const NAME_SPACE = 38;
-    const W = 300, MAXH = 40;
-    const H = MAXH + NAME_SPACE + 4 + MAXH + NAME_SPACE;
-    const MID = MAXH + NAME_SPACE;
+    const W = 180, ROW_H = 30, BAR_H = 10;
+    const NAME_W = 60, ZERO_X = 62, NUM_SPACE = 30;
+    const BAR_MAX_W = W - ZERO_X - NUM_SPACE;
     const n = items.length;
-    const barW = Math.max(6, Math.min(22, (W - 20) / n - 5));
-    const gap  = Math.max(3, (W - 20 - n * barW) / Math.max(n - 1, 1));
-    const x0   = (W - (n * barW + (n - 1) * gap)) / 2;
+    const H = n * ROW_H;
 
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.className = 'variance-chart-svg';
 
     const zl = document.createElementNS(NS, 'line');
-    zl.setAttribute('x1', '2'); zl.setAttribute('x2', String(W - 2));
-    zl.setAttribute('y1', String(MID)); zl.setAttribute('y2', String(MID));
-    zl.setAttribute('stroke', 'rgba(226,226,210,0.22)');
-    zl.setAttribute('stroke-width', '0.8');
+    zl.setAttribute('x1', String(ZERO_X)); zl.setAttribute('x2', String(ZERO_X));
+    zl.setAttribute('y1', '0'); zl.setAttribute('y2', String(H));
+    zl.setAttribute('stroke', 'rgba(226,226,210,0.15)');
+    zl.setAttribute('stroke-width', '0.7');
     svg.appendChild(zl);
 
     let selBar = null;
     const groups = [];
 
     items.forEach((d, i) => {
-      const bh  = Math.max(3, Math.abs(d.variance) / maxAbs * MAXH);
-      const cx  = x0 + i * (barW + gap) + barW / 2;
-      const x   = cx - barW / 2;
+      const bw  = Math.max(2, Math.abs(d.variance) / maxAbs * BAR_MAX_W);
+      const cy  = i * ROW_H + ROW_H / 2;
       const pos = d.variance >= 0;
-      const rx  = Math.min(barW / 2, 4);
+      const rx  = Math.min(BAR_H / 2, bw / 2, 4);
+      const barY = cy - BAR_H / 2;
 
       const g = document.createElementNS(NS, 'g');
       groups.push(g);
 
-      // Bar path: rounded only at tip, square at zero line
-      let barPath;
-      if (pos) {
-        const barY = MID - bh;
-        barPath = `M ${x.toFixed(1)},${MID} L ${x.toFixed(1)},${(barY + rx).toFixed(1)} Q ${x.toFixed(1)},${barY.toFixed(1)} ${(x + rx).toFixed(1)},${barY.toFixed(1)} L ${(x + barW - rx).toFixed(1)},${barY.toFixed(1)} Q ${(x + barW).toFixed(1)},${barY.toFixed(1)} ${(x + barW).toFixed(1)},${(barY + rx).toFixed(1)} L ${(x + barW).toFixed(1)},${MID} Z`;
-      } else {
-        const botY = MID + bh;
-        barPath = `M ${x.toFixed(1)},${MID} L ${(x + barW).toFixed(1)},${MID} L ${(x + barW).toFixed(1)},${(botY - rx).toFixed(1)} Q ${(x + barW).toFixed(1)},${botY.toFixed(1)} ${(x + barW - rx).toFixed(1)},${botY.toFixed(1)} L ${(x + rx).toFixed(1)},${botY.toFixed(1)} Q ${x.toFixed(1)},${botY.toFixed(1)} ${x.toFixed(1)},${(botY - rx).toFixed(1)} Z`;
-      }
+      const name = document.createElementNS(NS, 'text');
+      name.setAttribute('x', String(NAME_W - 3));
+      name.setAttribute('y', (cy + 3.5).toFixed(1));
+      name.setAttribute('text-anchor', 'end');
+      name.setAttribute('font-size', '8.5');
+      name.setAttribute('fill', 'rgba(226,226,210,0.65)');
+      name.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+      name.textContent = d.cat;
+      g.appendChild(name);
+
+      const barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${(ZERO_X + bw - rx).toFixed(1)},${barY.toFixed(1)} Q ${(ZERO_X + bw).toFixed(1)},${barY.toFixed(1)} ${(ZERO_X + bw).toFixed(1)},${(barY + rx).toFixed(1)} L ${(ZERO_X + bw).toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} Q ${(ZERO_X + bw).toFixed(1)},${(barY + BAR_H).toFixed(1)} ${(ZERO_X + bw - rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} Z`;
 
       const bar = document.createElementNS(NS, 'path');
       bar.setAttribute('d', barPath);
       bar.setAttribute('fill', d.color);
-      bar.setAttribute('opacity', pos ? '0.65' : '1');
+      bar.setAttribute('opacity', pos ? '0.55' : '1');
       g.appendChild(bar);
 
-      // Amount label (tip side)
       const amt = Math.round(Math.abs(d.variance));
       if (amt > 0) {
         const lbl = document.createElementNS(NS, 'text');
-        lbl.setAttribute('x', cx.toFixed(1));
-        lbl.setAttribute('y', pos ? (MID - bh - 3).toFixed(1) : (MID + bh + 9).toFixed(1));
-        lbl.setAttribute('text-anchor', 'middle');
+        lbl.setAttribute('x', (ZERO_X + bw + 3).toFixed(1));
+        lbl.setAttribute('y', (cy + 3.5).toFixed(1));
+        lbl.setAttribute('text-anchor', 'start');
         lbl.setAttribute('font-size', '7.5');
         lbl.setAttribute('fill', 'rgba(226,226,210,0.7)');
         lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
-        lbl.textContent = (pos ? '+' : '−') + amt;
+        lbl.textContent = (pos ? '+' : '\u2212') + amt;
         g.appendChild(lbl);
       }
 
-      // Category name label (opposite side, vertical)
-      const nameLbl = document.createElementNS(NS, 'text');
-      nameLbl.setAttribute('font-size', '7.5');
-      nameLbl.setAttribute('fill', 'rgba(226,226,210,0.55)');
-      nameLbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
-      nameLbl.setAttribute('text-anchor', 'start');
-      if (pos) {
-        // positive bar goes up → name below zero, rotated downward
-        nameLbl.setAttribute('transform', `translate(${cx.toFixed(1)},${(MID + 4).toFixed(1)}) rotate(90)`);
-      } else {
-        // negative bar goes down → name above zero, rotated upward
-        nameLbl.setAttribute('transform', `translate(${cx.toFixed(1)},${(MID - 4).toFixed(1)}) rotate(-90)`);
-      }
-      nameLbl.textContent = d.cat;
-      g.appendChild(nameLbl);
-
-      // Invisible hit area spanning full column
       const hit = document.createElementNS(NS, 'rect');
-      hit.setAttribute('x', (x - gap / 2).toFixed(1));
-      hit.setAttribute('y', '0');
-      hit.setAttribute('width', (barW + gap).toFixed(1));
-      hit.setAttribute('height', String(H));
+      hit.setAttribute('x', '0');
+      hit.setAttribute('y', String(i * ROW_H));
+      hit.setAttribute('width', String(W));
+      hit.setAttribute('height', String(ROW_H));
       hit.setAttribute('fill', 'transparent');
       hit.style.cursor = 'pointer';
-      const idx = i;
       hit.addEventListener('click', () => {
-        if (selBar === idx) {
+        if (selBar === i) {
           selBar = null;
           groups.forEach(gg => { gg.style.opacity = '1'; });
         } else {
-          selBar = idx;
-          groups.forEach((gg, j) => { gg.style.opacity = j === idx ? '1' : '0.12'; });
+          selBar = i;
+          groups.forEach((gg, j) => { gg.style.opacity = j === i ? '1' : '0.12'; });
         }
       });
       g.appendChild(hit);
@@ -952,13 +934,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       svg.appendChild(g);
     });
 
-    const wrap = document.createElement('div');
-    wrap.className = 'variance-chart-wrap';
-    wrap.appendChild(svg);
-    container.appendChild(wrap);
+    varCol.appendChild(svg);
   }
 
-  function renderCharts(container) {
+  function renderCharts() {
+    const donutArea = document.getElementById('donut-area');
+    if (!donutArea) return;
+    donutArea.innerHTML = '';
+
     const catTotals = {};
     entries.filter(e => !e.refund).forEach(e => {
       if (!e.cat) return;
@@ -967,15 +950,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const cats  = Object.keys(catTotals).filter(c => catTotals[c] > 0);
     const total = cats.reduce((s, c) => s + catTotals[c], 0);
 
-    const row = document.createElement('div');
-    row.className = 'charts-row';
-
     if (cats.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'chart-empty-lbl';
       empty.textContent = 'Aucune dépense';
-      row.appendChild(empty);
-      container.appendChild(row);
+      donutArea.appendChild(empty);
       return;
     }
 
@@ -988,7 +967,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
     }
 
-    // SVG
     const svg = mk('svg');
     svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
     svg.className = 'chart-donut-svg';
@@ -1032,7 +1010,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       hitG.appendChild(hit); hitEls.push(hit);
     });
 
-    // Texte centre
     const lblEl = mk('text');
     lblEl.setAttribute('x', String(CX)); lblEl.setAttribute('y', String(CY - 9));
     lblEl.setAttribute('text-anchor', 'middle'); lblEl.setAttribute('font-size', '11');
@@ -1051,52 +1028,26 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     svg.appendChild(vizG); svg.appendChild(hitG);
     svg.appendChild(lblEl); svg.appendChild(amtEl);
 
-    // Légende dans #reel-legend (nom | dot)
-    const legendContainer = document.getElementById('reel-legend');
-    const legendEls = [];
-    cats.forEach((cat, i) => {
-      const color = PIE_COLORS[i % PIE_COLORS.length];
-      const item = document.createElement('div');
-      item.className = 'reel-legend-item';
-      const name = document.createElement('span');
-      name.className = 'reel-legend-name';
-      name.textContent = cat;
-      const dot = document.createElement('span');
-      dot.className = 'reel-legend-dot';
-      dot.style.background = color;
-      item.appendChild(name);
-      item.appendChild(dot);
-      legendEls.push(item);
-      if (legendContainer) legendContainer.appendChild(item);
-    });
-
-    // Interaction tap
     let sel = null;
     function hilite(idx) {
       sel = idx;
       lblEl.textContent = cats[idx];
       amtEl.textContent = fmtR(catTotals[cats[idx]]);
-      vizEls.forEach((e, j)   => e.style.opacity = j === idx ? '1' : '0.12');
-      legendEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.25');
+      vizEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.12');
     }
     function resetSel() {
       sel = null;
       lblEl.textContent = 'Total';
       amtEl.textContent = fmtR(total);
-      vizEls.forEach(e   => e.style.opacity = '1');
-      legendEls.forEach(e => e.style.opacity = '1');
+      vizEls.forEach(e => e.style.opacity = '1');
     }
 
     hitEls.forEach((hit, i) => {
       hit.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
     });
-    legendEls.forEach((item, i) => {
-      item.addEventListener('click', e => { e.stopPropagation(); sel === i ? resetSel() : hilite(i); });
-    });
     svg.addEventListener('click', () => { if (sel !== null) resetSel(); });
 
-    row.appendChild(svg);
-    container.appendChild(row);
+    donutArea.appendChild(svg);
   }
 
   function renderRefundSection(container) {
