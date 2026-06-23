@@ -165,17 +165,30 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Layout deux-colonnes (onglet reel) ── */
 .reel-body-row { display:flex;flex-direction:row;align-items:flex-start; }
-.variance-col { flex:0 0 44%;overflow:hidden;padding:4px 0 4px 8px; }
+.variance-col { flex:0 0 44%;padding:4px 0 4px 8px; }
 .reel-right-col { flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 8px 4px;gap:6px; }
 #reel-badges { margin:0; }
 #donut-area { flex:0 0 auto; }
 .entry-form-area { flex:0 0 auto; }
+.form-refund-group { display:flex;flex-direction:row; }
 .entry-form {
   background:#243447;
-  border-radius:14px;
+  border-radius:14px 0 0 14px;
   padding:8px;
   display:flex;flex-direction:column;gap:6px;
+  flex:1;
 }
+.btn-refund-attached {
+  width:40px;background:#C51F5D;color:#E2E2D2;
+  border-radius:0 14px 14px 0;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;align-self:stretch;
+  -webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;
+}
+.btn-refund-attached:active { transform:scale(.95); }
+#btn-refund-toggle.active { background:#8B1540; }
+.entry-form.refund-active { background:#C51F5D; }
+.entry-form.refund-active input,.entry-form.refund-active select { background:rgba(0,0,0,0.22);box-shadow:none; }
 .entry-form-grid { display:grid;grid-template-columns:1fr auto;gap:6px; }
 .entry-btns { display:flex;flex-direction:column;gap:6px;padding:8px 0; }
 .entry-form input, .entry-form select {
@@ -311,8 +324,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .refund-item { display:flex;align-items:center;padding:10px 12px;background:rgba(26,37,53,.5);gap:11px; }
 .refund-item-desc { flex:1;font-size:13px;color:rgba(226,226,210,0.65); }
 .refund-item-amount { font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#C51F5D;white-space:nowrap; }
-#btn-refund-toggle.active { background:#8B1540; }
-.entry-form.refund-active input,.entry-form.refund-active select { box-shadow:inset 0 0 0 1.5px rgba(197,31,93,.45); }
 
 /* ── Tab pill ── */
 .tab-pill { display:flex;align-items:center;gap:4px;background:#243447;border-radius:40px;padding:4px;position:relative;overflow:hidden; }
@@ -475,18 +486,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div id="reel-badges" class="badge-frame"></div>
           <div class="entry-form-area">
             <div class="entry-form-grid">
-              <div class="entry-form">
-                <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-                <input type="text" id="e-desc" placeholder="Description">
-                <select id="e-cat"></select>
-              </div>
-              <div class="entry-btns">
-                <button id="btn-refund-toggle" class="btn-circle" onclick="toggleRefundMode()">
+              <div class="form-refund-group">
+                <div class="entry-form">
+                  <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+                  <input type="text" id="e-desc" placeholder="Description">
+                  <select id="e-cat"></select>
+                </div>
+                <button id="btn-refund-toggle" class="btn-refund-attached" onclick="toggleRefundMode()">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
                     <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
                   </svg>
                 </button>
+              </div>
+              <div class="entry-btns">
                 <button class="btn-circle" onclick="undoEntry()">
                   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 6 9 12 15 18"/>
@@ -852,16 +865,18 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     const maxAbs = Math.max(...items.map(d => Math.abs(d.variance)), 1);
     const NS = 'http://www.w3.org/2000/svg';
-    const W = 180, ROW_H = 30, BAR_H = 10;
-    const NAME_W = 60, ZERO_X = 62, NUM_SPACE = 30;
-    const BAR_MAX_W = W - ZERO_X - NUM_SPACE;
+    // BAR_H=28 in W=200 viewBox matches donut SW=22 in 200-wide viewBox (proportional to column widths)
+    const W = 200, BAR_H = 28, ROW_H = 32;
+    const ZERO_X = 100, BAR_MAX_W = 70;
     const n = items.length;
     const H = n * ROW_H;
 
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('overflow', 'visible');
     svg.className = 'variance-chart-svg';
 
+    // Zero line
     const zl = document.createElementNS(NS, 'line');
     zl.setAttribute('x1', String(ZERO_X)); zl.setAttribute('x2', String(ZERO_X));
     zl.setAttribute('y1', '0'); zl.setAttribute('y2', String(H));
@@ -876,43 +891,71 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const bw  = Math.max(2, Math.abs(d.variance) / maxAbs * BAR_MAX_W);
       const cy  = i * ROW_H + ROW_H / 2;
       const pos = d.variance >= 0;
-      const rx  = Math.min(BAR_H / 2, bw / 2, 4);
+      const rx  = BAR_H / 2; // full semicircle = matches donut round linecap
       const barY = cy - BAR_H / 2;
+      const amt  = Math.round(Math.abs(d.variance));
+      const numStr = (pos ? '+' : '−') + amt;
+      const numW = numStr.length * 4.5; // approx text width in viewBox units
 
       const g = document.createElementNS(NS, 'g');
       groups.push(g);
 
+      // Bar path: square at zero side, rounded semicircle at tip
+      let barPath;
+      if (pos) {
+        // Bar goes RIGHT from ZERO_X
+        const tipX = ZERO_X + bw;
+        barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${(tipX - rx).toFixed(1)},${barY.toFixed(1)} Q ${tipX.toFixed(1)},${barY.toFixed(1)} ${tipX.toFixed(1)},${(barY + rx).toFixed(1)} L ${tipX.toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} Q ${tipX.toFixed(1)},${(barY + BAR_H).toFixed(1)} ${(tipX - rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} Z`;
+      } else {
+        // Bar goes LEFT from ZERO_X
+        const tipX = ZERO_X - bw;
+        barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} L ${(tipX + rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} Q ${tipX.toFixed(1)},${(barY + BAR_H).toFixed(1)} ${tipX.toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} L ${tipX.toFixed(1)},${(barY + rx).toFixed(1)} Q ${tipX.toFixed(1)},${barY.toFixed(1)} ${(tipX + rx).toFixed(1)},${barY.toFixed(1)} Z`;
+      }
+
+      const bar = document.createElementNS(NS, 'path');
+      bar.setAttribute('d', barPath);
+      bar.setAttribute('fill', d.color);
+      bar.setAttribute('opacity', pos ? '0.6' : '1');
+      g.appendChild(bar);
+
+      // Number label at bar tip
+      if (amt > 0) {
+        const lbl = document.createElementNS(NS, 'text');
+        if (pos) {
+          lbl.setAttribute('x', (ZERO_X + bw + 3).toFixed(1));
+          lbl.setAttribute('text-anchor', 'start');
+        } else {
+          lbl.setAttribute('x', (ZERO_X - bw - 3).toFixed(1));
+          lbl.setAttribute('text-anchor', 'end');
+        }
+        lbl.setAttribute('y', (cy + 3.5).toFixed(1));
+        lbl.setAttribute('font-size', '7.5');
+        lbl.setAttribute('fill', 'rgba(226,226,210,0.75)');
+        lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+        lbl.textContent = numStr;
+        g.appendChild(lbl);
+      }
+
+      // Category name: aligned with zero line for positive, follows bar tip for negative
       const name = document.createElementNS(NS, 'text');
-      name.setAttribute('x', String(NAME_W - 3));
+      if (pos) {
+        // Right-aligned just left of zero line
+        name.setAttribute('x', (ZERO_X - 4).toFixed(1));
+        name.setAttribute('text-anchor', 'end');
+      } else {
+        // Right-aligned just left of number (follows bar)
+        const nameX = ZERO_X - bw - (amt > 0 ? numW + 5 : 4);
+        name.setAttribute('x', nameX.toFixed(1));
+        name.setAttribute('text-anchor', 'end');
+      }
       name.setAttribute('y', (cy + 3.5).toFixed(1));
-      name.setAttribute('text-anchor', 'end');
       name.setAttribute('font-size', '8.5');
       name.setAttribute('fill', 'rgba(226,226,210,0.65)');
       name.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
       name.textContent = d.cat;
       g.appendChild(name);
 
-      const barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${(ZERO_X + bw - rx).toFixed(1)},${barY.toFixed(1)} Q ${(ZERO_X + bw).toFixed(1)},${barY.toFixed(1)} ${(ZERO_X + bw).toFixed(1)},${(barY + rx).toFixed(1)} L ${(ZERO_X + bw).toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} Q ${(ZERO_X + bw).toFixed(1)},${(barY + BAR_H).toFixed(1)} ${(ZERO_X + bw - rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} Z`;
-
-      const bar = document.createElementNS(NS, 'path');
-      bar.setAttribute('d', barPath);
-      bar.setAttribute('fill', d.color);
-      bar.setAttribute('opacity', pos ? '0.55' : '1');
-      g.appendChild(bar);
-
-      const amt = Math.round(Math.abs(d.variance));
-      if (amt > 0) {
-        const lbl = document.createElementNS(NS, 'text');
-        lbl.setAttribute('x', (ZERO_X + bw + 3).toFixed(1));
-        lbl.setAttribute('y', (cy + 3.5).toFixed(1));
-        lbl.setAttribute('text-anchor', 'start');
-        lbl.setAttribute('font-size', '7.5');
-        lbl.setAttribute('fill', 'rgba(226,226,210,0.7)');
-        lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
-        lbl.textContent = (pos ? '+' : '\u2212') + amt;
-        g.appendChild(lbl);
-      }
-
+      // Hit area (full row)
       const hit = document.createElementNS(NS, 'rect');
       hit.setAttribute('x', '0');
       hit.setAttribute('y', String(i * ROW_H));
