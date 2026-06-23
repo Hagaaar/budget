@@ -288,11 +288,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-sec-add:active { background:#8B1540;color:#E2E2D2; }
 
 /* ── Graphique écarts budget ── */
-.variance-chart-wrap { padding:6px 8px 2px; }
+.variance-chart-wrap { padding:4px 8px 0; }
 .variance-chart-svg { width:100%;display:block; }
 
 /* ── Graphiques ── */
-.charts-row { padding:10px 8px 4px; }
+.charts-row { padding:0 8px 4px; }
 .chart-donut-svg { width:100%;aspect-ratio:1/1;display:block; }
 .chart-empty-lbl { font-size:10px;color:rgba(226,226,210,0.5);text-align:center;padding:16px 0; }
 /* Légende dans le header */
@@ -829,18 +829,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   const PIE_COLORS = ['#C51F5D','#E2E2D2','#D4537E','#4A6A85','#F07098','#A8A898','#8B2547','#5A85A5'];
 
   function renderVarianceChart(container) {
-    // Dépenses par catégorie
     const spent = {};
     entries.filter(e => !e.refund).forEach(e => {
       if (!e.cat) return;
       spent[e.cat] = (spent[e.cat] || 0) + e.montant;
     });
-    // Union des catégories (budget OU dépenses)
     const allCats = [...new Set([...Object.keys(spent), ...getCats()])]
       .filter(c => getVariableBudgetForCat(c) > 0 || (spent[c] || 0) > 0);
     if (allCats.length === 0) return;
 
-    // Couleurs alignées sur l'ordre du donut
     const donutCats = Object.keys(spent).filter(c => spent[c] > 0);
     const colorMap = {};
     donutCats.forEach((c, i) => { colorMap[c] = PIE_COLORS[i % PIE_COLORS.length]; });
@@ -853,7 +850,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     const maxAbs = Math.max(...items.map(d => Math.abs(d.variance)), 1);
     const NS = 'http://www.w3.org/2000/svg';
-    const W = 300, H = 82, MID = 44, MAXH = 36;
+    const NAME_SPACE = 38;
+    const W = 300, MAXH = 40;
+    const H = MAXH + NAME_SPACE + 4 + MAXH + NAME_SPACE;
+    const MID = MAXH + NAME_SPACE;
     const n = items.length;
     const barW = Math.max(6, Math.min(22, (W - 20) / n - 5));
     const gap  = Math.max(3, (W - 20 - n * barW) / Math.max(n - 1, 1));
@@ -863,7 +863,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.className = 'variance-chart-svg';
 
-    // Ligne zéro
     const zl = document.createElementNS(NS, 'line');
     zl.setAttribute('x1', '2'); zl.setAttribute('x2', String(W - 2));
     zl.setAttribute('y1', String(MID)); zl.setAttribute('y2', String(MID));
@@ -871,36 +870,86 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     zl.setAttribute('stroke-width', '0.8');
     svg.appendChild(zl);
 
+    let selBar = null;
+    const groups = [];
+
     items.forEach((d, i) => {
       const bh  = Math.max(3, Math.abs(d.variance) / maxAbs * MAXH);
-      const x   = x0 + i * (barW + gap);
+      const cx  = x0 + i * (barW + gap) + barW / 2;
+      const x   = cx - barW / 2;
       const pos = d.variance >= 0;
-      const y   = pos ? MID - bh : MID;
       const rx  = Math.min(barW / 2, 4);
 
-      const bar = document.createElementNS(NS, 'rect');
-      bar.setAttribute('x', x.toFixed(1));
-      bar.setAttribute('y', y.toFixed(1));
-      bar.setAttribute('width', barW.toFixed(1));
-      bar.setAttribute('height', bh.toFixed(1));
-      bar.setAttribute('rx', rx.toFixed(1));
+      const g = document.createElementNS(NS, 'g');
+      groups.push(g);
+
+      // Bar path: rounded only at tip, square at zero line
+      let barPath;
+      if (pos) {
+        const barY = MID - bh;
+        barPath = `M ${x.toFixed(1)},${MID} L ${x.toFixed(1)},${(barY + rx).toFixed(1)} Q ${x.toFixed(1)},${barY.toFixed(1)} ${(x + rx).toFixed(1)},${barY.toFixed(1)} L ${(x + barW - rx).toFixed(1)},${barY.toFixed(1)} Q ${(x + barW).toFixed(1)},${barY.toFixed(1)} ${(x + barW).toFixed(1)},${(barY + rx).toFixed(1)} L ${(x + barW).toFixed(1)},${MID} Z`;
+      } else {
+        const botY = MID + bh;
+        barPath = `M ${x.toFixed(1)},${MID} L ${(x + barW).toFixed(1)},${MID} L ${(x + barW).toFixed(1)},${(botY - rx).toFixed(1)} Q ${(x + barW).toFixed(1)},${botY.toFixed(1)} ${(x + barW - rx).toFixed(1)},${botY.toFixed(1)} L ${(x + rx).toFixed(1)},${botY.toFixed(1)} Q ${x.toFixed(1)},${botY.toFixed(1)} ${x.toFixed(1)},${(botY - rx).toFixed(1)} Z`;
+      }
+
+      const bar = document.createElementNS(NS, 'path');
+      bar.setAttribute('d', barPath);
       bar.setAttribute('fill', d.color);
       bar.setAttribute('opacity', pos ? '0.65' : '1');
-      svg.appendChild(bar);
+      g.appendChild(bar);
 
-      // Label montant
+      // Amount label (tip side)
       const amt = Math.round(Math.abs(d.variance));
       if (amt > 0) {
         const lbl = document.createElementNS(NS, 'text');
-        lbl.setAttribute('x', (x + barW / 2).toFixed(1));
+        lbl.setAttribute('x', cx.toFixed(1));
         lbl.setAttribute('y', pos ? (MID - bh - 3).toFixed(1) : (MID + bh + 9).toFixed(1));
         lbl.setAttribute('text-anchor', 'middle');
         lbl.setAttribute('font-size', '7.5');
-        lbl.setAttribute('fill', 'rgba(226,226,210,0.6)');
+        lbl.setAttribute('fill', 'rgba(226,226,210,0.7)');
         lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
         lbl.textContent = (pos ? '+' : '−') + amt;
-        svg.appendChild(lbl);
+        g.appendChild(lbl);
       }
+
+      // Category name label (opposite side, vertical)
+      const nameLbl = document.createElementNS(NS, 'text');
+      nameLbl.setAttribute('font-size', '7.5');
+      nameLbl.setAttribute('fill', 'rgba(226,226,210,0.55)');
+      nameLbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
+      nameLbl.setAttribute('text-anchor', 'start');
+      if (pos) {
+        // positive bar goes up → name below zero, rotated downward
+        nameLbl.setAttribute('transform', `translate(${cx.toFixed(1)},${(MID + 4).toFixed(1)}) rotate(90)`);
+      } else {
+        // negative bar goes down → name above zero, rotated upward
+        nameLbl.setAttribute('transform', `translate(${cx.toFixed(1)},${(MID - 4).toFixed(1)}) rotate(-90)`);
+      }
+      nameLbl.textContent = d.cat;
+      g.appendChild(nameLbl);
+
+      // Invisible hit area spanning full column
+      const hit = document.createElementNS(NS, 'rect');
+      hit.setAttribute('x', (x - gap / 2).toFixed(1));
+      hit.setAttribute('y', '0');
+      hit.setAttribute('width', (barW + gap).toFixed(1));
+      hit.setAttribute('height', String(H));
+      hit.setAttribute('fill', 'transparent');
+      hit.style.cursor = 'pointer';
+      const idx = i;
+      hit.addEventListener('click', () => {
+        if (selBar === idx) {
+          selBar = null;
+          groups.forEach(gg => { gg.style.opacity = '1'; });
+        } else {
+          selBar = idx;
+          groups.forEach((gg, j) => { gg.style.opacity = j === idx ? '1' : '0.12'; });
+        }
+      });
+      g.appendChild(hit);
+
+      svg.appendChild(g);
     });
 
     const wrap = document.createElement('div');
