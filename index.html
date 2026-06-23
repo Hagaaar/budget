@@ -841,23 +841,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (!varCol) return;
     varCol.innerHTML = '';
 
-    const spent = {};
-    entries.filter(e => !e.refund).forEach(e => {
-      if (!e.cat) return;
-      spent[e.cat] = (spent[e.cat] || 0) + e.montant;
-    });
-    const allCats = [...new Set([...Object.keys(spent), ...getCats()])]
-      .filter(c => getVariableBudgetForCat(c) > 0 || (spent[c] || 0) > 0);
-    if (allCats.length === 0) return;
+    // Use getCats() as source of truth for categories, and getSpentByCat() to match
+    // the exact same calculation as the category list below (case-insensitive, trimmed)
+    const cats = getCats();
+    if (cats.length === 0) return;
 
-    const donutCats = Object.keys(spent).filter(c => spent[c] > 0);
-    const colorMap = {};
-    donutCats.forEach((c, i) => { colorMap[c] = PIE_COLORS[i % PIE_COLORS.length]; });
-
-    const items = allCats.map((c, i) => ({
+    const items = cats.map((c, i) => ({
       cat: c,
-      variance: getVariableBudgetForCat(c) - (spent[c] || 0),
-      color: colorMap[c] || PIE_COLORS[i % PIE_COLORS.length]
+      variance: getVariableBudgetForCat(c) - getSpentByCat(c),
+      color: PIE_COLORS[i % PIE_COLORS.length]
     })).filter(d => Math.round(Math.abs(d.variance)) > 0);
 
     if (items.length === 0) return;
