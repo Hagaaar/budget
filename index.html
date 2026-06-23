@@ -888,7 +888,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const groups = [];
 
     items.forEach((d, i) => {
-      const bw  = Math.max(2, Math.abs(d.variance) / maxAbs * BAR_MAX_W);
+      const rawBw = Math.abs(d.variance) / maxAbs * BAR_MAX_W;
+      const bw  = rawBw < 0.5 ? 0 : Math.max(BAR_H / 2, rawBw);
       const cy  = i * ROW_H + ROW_H / 2;
       const pos = d.variance >= 0;
       const rx  = BAR_H / 2; // full semicircle = matches donut round linecap
@@ -902,7 +903,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
       // Bar path: square at zero side, rounded semicircle at tip
       let barPath;
-      if (pos) {
+      if (bw === 0) {
+        // no bar to draw
+      } else if (pos) {
         // Bar goes RIGHT from ZERO_X
         const tipX = ZERO_X + bw;
         barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${(tipX - rx).toFixed(1)},${barY.toFixed(1)} Q ${tipX.toFixed(1)},${barY.toFixed(1)} ${tipX.toFixed(1)},${(barY + rx).toFixed(1)} L ${tipX.toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} Q ${tipX.toFixed(1)},${(barY + BAR_H).toFixed(1)} ${(tipX - rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} Z`;
@@ -912,11 +915,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         barPath = `M ${ZERO_X},${barY.toFixed(1)} L ${ZERO_X},${(barY + BAR_H).toFixed(1)} L ${(tipX + rx).toFixed(1)},${(barY + BAR_H).toFixed(1)} Q ${tipX.toFixed(1)},${(barY + BAR_H).toFixed(1)} ${tipX.toFixed(1)},${(barY + BAR_H - rx).toFixed(1)} L ${tipX.toFixed(1)},${(barY + rx).toFixed(1)} Q ${tipX.toFixed(1)},${barY.toFixed(1)} ${(tipX + rx).toFixed(1)},${barY.toFixed(1)} Z`;
       }
 
-      const bar = document.createElementNS(NS, 'path');
-      bar.setAttribute('d', barPath);
-      bar.setAttribute('fill', d.color);
-      bar.setAttribute('opacity', pos ? '0.6' : '1');
-      g.appendChild(bar);
+      if (barPath) {
+        const bar = document.createElementNS(NS, 'path');
+        bar.setAttribute('d', barPath);
+        bar.setAttribute('fill', d.color);
+        bar.setAttribute('opacity', pos ? '0.6' : '1');
+        g.appendChild(bar);
+      }
 
       // Number label at bar tip
       if (amt > 0) {
