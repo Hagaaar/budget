@@ -29,8 +29,8 @@
 
 /* ── Base ── */
 *{box-sizing:border-box;margin:0;padding:0;border:none;}
-html{height:100%;overflow:hidden;}
-body{font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;background:#141D26;color:#E2E2D2;height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column;padding:0;}
+html{height:100%;}
+body{font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;background:#141D26;color:#E2E2D2;height:100%;height:100dvh;overflow:hidden;}
 input[type=number]{-moz-appearance:textfield;}
 input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
@@ -53,81 +53,97 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
 
 /* ── Top bar ── */
-.top-bar{flex-shrink:0;padding:6px 8px;position:relative;z-index:20;}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;}
+.tab-pill{display:flex;align-items:center;gap:4px;background:transparent;}
+.tab{padding:12px 20px;border-radius:24px;cursor:pointer;font-size:15px;font-weight:700;color:rgba(226,226,210,0.45);transition:all .2s ease;-webkit-tap-highlight-color:transparent;}
+.tab.active{background:#C51F5D;color:#141D26;box-shadow:0 4px 12px rgba(197,31,93,0.3);}
+.top-actions{display:flex;gap:8px;align-items:center;}
+.action-circle{width:38px;height:38px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;}
+.action-circle:active{transform:scale(.88);}
+
+/* ── Sync pip ── */
+.sync-pip{width:18px;height:18px;border-radius:50%;background:#2A3D52;transition:background .4s;}
+.sync-pip.syncing{background:#C51F5D;animation:pulse .8s infinite;}
+.sync-pip.ok{background:#C51F5D;}
+.sync-pip.err{background:#8B1540;}
+
+/* ── Overlay sync ── */
+#sync-overlay{position:absolute;top:0;right:0;bottom:0;width:0;border-radius:24px;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;overflow:hidden;transition:width .45s cubic-bezier(0.4,0,0.2,1),background .3s;background:#2A3D52;}
+#sync-overlay.show{width:100%;pointer-events:auto;}
+#sync-overlay.ok{background:#C51F5D;}
+#sync-overlay.syncing{background:#C51F5D;}
+#sync-overlay.err{background:#8B1540;}
+#sync-overlay-text{font-size:13px;font-weight:700;color:#141D26;white-space:nowrap;letter-spacing:.02em;}
+#sync-overlay.err #sync-overlay-text{color:#E2E2D2;}
 
 /* ── Panel area ── */
-.panel-area{flex:1;overflow:hidden;position:relative;}
+.panel-area{position:fixed;inset:0;overflow:hidden;z-index:10;background:#141D26;}
 .panel{display:none;}
-.panel.active{display:flex;flex-direction:column;position:absolute;inset:0;overflow:hidden;}
-
-/* ── Zone fixée en haut ── */
-.panel-top-fixed{flex-shrink:0;background:#141D26;position:relative;z-index:5;border-radius:0 0 16px 16px;}
+.panel.active{display:block;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:100px;padding-bottom:120px;}
 
 /* ── Layout reel : rangée principale ── */
-.reel-row{display:flex;gap:8px;padding:6px 8px 10px;}
+.reel-body-row{display:flex;flex-direction:row;align-items:stretch;gap:12px;padding:12px 12px 0;width:100%;}
 
 /* ── Carte variance (colonne gauche) ── */
-.variance-col{flex:0 0 42%;background:#243447;border-radius:14px;padding:10px 6px;position:relative;min-height:160px;display:flex;align-items:center;overflow:hidden;}
-.variance-chart-wrap{width:100%;}
+.variance-col{flex:0 0 42%;display:flex;flex-direction:column;position:relative;background:#243447;border-radius:14px;padding:16px 0;overflow:hidden;}
+.variance-col::before{content:'';position:absolute;top:0;bottom:60px;left:50%;width:1px;background:rgba(226,226,210,0.15);z-index:0;}
+.variance-chart-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
+.variance-footer{display:flex;margin-top:12px;position:relative;z-index:1;}
+.variance-footer-left{width:50%;text-align:right;padding-right:12px;line-height:1.2;font-size:13px;font-weight:700;color:#E2E2D2;}
+.variance-footer-right{width:50%;padding-left:12px;display:flex;align-items:flex-end;line-height:1.1;font-size:10px;color:rgba(226,226,210,0.6);padding-bottom:1px;}
 
 /* ── Colonne droite reel ── */
 .reel-right-col{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
 
-/* ── Badges reel ── */
-#reel-badges{background:#243447;border-radius:14px;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;}
-.badge-item{padding:3px 6px;display:flex;flex-direction:column;gap:2px;}
-.badge-item:nth-child(odd){border-right:1px solid rgba(226,226,210,.07);padding-right:10px;}
-.badge-item:nth-child(even){padding-left:10px;}
-.badge-lbl{font-size:8px;font-weight:600;color:rgba(226,226,210,0.5);text-transform:uppercase;letter-spacing:.09em;line-height:1;white-space:nowrap;}
-.badge-val{font-size:18px;font-weight:800;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1;white-space:nowrap;}
+/* ── Badge frame ── */
+.badge-frame{width:100%;background:#243447;border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;}
+.badge-item{display:flex;flex-direction:column;gap:4px;flex:1;}
+.badge-item+.badge-item{padding-left:16px;border-left:1px solid rgba(226,226,210,0.08);}
+.badge-lbl{font-size:8px;font-weight:700;color:rgba(226,226,210,0.5);text-transform:uppercase;letter-spacing:.08em;}
+.badge-val-wrap{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+.badge-val{font-size:22px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;}
 .badge-val.green{color:#C51F5D;}
 .badge-val.red{color:#8B1540;}
-.badge-val.white{color:#E2E2D2;}
+.badge-sub{font-size:12px;font-weight:700;color:#8B1540;}
 
 /* ── Input salaire (onglet budget) ── */
-.badge-input{background:none;color:#E2E2D2;font-size:18px;font-weight:700;font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1;outline:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:100%;}
+.badge-input{background:none;color:#E2E2D2;font-size:22px;font-weight:700;font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;outline:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:100%;}
 
-/* ── Cadre badge budget (onglet budget) ── */
-.budget-badge-frame{margin:6px 8px;background:#243447;border-radius:14px;padding:8px 4px;display:grid;grid-template-columns:1fr 1fr;}
-
-/* ── Form combo box ── */
-#form-combo-box{background:#243447;border-radius:14px;display:flex;overflow:hidden;transition:background .2s;}
-#form-combo-box.refund-active{background:#C51F5D;}
-#form-combo-box.refund-active .form-inputs input,
-#form-combo-box.refund-active .form-inputs select{background:rgba(0,0,0,0.18);border-color:transparent;color:#E2E2D2;}
-.form-inputs{flex:1;display:flex;flex-direction:column;gap:5px;padding:8px;min-width:0;}
-.form-inputs input,.form-inputs select{padding:8px 10px;background:#141D26;border:1px solid rgba(226,226,210,0.08);color:#E2E2D2;font-size:12px;font-weight:500;font-family:'Inter',-apple-system,Arial,sans-serif;outline:none;width:100%;border-radius:8px;-webkit-appearance:none;appearance:none;transition:box-shadow .15s;}
-.form-inputs input:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
-.form-inputs input::placeholder{color:rgba(226,226,210,0.3);}
-.form-inputs input[type=number]{appearance:textfield;}
-.form-inputs select{background-color:#141D26;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:8px 5px;padding-right:24px;cursor:pointer;}
-.form-inputs select:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
-
-/* ── Boutons action (colonne droite du form) ── */
-.entry-btns-col{display:flex;flex-direction:column;flex-shrink:0;width:46px;}
-.btn-action{flex:1;width:46px;min-height:36px;background:#C51F5D;color:#141D26;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s;}
-.btn-action+.btn-action{border-top:1px solid rgba(20,26,34,.3);}
-.btn-action:active{background:#8B1540;}
-.btn-action.active{background:#8B1540;}
-.btn-action-add{flex:2;}
+/* ── Formulaire saisie ── */
+.entry-form-area{width:100%;flex:0 0 auto;}
+.entry-form-grid{display:flex;width:100%;gap:12px;align-items:stretch;}
+.form-combo-box{display:flex;flex:0 0 68%;min-width:0;background:#243447;border-radius:14px;transition:background .2s;overflow:hidden;}
+.form-combo-box.refund-active{background:#8B1540;}
+.entry-inputs-card{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;padding:12px;}
+.entry-inputs-card input,.entry-inputs-card select{width:100%;height:40px;background:#141D26;color:#E2E2D2;font-size:14px;font-family:'Inter',sans-serif;border-radius:8px;padding:0 12px;outline:none;transition:background .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
+.entry-inputs-card input:focus,.entry-inputs-card select:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
+.entry-inputs-card input::placeholder{color:rgba(226,226,210,0.3);}
+.entry-inputs-card input[type=number]{appearance:textfield;}
+.entry-inputs-card select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:10px 6px;padding-right:32px;}
+.btn-refund-attached{width:42px;background:#C51F5D;color:#E2E2D2;border-radius:0 14px 14px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;-webkit-tap-highlight-color:transparent;}
+.btn-refund-attached:active,.btn-refund-attached.active{background:#8B1540;}
+.entry-btns-col{display:flex;flex-direction:column;gap:12px;flex:1;margin-right:-12px;}
+.btn-action{background:#C51F5D;color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,background .15s;-webkit-tap-highlight-color:transparent;}
+.btn-action:active{transform:scale(.92);background:#8B1540;}
+.btn-undo{width:100%;height:62px;border-radius:31px 0 0 31px;flex-shrink:0;}
+.btn-add{width:100%;flex:1;border-radius:31px 0 0 31px;}
 
 /* ── Donut ── */
-#donut-area{background:#243447;border-radius:14px;padding:10px;flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;}
-.chart-donut-svg{width:100%;aspect-ratio:1/1;display:block;}
+#donut-area{width:100%;background:#243447;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;flex:1;min-height:180px;}
+.chart-donut-svg{width:100%;max-width:180px;aspect-ratio:1/1;display:block;}
 .chart-empty-lbl{font-size:10px;color:rgba(226,226,210,0.5);text-align:center;padding:16px 0;}
 
 /* ── Graphique variance ── */
 .variance-chart-svg{width:100%;display:block;}
 
-/* ── Listes défilantes ── */
-#cat-list{flex:1;overflow-y:auto;padding:22px 8px calc(80px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;-webkit-user-select:none;user-select:none;margin-top:-16px;position:relative;z-index:1;}
-#budget-scroll{flex:1;overflow-y:auto;padding:6px 8px calc(80px + env(safe-area-inset-bottom,0px));-webkit-overflow-scrolling:touch;-webkit-user-select:none;user-select:none;}
+/* ── Liste catégories (panel scroll) ── */
+#cat-list{padding:12px 12px 0;position:relative;z-index:1;-webkit-user-select:none;user-select:none;}
 
 /* ── Fondu bas ── */
-.panel-fade-bottom{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(to bottom,transparent,#141D26);z-index:9;pointer-events:none;}
+.panel-fade-bottom{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,#141D26);z-index:9;pointer-events:none;}
 
 /* ── Category groups ── */
-.cat-group{margin-bottom:8px;border-radius:8px;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.cat-group{background:#243447;border-radius:12px;margin-bottom:8px;overflow:hidden;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 .cat-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#1C2735;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .cat-header-name{font-size:11px;font-weight:800;color:#E2E2D2;text-transform:uppercase;letter-spacing:.5px;}
 .cat-header-right{display:flex;gap:15px;align-items:center;}
@@ -135,9 +151,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .cat-reste{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;width:45px;text-align:left;}
 .cat-reste.green{color:#C51F5D;}
 .cat-reste.red{color:#8B1540;}
-.cat-chevron{display:inline-flex;align-items:center;transition:transform .25s;}
-.cat-group.collapsed .cat-chevron{transform:rotate(0deg);}
-.cat-chevron{transform:rotate(90deg);}
+.cat-chevron{font-size:12px;color:rgba(226,226,210,0.5);transition:transform .25s;margin-left:4px;display:inline-block;}
+.cat-group.collapsed .cat-chevron{transform:rotate(-90deg);}
 .cat-body{overflow:hidden;max-height:800px;transition:max-height .3s ease;}
 .cat-group.collapsed .cat-body{max-height:0;}
 .entry-row-item{display:flex;align-items:center;padding:10px 12px;background:rgba(36,52,71,0.1);}
@@ -187,19 +202,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-section.collapsed .budget-section-chevron{transform:rotate(-90deg);}
 .budget-section-body{overflow:hidden;max-height:700px;transition:max-height .3s ease;}
 .budget-section.collapsed .budget-section-body{max-height:0;}
-.budget-row{display:flex;align-items:center;padding:8px 10px 8px 12px;background:rgba(36,52,71,.4);gap:6px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.budget-row{display:flex;align-items:center;padding:10px 16px;background:rgba(20,29,38,0.4);gap:8px;border-top:1px solid rgba(226,226,210,0.05);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
 .budget-row.dragging{opacity:.5;transform:scale(1.02);z-index:10;position:relative;}
 .budget-row-label-input{flex:1;background:none;color:rgba(226,226,210,0.5);font-size:13px;font-family:'Inter',-apple-system,Arial,sans-serif;outline:none;padding:0;min-width:0;transition:color .15s;-webkit-user-select:text;user-select:text;}
 .budget-row-label-input:focus{color:#E2E2D2;}
-.budget-input-wrap{display:flex;align-items:center;gap:3px;flex:0 0 90px;}
-.budget-btn-step{flex:1;height:18px;border-radius:5px;background:#243447;color:#C51F5D;font-size:14px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .1s,color .1s;line-height:1;}
+.budget-input-wrap{display:flex;align-items:center;gap:4px;flex:0 0 100px;background:#141D26;border-radius:8px;padding:2px;}
+.budget-btn-step{flex:1;height:24px;border-radius:6px;background:transparent;color:#C51F5D;font-size:16px;font-weight:400;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;}
 .budget-btn-step:active{background:#C51F5D;color:#141D26;}
-.budget-input{flex:0 0 38px;width:38px;text-align:center;padding:2px 1px;border-radius:5px;background:#141D26;color:#E2E2D2;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;font-family:'Inter',-apple-system,Arial,sans-serif;appearance:textfield;outline:none;-webkit-user-select:text;user-select:text;}
+.budget-input{flex:0 0 38px;width:38px;text-align:center;padding:2px 1px;border-radius:5px;background:transparent;color:#E2E2D2;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;font-family:'Inter',-apple-system,Arial,sans-serif;appearance:textfield;outline:none;-webkit-user-select:text;user-select:text;}
 .budget-input:focus{background:#243447;}
 .btn-row-del{background:#243447;color:#8B1540;font-size:12px;font-weight:700;cursor:pointer;height:26px;width:26px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
 .btn-row-del:active{background:#8B1540;color:#E2E2D2;}
-.btn-sec-add{width:100%;height:40px;padding:0;background:#C51F5D;border-radius:0 0 12px 12px;color:#141D26;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;}
-.btn-sec-add:active{background:#8B1540;color:#E2E2D2;}
+.btn-sec-add{width:100%;height:44px;background:transparent;color:#C51F5D;font-size:14px;font-weight:700;cursor:pointer;border-top:1px solid rgba(226,226,210,0.05);display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s;}
+.btn-sec-add:active{background:rgba(197,31,93,0.1);}
 
 /* ── Remboursements ── */
 .refund-section{margin-top:6px;border-radius:12px;overflow:hidden;}
@@ -214,33 +229,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .refund-item{display:flex;align-items:center;padding:10px 12px;background:rgba(28,39,53,.5);gap:11px;}
 .refund-item-desc{flex:1;font-size:13px;color:rgba(226,226,210,0.65);}
 .refund-item-amount{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:#C51F5D;white-space:nowrap;}
-
-/* ── Tab pill ── */
-.tab-pill{display:flex;align-items:center;gap:4px;background:#243447;border-radius:40px;padding:4px;position:relative;overflow:hidden;}
-.tabs-container{flex:1;display:flex;min-width:0;}
-.tab{flex:1;padding:8px 6px;border-radius:36px;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:rgba(226,226,210,0.5);text-align:center;-webkit-tap-highlight-color:transparent;transition:background .2s,color .2s;}
-.tab.active{background:#C51F5D;color:#141D26;font-weight:700;}
-
-/* ── Boutons top bar ── */
-.sync-circle{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s;}
-.sync-circle:active{transform:scale(.88);}
-.sync-pip{width:18px;height:18px;border-radius:50%;background:#2A3D52;transition:background .4s;}
-.sync-pip.syncing{background:#C51F5D;animation:pulse .8s infinite;}
-.sync-pip.ok{background:#C51F5D;}
-.sync-pip.err{background:#8B1540;}
-.lock-btn{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s;}
-.lock-btn:active{transform:scale(.88);}
-.export-btn{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;margin:0 1px;transition:transform .1s;}
-.export-btn:active{transform:scale(.88);}
-
-/* ── Overlay sync ── */
-#sync-overlay{position:absolute;top:0;right:0;bottom:0;width:0;border-radius:40px;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;overflow:hidden;transition:width .45s cubic-bezier(0.4,0,0.2,1),background .3s;background:#2A3D52;}
-#sync-overlay.show{width:100%;pointer-events:auto;}
-#sync-overlay.ok{background:#C51F5D;}
-#sync-overlay.syncing{background:#C51F5D;}
-#sync-overlay.err{background:#8B1540;}
-#sync-overlay-text{font-size:13px;font-weight:700;color:#141D26;white-space:nowrap;letter-spacing:.02em;}
-#sync-overlay.err #sync-overlay-text{color:#E2E2D2;}
 
 /* ── Toast statut sync ── */
 #sync-status-toast{position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(16px);border-radius:20px;padding:7px 18px;font-size:11px;letter-spacing:.02em;z-index:400;transition:transform .35s ease,opacity .35s ease;opacity:0;pointer-events:none;white-space:nowrap;backdrop-filter:blur(10px);cursor:default;background:rgba(36,52,71,.85);border:1px solid rgba(255,255,255,.08);color:rgba(226,226,210,0.5);}
@@ -330,29 +318,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   </div>
 </div>
 
-<!-- Navigation -->
+<!-- Top bar -->
 <div class="top-bar">
   <div class="tab-pill">
-    <div class="tabs-container">
-      <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
-      <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
-    </div>
-    <div class="sync-circle" onclick="showSyncMsg()">
+    <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
+    <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
+  </div>
+  <div class="top-actions">
+    <div class="action-circle" onclick="showSyncMsg()">
       <span class="sync-pip" id="sync-dot"></span>
     </div>
-    <div class="export-btn" onclick="exportJSON()" title="Exporter les données">
+    <div class="action-circle" onclick="exportJSON()">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(226,226,210,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     </div>
-    <div class="lock-btn" onclick="lockApp()">
+    <div class="action-circle" onclick="lockApp()">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(226,226,210,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
       </svg>
     </div>
-    <div id="sync-overlay" onclick="hideSyncOverlay()">
-      <span id="sync-overlay-text"></span>
-    </div>
+  </div>
+  <div id="sync-overlay" onclick="hideSyncOverlay()">
+    <span id="sync-overlay-text"></span>
   </div>
 </div>
 
@@ -360,71 +348,76 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   <!-- ── DÉPENSES RÉEL ── -->
   <div id="reel" class="panel active">
-    <div class="panel-top-fixed">
-      <div class="reel-row">
-        <!-- Colonne gauche : graphique variance horizontal -->
-        <div class="variance-col">
-          <div class="variance-chart-wrap" id="variance-col-chart"></div>
+    <div class="reel-body-row">
+      <!-- Colonne gauche : graphique variance -->
+      <div class="variance-col">
+        <div class="variance-chart-wrap" id="variance-col-chart"></div>
+        <div class="variance-footer">
+          <div class="variance-footer-left">Dépenses<br>variables</div>
+          <div class="variance-footer-right">montant<br>restant</div>
         </div>
-        <!-- Colonne droite : badges + formulaire + donut -->
-        <div class="reel-right-col">
-          <div id="reel-badges"></div>
-          <div id="form-combo-box" class="form-combo-box">
-            <div class="form-inputs">
-              <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
-              <input type="text" id="e-desc" placeholder="Description">
-              <select id="e-cat"></select>
-            </div>
-            <div class="entry-btns-col">
-              <button class="btn-action" onclick="undoEntry()">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="15 6 9 12 15 18"/>
-                </svg>
-              </button>
-              <button id="btn-refund-toggle" class="btn-action" onclick="toggleRefundMode()">
+      </div>
+      <!-- Colonne droite : badges + formulaire + donut -->
+      <div class="reel-right-col">
+        <div id="reel-badges" class="badge-frame"></div>
+        <div class="entry-form-area">
+          <div class="entry-form-grid">
+            <div class="form-combo-box" id="form-combo-box">
+              <div class="entry-inputs-card">
+                <input type="number" id="e-montant" placeholder="Montant €" step="0.01">
+                <input type="text" id="e-desc" placeholder="Description">
+                <select id="e-cat"></select>
+              </div>
+              <button id="btn-refund-toggle" class="btn-refund-attached" onclick="toggleRefundMode()">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
                   <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
                 </svg>
               </button>
-              <button class="btn-action btn-action-add" onclick="addEntry()">
+            </div>
+            <div class="entry-btns-col">
+              <button class="btn-action btn-undo" onclick="undoEntry()">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="15 6 9 12 15 18"/>
+                </svg>
+              </button>
+              <button class="btn-action btn-add" onclick="addEntry()">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
                   <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
               </button>
             </div>
           </div>
-          <div id="donut-area"></div>
         </div>
+        <div id="donut-area"></div>
       </div>
     </div>
     <div id="cat-list"></div>
-    <div class="panel-fade-bottom"></div>
   </div>
 
   <!-- ── BUDGET PROJETÉ ── -->
   <div id="budget" class="panel">
-    <div class="panel-top-fixed">
-      <div class="budget-badge-frame">
-        <div class="badge-item">
+    <div style="padding:16px 16px 0;">
+      <div class="badge-frame" style="flex-wrap:wrap;gap:16px;">
+        <div class="badge-item" style="border-left:none;padding-left:0;">
           <span class="badge-lbl">Salaire net</span>
           <input class="badge-input" id="salaire" type="number" value="2779" oninput="recalc()">
         </div>
-        <div class="badge-item">
+        <div class="badge-item" style="padding-left:0;border-left:none;">
           <span class="badge-lbl">Reste projeté</span>
-          <span class="badge-val green" id="b-reste">313 €</span>
+          <span class="badge-val" id="b-reste">313 €</span>
         </div>
-        <div class="badge-item">
+        <div class="badge-item" style="padding-left:0;border-left:none;">
           <span class="badge-lbl">Total fixes</span>
-          <span class="badge-val white" id="b-fixes">1 806 €</span>
+          <span class="badge-val" id="b-fixes">1 806 €</span>
         </div>
-        <div class="badge-item">
+        <div class="badge-item" style="padding-left:0;border-left:none;">
           <span class="badge-lbl">Budget variable</span>
-          <span class="badge-val green" id="b-variable">660 €</span>
+          <span class="badge-val" id="b-variable">660 €</span>
         </div>
       </div>
     </div>
-    <div id="budget-scroll">
+    <div id="budget-scroll" style="padding:12px 16px 0;">
       <div class="budget-section" id="bsec-variable">
         <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
           Dépenses variables budgétées
@@ -466,9 +459,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         </div>
       </div>
     </div>
-    <div class="panel-fade-bottom"></div>
   </div>
 
+  <div class="panel-fade-bottom"></div>
 </div>
 
 <script>
@@ -578,31 +571,31 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const frame = document.getElementById('reel-badges');
     if (!frame || !vals) return;
     const { reelTotal, resteReel, refundTotal } = vals;
-    const rrClr = resteReel >= 0 ? 'green' : 'red';
-    const refundInline = refundTotal > 0
-      ? ` <span style="font-size:10px;font-weight:600;color:#C51F5D">(${fmtR(refundTotal)})</span>` : '';
+    const rrClr = resteReel >= 0 ? '' : 'red';
+    const refundSub = refundTotal > 0
+      ? `<span class="badge-sub">+ ${fmtR(refundTotal)}</span>` : '';
     frame.innerHTML = `
       <div class="badge-item">
         <span class="badge-lbl">Dépense variable</span>
-        <div style="display:flex;align-items:baseline;gap:3px;flex-wrap:wrap">
-          <span class="badge-val white" id="r-reel">${fmtR(reelTotal)}</span>${refundInline}
+        <div class="badge-val-wrap">
+          <span class="badge-val">${fmtR(reelTotal)}</span>${refundSub}
         </div>
       </div>
       <div class="badge-item">
         <span class="badge-lbl">Reste variable</span>
-        <span class="badge-val ${rrClr}" id="r-reste-reel">${fmtR(resteReel)}</span>
+        <span class="badge-val ${rrClr}">${fmtR(resteReel)}</span>
       </div>`;
   }
 
   function recalc() {
     const fixes         = getFixesTotal();
-    const fixesChecked  = getFixesCheckedTotal();
     const variable      = getVariableTotal();
     const salaire       = gv('salaire');
     const reste         = salaire - fixes - variable;
     const reelTotal     = getReelTotal();
     const refundTotal   = getRefundTotal();
     const resteReel     = salaire - fixes - reelTotal + refundTotal;
+    const fixesChecked  = getFixesCheckedTotal();
     const globalReel    = fixesChecked + reelTotal - refundTotal;
     const globalReste   = salaire - fixesChecked - reelTotal + refundTotal;
 
@@ -654,7 +647,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <div class="cat-header-right">
             <span class="cat-budget">budget ${fmtR(budget)}</span>
             <span class="cat-reste ${clrReste}">${reste >= 0 ? '+' : ''}${fmtR(reste)}</span>
-            <span class="cat-chevron">›</span>
+            <span class="cat-chevron">▶</span>
           </div>
         </div>`;
 
@@ -1260,14 +1253,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       container.addEventListener('touchend', endDragB);
       container.addEventListener('touchcancel', endDragB);
     });
-  }
-
-  function removeGroup(cat, desc) {
-    entries = entries.filter(e => !(
-      e.cat?.trim().toLowerCase() === cat.trim().toLowerCase() &&
-      (e.desc || '—').trim() === desc
-    ));
-    recalc();
   }
 
   function addEntry() {
