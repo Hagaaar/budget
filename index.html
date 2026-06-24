@@ -91,11 +91,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-badge-frame{margin:6px 8px;background:#243447;border-radius:14px;padding:8px 4px;display:grid;grid-template-columns:1fr 1fr;}
 
 /* ── Form combo box ── */
-#form-combo-box{background:#243447;border-radius:14px;padding:8px;display:flex;gap:7px;transition:background .2s;}
+#form-combo-box{background:#243447;border-radius:14px;display:flex;overflow:hidden;transition:background .2s;}
 #form-combo-box.refund-active{background:#C51F5D;}
 #form-combo-box.refund-active .form-inputs input,
 #form-combo-box.refund-active .form-inputs select{background:rgba(0,0,0,0.18);border-color:transparent;color:#E2E2D2;}
-.form-inputs{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.form-inputs{flex:1;display:flex;flex-direction:column;gap:5px;padding:8px;min-width:0;}
 .form-inputs input,.form-inputs select{padding:8px 10px;background:#141D26;border:1px solid rgba(226,226,210,0.08);color:#E2E2D2;font-size:12px;font-weight:500;font-family:'Inter',-apple-system,Arial,sans-serif;outline:none;width:100%;border-radius:8px;-webkit-appearance:none;appearance:none;transition:box-shadow .15s;}
 .form-inputs input:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
 .form-inputs input::placeholder{color:rgba(226,226,210,0.3);}
@@ -104,11 +104,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .form-inputs select:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
 
 /* ── Boutons action (colonne droite du form) ── */
-.entry-btns-col{display:flex;flex-direction:column;gap:5px;flex-shrink:0;width:36px;}
-.btn-action{width:36px;height:36px;border-radius:50%;background:#C51F5D;color:#141D26;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;flex-shrink:0;}
-.btn-action:active{background:#8B1540;transform:scale(.92);}
+.entry-btns-col{display:flex;flex-direction:column;flex-shrink:0;width:46px;}
+.btn-action{flex:1;width:46px;min-height:36px;background:#C51F5D;color:#141D26;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s;}
+.btn-action+.btn-action{border-top:1px solid rgba(20,26,34,.3);}
+.btn-action:active{background:#8B1540;}
 .btn-action.active{background:#8B1540;}
-.btn-action-add{border-radius:18px;flex:1;min-height:36px;height:auto;}
+.btn-action-add{flex:2;}
 
 /* ── Donut ── */
 #donut-area{background:#243447;border-radius:14px;padding:10px;flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;}
