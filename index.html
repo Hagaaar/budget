@@ -485,8 +485,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function chartHilite(catName) {
     chartState.selCat = catName;
+    const n = normCat(catName);
     Object.entries(chartState.varGroups).forEach(([c, g]) => {
-      g.setAttribute('opacity', c === catName ? '1' : '0.12');
+      g.setAttribute('opacity', normCat(c) === n ? '1' : '0.12');
     });
     if (chartState.hiliteDonut) chartState.hiliteDonut(catName);
   }
@@ -496,8 +497,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     Object.values(chartState.varGroups).forEach(g => { g.setAttribute('opacity', '1'); });
     if (chartState.resetDonut) chartState.resetDonut();
   }
+  function normCat(s) { return (s || '').trim().toLowerCase(); }
+
   function getCatColor(cat) {
-    const idx = getCats().indexOf(cat);
+    const idx = getCats().findIndex(c => normCat(c) === normCat(cat));
     return PIE_COLORS[(idx >= 0 ? idx : 0) % PIE_COLORS.length];
   }
 
@@ -726,11 +729,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const cats = getCats();
     if (cats.length === 0) return;
 
-    const items = cats.map(c => ({
+    const allItems = cats.map(c => ({
       cat: c,
       variance: getVariableBudgetForCat(c) - getSpentByCat(c),
       color: getCatColor(c)
-    })).filter(d => Math.round(Math.abs(d.variance)) > 0);
+    }));
+    const items = allItems.filter(d => Math.round(Math.abs(d.variance)) > 0);
 
     if (items.length === 0) return;
     const maxAbs = Math.max(...items.map(d => Math.abs(d.variance)), 1);
@@ -830,6 +834,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       g.appendChild(hit);
 
       svg.appendChild(g);
+    });
+
+    // Register zero-variance cats as stub groups so cross-chart linking works
+    allItems.forEach(d => {
+      if (!chartState.varGroups[d.cat]) {
+        const stub = document.createElementNS(NS, 'g');
+        chartState.varGroups[d.cat] = stub;
+      }
     });
 
     varCol.appendChild(svg);
@@ -932,9 +944,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     cats.forEach((cat, i) => { chartState.donutEls[cat] = vizEls[i]; });
 
     chartState.hiliteDonut = (catName) => {
-      const idx = cats.indexOf(catName);
-      lblEl.textContent = catName;
-      amtEl.textContent = fmtR(catTotals[catName] || 0);
+      const n = normCat(catName);
+      const idx = cats.findIndex(c => normCat(c) === n);
+      const displayName = idx >= 0 ? cats[idx] : catName;
+      lblEl.textContent = displayName;
+      amtEl.textContent = fmtR(idx >= 0 ? (catTotals[cats[idx]] || 0) : (catTotals[catName] || 0));
       vizEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.12');
     };
     chartState.resetDonut = () => {
