@@ -496,6 +496,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     Object.values(chartState.varGroups).forEach(g => { g.setAttribute('opacity', '1'); });
     if (chartState.resetDonut) chartState.resetDonut();
   }
+  function getCatColor(cat) {
+    const idx = getCats().indexOf(cat);
+    return PIE_COLORS[(idx >= 0 ? idx : 0) % PIE_COLORS.length];
+  }
+
   let longPressTimer = null, dragEl = null;
 
   function getCats() { return budgetSections.variable.map(r => r.label); }
@@ -721,10 +726,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const cats = getCats();
     if (cats.length === 0) return;
 
-    const items = cats.map((c, i) => ({
+    const items = cats.map(c => ({
       cat: c,
       variance: getVariableBudgetForCat(c) - getSpentByCat(c),
-      color: PIE_COLORS[i % PIE_COLORS.length]
+      color: getCatColor(c)
     })).filter(d => Math.round(Math.abs(d.variance)) > 0);
 
     if (items.length === 0) return;
@@ -869,7 +874,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     let cum = 0;
 
     cats.forEach((cat, i) => {
-      const color  = PIE_COLORS[i % PIE_COLORS.length];
+      const color  = getCatColor(cat);
       const full   = (catTotals[cat] / total) * 360;
       const startA = cum + GAP / 2;
       const drawD  = full - GAP;
