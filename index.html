@@ -53,10 +53,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
 
 /* ── Top bar ── */
-.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;}
-.tab-pill{display:flex;align-items:center;gap:4px;background:transparent;}
-.tab{padding:12px 20px;border-radius:24px;cursor:pointer;font-size:15px;font-weight:700;color:rgba(226,226,210,0.45);transition:all .2s ease;-webkit-tap-highlight-color:transparent;}
-.tab.active{background:#C51F5D;color:#141D26;box-shadow:0 4px 12px rgba(197,31,93,0.3);}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
+.tab-pill{display:flex;align-items:center;background:rgba(20,29,38,.6);border-radius:28px;padding:4px;position:relative;gap:0;}
+.tab-slider{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#C51F5D;border-radius:20px;box-shadow:0 4px 12px rgba(197,31,93,.3);transition:left .25s cubic-bezier(.4,0,.2,1),width .25s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:0;}
+.tab{padding:10px 18px;border-radius:20px;cursor:pointer;font-size:15px;font-weight:700;color:rgba(226,226,210,.45);transition:color .2s ease;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;}
+.tab.active{color:#141D26;}
 .top-actions{display:flex;gap:8px;align-items:center;}
 .action-circle{width:38px;height:38px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;}
 .action-circle:active{transform:scale(.88);}
@@ -67,9 +68,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sync-pip.ok{background:#C51F5D;}
 .sync-pip.err{background:#8B1540;}
 
-/* ── Overlay sync ── */
-#sync-overlay{position:absolute;top:0;right:0;bottom:0;width:0;border-radius:24px;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;overflow:hidden;transition:width .45s cubic-bezier(0.4,0,0.2,1),background .3s;background:#2A3D52;}
-#sync-overlay.show{width:100%;pointer-events:auto;}
+/* ── Overlay sync (circular reveal from sync dot) ── */
+#sync-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;background:#2A3D52;clip-path:circle(0px at calc(100% - 127px) 50%);transition:clip-path .45s cubic-bezier(.4,0,.2,1),background .3s;}
+#sync-overlay.show{clip-path:circle(150% at calc(100% - 127px) 50%);pointer-events:auto;}
 #sync-overlay.ok{background:#C51F5D;}
 #sync-overlay.syncing{background:#C51F5D;}
 #sync-overlay.err{background:#8B1540;}
@@ -111,7 +112,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Formulaire saisie ── */
 .entry-form-area{width:100%;flex:0 0 auto;}
-.entry-form-grid{display:flex;width:100%;gap:12px;align-items:stretch;}
+.entry-form-grid{display:flex;width:100%;gap:8px;align-items:stretch;}
 .form-combo-box{display:flex;flex:0 0 68%;min-width:0;background:#243447;border-radius:14px;transition:background .2s;overflow:hidden;}
 .form-combo-box.refund-active{background:#8B1540;}
 .entry-inputs-card{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;padding:12px;}
@@ -122,11 +123,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-inputs-card select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:10px 6px;padding-right:32px;}
 .btn-refund-attached{width:42px;background:#C51F5D;color:#E2E2D2;border-radius:0 14px 14px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;-webkit-tap-highlight-color:transparent;}
 .btn-refund-attached:active,.btn-refund-attached.active{background:#8B1540;}
-.entry-btns-col{display:flex;flex-direction:column;gap:12px;flex:1;margin-right:-12px;}
-.btn-action{background:#C51F5D;color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,background .15s;-webkit-tap-highlight-color:transparent;}
+.entry-btns-col{display:flex;flex-direction:column;gap:8px;flex:1;}
+.btn-action{background:#C51F5D;color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,background .15s;-webkit-tap-highlight-color:transparent;border-radius:14px;}
 .btn-action:active{transform:scale(.92);background:#8B1540;}
-.btn-undo{width:100%;height:62px;border-radius:31px 0 0 31px;flex-shrink:0;}
-.btn-add{width:100%;flex:1;border-radius:31px 0 0 31px;}
+.btn-undo{width:100%;height:62px;flex-shrink:0;}
+.btn-add{width:100%;flex:1;}
 
 /* ── Donut ── */
 #donut-area{width:100%;background:#243447;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;flex:1;min-height:180px;}
@@ -320,7 +321,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <!-- Top bar -->
 <div class="top-bar">
-  <div class="tab-pill">
+  <div class="tab-pill" id="tab-pill">
+    <div class="tab-slider" id="tab-slider"></div>
     <div class="tab active" onclick="showTab('reel',this)">Dépenses réel</div>
     <div class="tab" onclick="showTab('budget',this)">Budget projeté</div>
   </div>
@@ -548,11 +550,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     toastTimer = setTimeout(() => t.classList.remove('show'), duration);
   }
 
+  function updateTabSlider() {
+    const pill   = document.getElementById('tab-pill');
+    const active = pill && pill.querySelector('.tab.active');
+    const slider = document.getElementById('tab-slider');
+    if (!active || !slider) return;
+    slider.style.left  = active.offsetLeft + 'px';
+    slider.style.width = active.offsetWidth + 'px';
+  }
+
   function showTab(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     el.classList.add('active');
+    updateTabSlider();
   }
 
   function getFixesTotal() {
@@ -578,16 +590,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function renderReelBadges(vals) {
     const frame = document.getElementById('reel-badges');
     if (!frame || !vals) return;
-    const { reelTotal, resteReel, refundTotal } = vals;
+    const { reelTotal, resteReel } = vals;
     const rrClr = resteReel >= 0 ? '' : 'red';
-    const refundSub = refundTotal > 0
-      ? `<span class="badge-sub">+ ${fmtR(refundTotal)}</span>` : '';
     frame.innerHTML = `
       <div class="badge-item">
         <span class="badge-lbl">Dépense variable</span>
-        <div class="badge-val-wrap">
-          <span class="badge-val">${fmtR(reelTotal)}</span>${refundSub}
-        </div>
+        <span class="badge-val">${fmtR(reelTotal)}</span>
       </div>
       <div class="badge-item">
         <span class="badge-lbl">Reste variable</span>
@@ -1603,6 +1611,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         document.getElementById('bsec-'+k)?.classList.add('collapsed')
       );
       setupBudgetDrag();
+      updateTabSlider();
       await verifierNouveauMois();
     })();
   }
