@@ -56,7 +56,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
 .tab-pill{display:flex;align-items:center;background:rgba(20,29,38,.6);border-radius:28px;padding:4px;position:relative;gap:0;}
 .tab-slider{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#C51F5D;border-radius:20px;box-shadow:0 4px 12px rgba(197,31,93,.3);transition:left .25s cubic-bezier(.4,0,.2,1),width .25s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:0;}
-.tab{padding:10px 18px;border-radius:20px;cursor:pointer;font-size:15px;font-weight:700;color:rgba(226,226,210,.45);transition:color .2s ease;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;}
+.tab{padding:8px 12px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(226,226,210,.45);transition:color .2s ease;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
 .tab.active{color:#141D26;}
 .top-actions{display:flex;gap:8px;align-items:center;}
 .action-circle{width:38px;height:38px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;}
@@ -69,8 +69,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .sync-pip.err{background:#8B1540;}
 
 /* ── Overlay sync (circular reveal from sync dot) ── */
-#sync-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;background:#2A3D52;clip-path:circle(0px at calc(100% - 127px) 50%);transition:clip-path .45s cubic-bezier(.4,0,.2,1),background .3s;}
-#sync-overlay.show{clip-path:circle(150% at calc(100% - 127px) 50%);pointer-events:auto;}
+#sync-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:15;pointer-events:none;background:#2A3D52;clip-path:circle(0px at calc(100% - 81px) 50%);transition:clip-path .45s cubic-bezier(.4,0,.2,1),background .3s;}
+#sync-overlay.show{clip-path:circle(150% at calc(100% - 81px) 50%);pointer-events:auto;}
 #sync-overlay.ok{background:#C51F5D;}
 #sync-overlay.syncing{background:#C51F5D;}
 #sync-overlay.err{background:#8B1540;}
@@ -86,51 +86,56 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .reel-body-row{display:flex;flex-direction:row;align-items:stretch;gap:12px;padding:12px 12px 0;width:100%;}
 
 /* ── Carte variance (colonne gauche) ── */
-.variance-col{flex:0 0 42%;display:flex;flex-direction:column;position:relative;background:#243447;border-radius:14px;padding:16px 0;overflow:hidden;}
-.variance-col::before{content:'';position:absolute;top:0;bottom:60px;left:50%;width:1px;background:rgba(226,226,210,0.15);z-index:0;}
+.variance-col{flex:0 0 42%;display:flex;flex-direction:column;position:relative;background:#243447;border-radius:14px;padding:16px 0 12px;overflow:hidden;}
+.variance-col::before{content:'';position:absolute;top:10px;bottom:0;left:50%;width:1px;background:rgba(226,226,210,0.15);z-index:0;}
 .variance-chart-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
-.variance-footer{display:flex;margin-top:12px;position:relative;z-index:1;}
-.variance-footer-left{width:50%;text-align:right;padding-right:12px;line-height:1.2;font-size:13px;font-weight:700;color:#E2E2D2;}
-.variance-footer-right{width:50%;padding-left:12px;display:flex;align-items:flex-end;line-height:1.1;font-size:10px;color:rgba(226,226,210,0.6);padding-bottom:1px;}
+.variance-footer{display:flex;margin-top:10px;position:relative;z-index:1;}
+.variance-footer-left{width:50%;text-align:right;padding-right:10px;line-height:1.2;font-size:10px;font-weight:700;color:#E2E2D2;}
+.variance-footer-right{width:50%;padding-left:10px;display:flex;align-items:flex-end;line-height:1.1;font-size:8px;color:rgba(226,226,210,0.6);padding-bottom:1px;}
 
 /* ── Colonne droite reel ── */
 .reel-right-col{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
 
 /* ── Badge frame ── */
-.badge-frame{width:100%;background:#243447;border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;}
-.badge-item{display:flex;flex-direction:column;gap:4px;flex:1;}
-.badge-item+.badge-item{padding-left:16px;border-left:1px solid rgba(226,226,210,0.08);}
+.badge-frame{width:100%;background:#243447;border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
+.badge-item{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
+.badge-item+.badge-item{padding-left:12px;border-left:1px solid rgba(226,226,210,0.08);}
 .badge-lbl{font-size:8px;font-weight:700;color:rgba(226,226,210,0.5);text-transform:uppercase;letter-spacing:.08em;}
 .badge-val-wrap{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
-.badge-val{font-size:22px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;}
+.badge-val{font-size:17px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;white-space:nowrap;}
 .badge-val.green{color:#C51F5D;}
 .badge-val.red{color:#8B1540;}
-.badge-sub{font-size:12px;font-weight:700;color:#8B1540;}
+.badge-sub{font-size:11px;font-weight:700;color:#8B1540;}
 
 /* ── Input salaire (onglet budget) ── */
-.badge-input{background:none;color:#E2E2D2;font-size:22px;font-weight:700;font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;outline:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:100%;}
+.badge-input{background:none;color:#E2E2D2;font-size:17px;font-weight:700;font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;outline:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:100%;}
 
 /* ── Formulaire saisie ── */
 .entry-form-area{width:100%;flex:0 0 auto;}
 .entry-form-grid{display:flex;width:100%;gap:8px;align-items:stretch;}
-.form-combo-box{display:flex;flex:0 0 68%;min-width:0;background:#243447;border-radius:14px;transition:background .2s;overflow:hidden;}
+.form-combo-box{display:flex;flex-direction:column;flex:1;min-width:0;background:#243447;border-radius:14px;transition:background .2s;overflow:hidden;}
 .form-combo-box.refund-active{background:#8B1540;}
-.entry-inputs-card{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;padding:12px;}
-.entry-inputs-card input,.entry-inputs-card select{width:100%;height:40px;background:#141D26;color:#E2E2D2;font-size:14px;font-family:'Inter',sans-serif;border-radius:8px;padding:0 12px;outline:none;transition:background .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
+.entry-inputs-card{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;padding:10px;}
+.entry-inputs-card input,.entry-inputs-card select{width:100%;height:38px;background:#141D26;color:#E2E2D2;font-size:14px;font-family:'Inter',sans-serif;border-radius:8px;padding:0 10px;outline:none;transition:background .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
 .entry-inputs-card input:focus,.entry-inputs-card select:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
 .entry-inputs-card input::placeholder{color:rgba(226,226,210,0.3);}
 .entry-inputs-card input[type=number]{appearance:textfield;}
-.entry-inputs-card select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:10px 6px;padding-right:32px;}
-.btn-refund-attached{width:42px;background:#C51F5D;color:#E2E2D2;border-radius:0 14px 14px 0;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;-webkit-tap-highlight-color:transparent;}
-.btn-refund-attached:active,.btn-refund-attached.active{background:#8B1540;}
-.entry-btns-col{display:flex;flex-direction:column;gap:8px;flex:1;}
-.btn-action{background:#C51F5D;color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,background .15s;-webkit-tap-highlight-color:transparent;border-radius:14px;}
-.btn-action:active{transform:scale(.92);background:#8B1540;}
-.btn-undo{width:100%;height:62px;flex-shrink:0;}
-.btn-add{width:100%;flex:1;}
+.entry-inputs-card select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:9px 5px;padding-right:28px;}
+/* Refund button — bottom strip */
+.btn-refund-bottom{width:100%;height:30px;background:rgba(20,29,38,0.5);color:rgba(197,31,93,0.65);display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .15s,color .15s;-webkit-tap-highlight-color:transparent;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;border-top:1px solid rgba(226,226,210,0.06);}
+.btn-refund-bottom:active{background:rgba(20,29,38,0.7);}
+.btn-refund-bottom.active,.form-combo-box.refund-active .btn-refund-bottom{background:rgba(226,226,210,0.1);color:#E2E2D2;}
+/* Action buttons column */
+.entry-btns-col{display:flex;flex-direction:column;gap:8px;flex:0 0 44px;}
+.btn-action{color:#E2E2D2;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s,background .15s;-webkit-tap-highlight-color:transparent;border-radius:14px;}
+.btn-action:active{transform:scale(.92);}
+.btn-undo{width:100%;height:60px;flex-shrink:0;background:#1C2735;color:rgba(226,226,210,0.4);}
+.btn-undo:active{background:#243447;}
+.btn-add{width:100%;flex:1;background:#C51F5D;}
+.btn-add:active{background:#8B1540;}
 
 /* ── Donut ── */
-#donut-area{width:100%;background:#243447;border-radius:14px;padding:20px;display:flex;align-items:center;justify-content:center;flex:1;min-height:180px;}
+#donut-area{width:100%;background:#243447;border-radius:14px;padding:6px;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;}
 .chart-donut-svg{width:100%;max-width:180px;aspect-ratio:1/1;display:block;}
 .chart-empty-lbl{font-size:10px;color:rgba(226,226,210,0.5);text-align:center;padding:16px 0;}
 
@@ -335,11 +340,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     </div>
-    <div class="action-circle" onclick="lockApp()">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(226,226,210,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-    </div>
   </div>
   <div id="sync-overlay" onclick="hideSyncOverlay()">
     <span id="sync-overlay-text"></span>
@@ -370,11 +370,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
                 <input type="text" id="e-desc" placeholder="Description">
                 <select id="e-cat"></select>
               </div>
-              <button id="btn-refund-toggle" class="btn-refund-attached" onclick="toggleRefundMode()">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <button id="btn-refund-toggle" class="btn-refund-bottom" onclick="toggleRefundMode()">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M15.75 5.5A7.5 7.5 0 1 1 8.25 5.5"/>
                   <polyline points="14.7 1.6 15.75 5.5 11.9 4.5"/>
                 </svg>
+                Remboursement
               </button>
             </div>
             <div class="entry-btns-col">
