@@ -927,8 +927,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     chartState.hiliteDonut = (catName) => {
       const n = normCat(catName);
       const idx = cats.findIndex(c => normCat(c) === n);
-      lblEl.textContent = idx >= 0 ? cats[idx] : catName;
-      amtEl.textContent = fmtR(idx >= 0 ? spentMap[cats[idx]] : 0);
+      if (idx < 0) {
+        // Category has no spending — leave donut on Total, don't dim anything
+        lblEl.textContent = 'Total';
+        amtEl.textContent = fmtR(total);
+        vizEls.forEach(e => e.style.opacity = '1');
+        return;
+      }
+      lblEl.textContent = cats[idx];
+      amtEl.textContent = fmtR(spentMap[cats[idx]]);
       vizEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.12');
     };
     chartState.resetDonut = () => {
