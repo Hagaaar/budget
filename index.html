@@ -834,13 +834,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (!donutArea) return;
     donutArea.innerHTML = '';
 
-    const catTotals = {};
-    entries.filter(e => !e.refund).forEach(e => {
-      if (!e.cat) return;
-      catTotals[e.cat] = (catTotals[e.cat] || 0) + e.montant;
-    });
-    const cats  = Object.keys(catTotals).filter(c => catTotals[c] > 0);
-    const total = cats.reduce((s, c) => s + catTotals[c], 0);
+    // Same source as variance chart: getCats() + getSpentByCat()
+    // This guarantees identical category names, colors, and cross-link keys
+    const cats = getCats().filter(c => getSpentByCat(c) > 0);
+    const spentMap = {};
+    cats.forEach(c => { spentMap[c] = getSpentByCat(c); });
+    const total = cats.reduce((s, c) => s + spentMap[c], 0);
 
     if (cats.length === 0) {
       const empty = document.createElement('div');
@@ -869,7 +868,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
     cats.forEach((cat, i) => {
       const color  = getCatColor(cat);
-      const full   = (catTotals[cat] / total) * 360;
+      const full   = (spentMap[cat] / total) * 360;
       const startA = cum + GAP / 2;
       const drawD  = full - GAP;
       const endA   = startA + Math.max(0, drawD);
@@ -928,9 +927,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     chartState.hiliteDonut = (catName) => {
       const n = normCat(catName);
       const idx = cats.findIndex(c => normCat(c) === n);
-      const displayName = idx >= 0 ? cats[idx] : catName;
-      lblEl.textContent = displayName;
-      amtEl.textContent = fmtR(idx >= 0 ? (catTotals[cats[idx]] || 0) : (catTotals[catName] || 0));
+      lblEl.textContent = idx >= 0 ? cats[idx] : catName;
+      amtEl.textContent = fmtR(idx >= 0 ? spentMap[cats[idx]] : 0);
       vizEls.forEach((e, j) => e.style.opacity = j === idx ? '1' : '0.12');
     };
     chartState.resetDonut = () => {
