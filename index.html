@@ -53,13 +53,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
 
 /* ── Top bar ── */
-.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
+.top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:6px 14px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
 .tab-pill{display:flex;align-items:center;background:rgba(20,29,38,.6);border-radius:28px;padding:4px;position:relative;gap:0;}
 .tab-slider{position:absolute;top:4px;left:0;height:calc(100% - 8px);background:#C51F5D;border-radius:20px;box-shadow:0 4px 12px rgba(197,31,93,.3);transition:left .25s cubic-bezier(.4,0,.2,1),width .25s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:0;}
-.tab{padding:8px 12px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(226,226,210,.45);transition:color .2s ease;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
+.tab{padding:6px 10px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;color:rgba(226,226,210,.45);transition:color .2s ease;position:relative;z-index:1;-webkit-tap-highlight-color:transparent;white-space:nowrap;}
 .tab.active{color:#141D26;}
 .top-actions{display:flex;gap:8px;align-items:center;}
-.action-circle{width:38px;height:38px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;}
+.action-circle{width:34px;height:34px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent;}
 .action-circle:active{transform:scale(.88);}
 
 /* ── Sync pip ── */
@@ -80,18 +80,18 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 /* ── Panel area ── */
 .panel-area{position:fixed;inset:0;overflow:hidden;z-index:10;background:#141D26;}
 .panel{display:none;}
-.panel.active{display:block;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:100px;padding-bottom:120px;}
+.panel.active{display:block;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-top:56px;padding-bottom:120px;}
 
 /* ── Chart card strip ── */
-.chart-card-strip{margin:12px 12px 0;background:#243447;border-radius:16px;padding:10px 12px;}
+.chart-card-strip{margin:8px 12px 0;background:#243447;border-radius:16px;padding:10px 12px;}
 
 /* ── Badge frame ── */
-.badge-frame{background:#243447;border-radius:14px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
+.badge-frame{background:#243447;border-radius:14px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;}
 .badge-item{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0;}
 .badge-item+.badge-item{padding-left:12px;border-left:1px solid rgba(226,226,210,0.08);}
 .badge-lbl{font-size:8px;font-weight:700;color:rgba(226,226,210,0.5);text-transform:uppercase;letter-spacing:.08em;}
 .badge-val-wrap{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
-.badge-val{font-size:17px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;white-space:nowrap;}
+.badge-val{font-size:15px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;white-space:nowrap;}
 .badge-val.green{color:#C51F5D;}
 .badge-val.red{color:#8B1540;}
 .badge-sub{font-size:11px;font-weight:700;color:#8B1540;}
@@ -104,14 +104,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-form-grid{display:flex;width:100%;gap:8px;align-items:stretch;}
 .form-combo-box{display:flex;flex-direction:column;flex:1;min-width:0;background:#243447;border-radius:14px;transition:background .2s;overflow:hidden;}
 .form-combo-box.refund-active{background:#8B1540;}
-.entry-inputs-card{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;padding:10px;}
-.entry-inputs-card input,.entry-inputs-card select{width:100%;height:38px;background:#141D26;color:#E2E2D2;font-size:14px;font-family:'Inter',sans-serif;border-radius:8px;padding:0 10px;outline:none;transition:background .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
+.entry-inputs-card{display:flex;flex-direction:column;gap:6px;flex:1;min-width:0;padding:8px;}
+.entry-inputs-card input,.entry-inputs-card select{width:100%;height:33px;background:#141D26;color:#E2E2D2;font-size:13px;font-family:'Inter',sans-serif;border-radius:8px;padding:0 10px;outline:none;transition:background .15s,box-shadow .15s;-webkit-appearance:none;appearance:none;}
 .entry-inputs-card input:focus,.entry-inputs-card select:focus{box-shadow:inset 0 0 0 2px #C51F5D;}
 .entry-inputs-card input::placeholder{color:rgba(226,226,210,0.3);}
 .entry-inputs-card input[type=number]{appearance:textfield;}
 .entry-inputs-card select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23C51F5D'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:9px 5px;padding-right:28px;}
 /* Refund button — bottom strip */
-.btn-refund-bottom{width:100%;height:30px;background:rgba(20,29,38,0.5);color:rgba(197,31,93,0.65);display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .15s,color .15s;-webkit-tap-highlight-color:transparent;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;border-top:1px solid rgba(226,226,210,0.06);}
+.btn-refund-bottom{width:100%;height:24px;background:rgba(20,29,38,0.5);color:rgba(197,31,93,0.65);display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:background .15s,color .15s;-webkit-tap-highlight-color:transparent;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0;border-top:1px solid rgba(226,226,210,0.06);}
 .btn-refund-bottom:active{background:rgba(20,29,38,0.7);}
 .btn-refund-bottom.active,.form-combo-box.refund-active .btn-refund-bottom{background:rgba(226,226,210,0.1);color:#E2E2D2;}
 /* Action buttons column */
