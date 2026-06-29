@@ -20,8 +20,11 @@
 .pin-pad{display:grid;grid-template-columns:repeat(3,74px);gap:12px;}
 .pin-key{width:74px;height:74px;border-radius:50%;background:#243447;color:#E2E2D2;font-size:22px;font-family:'Inter',-apple-system,Arial,sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .12s,color .12s;}
 .pin-key:active,.pin-key.pressed{background:#C51F5D;color:#141D26;}
-.pin-key.del{font-size:20px;color:rgba(226,226,210,0.5);}
+.pin-key.del{font-size:34px;color:rgba(226,226,210,0.5);background:transparent;}
+.pin-key.del:active{background:transparent;color:#E2E2D2;}
 .pin-key.empty{background:transparent;cursor:default;}
+#trust-toggle.pin-key{background:transparent;}
+#trust-toggle.pin-key:active{background:transparent;}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .shake{animation:shake .35s ease;}
 .trust-toggle{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;}
@@ -313,7 +316,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="pin-key" onclick="pinPress('4')">4</div><div class="pin-key" onclick="pinPress('5')">5</div><div class="pin-key" onclick="pinPress('6')">6</div>
     <div class="pin-key" onclick="pinPress('7')">7</div><div class="pin-key" onclick="pinPress('8')">8</div><div class="pin-key" onclick="pinPress('9')">9</div>
     <div class="pin-key" id="trust-toggle" onclick="toggleTrust()">
-      <svg id="trust-lock-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#C51F5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg id="trust-lock-svg" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#C51F5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"/>
         <path d="M7 11V7a5 5 0 0 1 10 0"/>
       </svg>
