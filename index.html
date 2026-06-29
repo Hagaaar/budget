@@ -603,12 +603,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function renderReelBadges(vals) {
     const frame = document.getElementById('reel-badges');
     if (!frame || !vals) return;
-    const { reelTotal, resteReel } = vals;
-    const rrClr = resteReel >= 0 ? '' : 'red';
+    const { globalReste, resteReel } = vals;
+    const grClr = globalReste >= 0 ? '' : 'red';
+    const rrClr = resteReel  >= 0 ? '' : 'red';
     frame.innerHTML = `
       <div class="badge-item">
-        <span class="badge-lbl">Dépense variable</span>
-        <span class="badge-val">${fmtR(reelTotal)}</span>
+        <span class="badge-lbl">Reste réel</span>
+        <span class="badge-val ${grClr}">${fmtR(globalReste)}</span>
       </div>
       <div class="badge-item">
         <span class="badge-lbl">Reste variable</span>
@@ -1670,7 +1671,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function initNextMonthBtn() {
     const btn = document.getElementById('btn-next-month');
-    if (btn) btn.textContent = 'Préparer ' + getNextMoisLabel() + ' →';
+    if (btn) btn.textContent = 'BUDGET PROCHAIN MOIS';
   }
 
   function openNextMonth() {
@@ -1698,7 +1699,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       { key:'abonnements', name:'Abonnements &amp; services' },
       { key:'epargne', name:'Épargne' }
     ];
-    let html = `<div class="badge-frame" style="flex-wrap:wrap;gap:16px;margin-bottom:12px;">
+    let html = `<div class="badge-frame" style="flex-wrap:nowrap;gap:8px;margin-bottom:12px;justify-content:space-between;">
       <div class="badge-item" style="border-left:none;padding-left:0;">
         <span class="badge-lbl">Salaire net</span>
         <input class="badge-input" id="next-salaire" type="number" value="${nextBudget.salaire||''}" oninput="updateNextMonthTotal()">
