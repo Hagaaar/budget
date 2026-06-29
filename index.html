@@ -1771,6 +1771,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const newId = ids.length > 0 ? Math.max(...ids) + 1 : Date.now();
     nextBudget.sections[secKey].push({ id: newId, label: 'Nouvelle ligne', value: 0 });
     renderNextMonthBudget();
+    setTimeout(() => {
+      const inputs = document.querySelectorAll('#next-month-content .budget-row-label-input');
+      const last = inputs[inputs.length - 1];
+      if (last) { last.focus(); last.select(); }
+    }, 50);
   }
 
   function updateNextMonthTotal() {
