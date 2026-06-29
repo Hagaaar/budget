@@ -248,6 +248,17 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .ss-btn-primary:active{background:#8B1540;transform:scale(.97);}
 .ss-btn-secondary{width:100%;padding:14px;border-radius:14px;color:rgba(226,226,210,0.5);font-size:14px;font-weight:400;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;background:transparent;border:1px solid rgba(226,226,210,.18);-webkit-tap-highlight-color:transparent;transition:background .12s;}
 .ss-btn-secondary:active{background:#243447;}
+
+/* ── Budget mois prochain ── */
+.btn-next-month{width:100%;height:50px;background:#243447;border-radius:14px;color:#C51F5D;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s;}
+.btn-next-month:active{background:#1C2735;}
+#next-month-overlay{position:fixed;inset:0;z-index:200;background:#141D26;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#next-month-overlay.show{transform:translateY(0);}
+.next-month-bar{position:sticky;top:0;z-index:1;padding:6px 14px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;gap:12px;}
+.next-month-bar-title{flex:1;font-size:14px;font-weight:700;color:#E2E2D2;text-align:center;}
+.btn-next-close{width:34px;height:34px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+.btn-next-save{width:100%;height:50px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;}
+.btn-next-save:active{background:#8B1540;transform:scale(.97);}
 </style>
 </head>
 <body>
@@ -443,9 +454,29 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         </div>
       </div>
     </div>
+    <div style="padding:8px 16px 16px;">
+      <button class="btn-next-month" id="btn-next-month" onclick="openNextMonth()">Préparer → </button>
+    </div>
   </div>
 
   <div class="panel-fade-bottom"></div>
+</div>
+
+<!-- ── BUDGET MOIS PROCHAIN ── -->
+<div id="next-month-overlay">
+  <div class="next-month-bar">
+    <button class="btn-next-close" onclick="closeNextMonth()">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(226,226,210,0.5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <span class="next-month-bar-title" id="next-month-bar-title">Budget</span>
+    <div style="width:34px;flex-shrink:0;"></div>
+  </div>
+  <div style="padding:12px 16px 0;" id="next-month-content"></div>
+  <div style="padding:12px 16px 24px;">
+    <button class="btn-next-save" onclick="saveNextMonthBudget()">Sauvegarder ✓</button>
+  </div>
 </div>
 
 <script>
@@ -1487,6 +1518,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           localStorage.setItem('bm_bak', JSON.stringify(d));
           idbSave(d);
         }
+        if (d.nextBudget) localStorage.setItem('bm_next_budget', JSON.stringify(d.nextBudget));
       }
       setSyncStatus('ok');
       splashHide();
@@ -1520,6 +1552,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
         body: JSON.stringify({ action:'archive', mois:moisActuel, data:getPayload() }) });
       entries = []; entryId = 0; fixedChecked = new Set();
+      const _nb = (() => { try { return JSON.parse(localStorage.getItem('bm_next_budget')||'null'); } catch(_){return null;} })();
+      if (_nb?.sections) { budgetSections = _nb.sections; if (_nb.salaire) document.getElementById('salaire').value = _nb.salaire; localStorage.removeItem('bm_next_budget'); renderAllBudgetSections(); }
       document.getElementById('mois-input').textContent = moisAttendu;
       recalc(); setSyncStatus('ok');
       showModal('Nouveau mois !',
@@ -1593,6 +1627,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       );
       setupBudgetDrag();
       updateTabSlider();
+      initNextMonthBtn();
       await verifierNouveauMois();
     })();
   }
@@ -1623,6 +1658,118 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   window.addEventListener('online', () => {
     if (document.getElementById('lock-screen').classList.contains('hidden')) load();
   });
+
+  // ── Budget mois prochain ──
+  let nextBudget = null;
+
+  function getNextMoisLabel() {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return MOIS_FR[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function initNextMonthBtn() {
+    const btn = document.getElementById('btn-next-month');
+    if (btn) btn.textContent = 'Préparer ' + getNextMoisLabel() + ' →';
+  }
+
+  function openNextMonth() {
+    const label = getNextMoisLabel();
+    document.getElementById('next-month-bar-title').textContent = 'Budget ' + label;
+    const saved = localStorage.getItem('bm_next_budget');
+    if (saved) { try { nextBudget = JSON.parse(saved); } catch(_) { nextBudget = null; } }
+    if (!nextBudget || !nextBudget.sections) {
+      nextBudget = { sections: JSON.parse(JSON.stringify(budgetSections)), salaire: gv('salaire') };
+    }
+    renderNextMonthBudget();
+    document.getElementById('next-month-overlay').classList.add('show');
+  }
+
+  function closeNextMonth() {
+    document.getElementById('next-month-overlay').classList.remove('show');
+  }
+
+  function renderNextMonthBudget() {
+    const container = document.getElementById('next-month-content');
+    const s = nextBudget.sections;
+    const secDefs = [
+      { key:'variable', name:'Dépenses variables' },
+      { key:'logement', name:'Logement' },
+      { key:'abonnements', name:'Abonnements &amp; services' },
+      { key:'epargne', name:'Épargne' }
+    ];
+    let html = `<div class="badge-frame" style="flex-wrap:wrap;gap:16px;margin-bottom:12px;">
+      <div class="badge-item" style="border-left:none;padding-left:0;">
+        <span class="badge-lbl">Salaire net</span>
+        <input class="badge-input" id="next-salaire" type="number" value="${nextBudget.salaire||''}" oninput="updateNextMonthTotal()">
+      </div>
+      <div class="badge-item" style="padding-left:0;border-left:none;">
+        <span class="badge-lbl">Budget variable</span>
+        <span class="badge-val" id="next-b-variable">— €</span>
+      </div>
+      <div class="badge-item" style="padding-left:0;border-left:none;">
+        <span class="badge-lbl">Reste projeté</span>
+        <span class="badge-val" id="next-b-reste">— €</span>
+      </div>
+    </div>`;
+    secDefs.forEach(({ key, name }) => {
+      const rows = (s[key] || []).map(row => `
+        <div class="budget-row">
+          <span class="budget-row-label-input" style="color:rgba(226,226,210,0.7);">${row.label}</span>
+          <div class="budget-input-wrap">
+            <button class="budget-btn-step" onclick="nextBudgetStep('${key}',${row.id},-10)">−</button>
+            <input class="budget-input" type="number" value="${row.value}" data-next="${key}-${row.id}" onchange="nextBudgetSet('${key}',${row.id},this.value)">
+            <button class="budget-btn-step" onclick="nextBudgetStep('${key}',${row.id},+10)">+</button>
+          </div>
+        </div>`).join('');
+      html += `<div class="budget-section" style="margin-bottom:6px;">
+        <div class="budget-section-title" style="cursor:default;">${name}</div>
+        <div class="budget-section-body">${rows}</div>
+      </div>`;
+    });
+    container.innerHTML = html;
+    updateNextMonthTotal();
+  }
+
+  function nextBudgetStep(secKey, rowId, delta) {
+    const row = (nextBudget?.sections[secKey] || []).find(r => r.id === rowId);
+    if (!row) return;
+    row.value = Math.max(0, (row.value || 0) + delta);
+    const input = document.querySelector(`[data-next="${secKey}-${rowId}"]`);
+    if (input) input.value = row.value;
+    updateNextMonthTotal();
+  }
+
+  function nextBudgetSet(secKey, rowId, val) {
+    const row = (nextBudget?.sections[secKey] || []).find(r => r.id === rowId);
+    if (row) { row.value = Math.max(0, parseFloat(val) || 0); updateNextMonthTotal(); }
+  }
+
+  function updateNextMonthTotal() {
+    if (!nextBudget) return;
+    nextBudget.salaire = parseFloat(document.getElementById('next-salaire')?.value) || 0;
+    const varT = (nextBudget.sections.variable || []).reduce((a, r) => a + (r.value||0), 0);
+    const fixT = ['logement','abonnements','epargne'].reduce((a, k) =>
+      a + (nextBudget.sections[k] || []).reduce((b, r) => b + (r.value||0), 0), 0);
+    const nbv = document.getElementById('next-b-variable');
+    const nbr = document.getElementById('next-b-reste');
+    if (nbv) nbv.textContent = Math.round(varT) + ' €';
+    if (nbr) nbr.textContent = Math.round(nextBudget.salaire - varT - fixT) + ' €';
+  }
+
+  async function saveNextMonthBudget() {
+    if (!nextBudget) return;
+    nextBudget.savedAt = Date.now();
+    localStorage.setItem('bm_next_budget', JSON.stringify(nextBudget));
+    try {
+      setSyncStatus('syncing');
+      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
+        body: JSON.stringify({ action:'next_budget', data: nextBudget }) });
+      setSyncStatus('ok');
+    } catch(_) { setSyncStatus('err'); }
+    showToast('Budget ' + getNextMoisLabel() + ' sauvegardé ✓');
+    closeNextMonth();
+  }
 </script>
 </body>
 </html>
