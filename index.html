@@ -304,7 +304,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 <!-- PIN -->
 <div id="lock-screen">
-  <div class="lock-title">Code d'accès</div>
   <div class="pin-dots" id="pin-dots">
     <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
     <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
@@ -313,14 +312,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="pin-key" onclick="pinPress('1')">1</div><div class="pin-key" onclick="pinPress('2')">2</div><div class="pin-key" onclick="pinPress('3')">3</div>
     <div class="pin-key" onclick="pinPress('4')">4</div><div class="pin-key" onclick="pinPress('5')">5</div><div class="pin-key" onclick="pinPress('6')">6</div>
     <div class="pin-key" onclick="pinPress('7')">7</div><div class="pin-key" onclick="pinPress('8')">8</div><div class="pin-key" onclick="pinPress('9')">9</div>
-    <div class="pin-key empty"></div><div class="pin-key" onclick="pinPress('0')">0</div><div class="pin-key del" onclick="pinDel()">‹</div>
-  </div>
-  <div class="trust-toggle" id="trust-toggle" onclick="toggleTrust()">
-    <svg id="trust-lock-svg" viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="#C51F5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0"/>
-    </svg>
-    <span class="trust-label">Faire confiance à cet appareil</span>
+    <div class="pin-key" id="trust-toggle" onclick="toggleTrust()">
+      <svg id="trust-lock-svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#C51F5D" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0"/>
+      </svg>
+    </div><div class="pin-key" onclick="pinPress('0')">0</div><div class="pin-key del" onclick="pinDel()">‹</div>
   </div>
 </div>
 
