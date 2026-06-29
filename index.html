@@ -93,8 +93,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .badge-val-wrap{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
 .badge-val{font-size:15px;font-weight:700;color:#E2E2D2;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;white-space:nowrap;}
 .badge-val.green{color:#C51F5D;}
-.badge-val.red{color:#8B1540;}
-.badge-sub{font-size:11px;font-weight:700;color:#8B1540;}
+.badge-val.red{color:#C51F5D;}
+.badge-sub{font-size:11px;font-weight:700;color:#C51F5D;}
 
 /* ── Input salaire (onglet budget) ── */
 .badge-input{background:none;color:#E2E2D2;font-size:17px;font-weight:700;font-family:'Inter',-apple-system,Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1;outline:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:100%;}
@@ -145,7 +145,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .cat-budget{font-size:10px;color:rgba(226,226,210,0.5);font-weight:500;white-space:nowrap;}
 .cat-reste{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:left;}
 .cat-reste.green{color:#C51F5D;}
-.cat-reste.red{color:#8B1540;}
+.cat-reste.red{color:#C51F5D;}
 .cat-chevron{font-size:12px;color:rgba(226,226,210,0.5);transition:transform .25s;margin-left:4px;display:inline-block;transform:rotate(90deg);}
 .cat-group.collapsed .cat-chevron{transform:rotate(0deg);}
 .cat-body{overflow:hidden;max-height:800px;transition:max-height .3s ease;}
@@ -154,8 +154,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .entry-desc{flex:1;font-size:13px;color:rgba(226,226,210,0.5);font-weight:400;}
 .entry-amount{font-size:13px;font-weight:600;color:#E2E2D2;font-variant-numeric:tabular-nums;margin-right:10px;white-space:nowrap;}
 .entry-amount.plus{color:#C51F5D;}
-.entry-amount.minus{color:#8B1540;}
-.btn-del{background:#243447;color:#8B1540;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0;}
+.entry-amount.minus{color:#C51F5D;}
+.btn-del{background:#243447;color:#C51F5D;font-size:12px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:7px;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s;flex-shrink:0;}
 .btn-del:active{background:#8B1540;color:#E2E2D2;}
 .cat-empty{padding:11px 12px;font-size:12px;color:rgba(226,226,210,0.5);background:rgba(36,52,71,0.1);opacity:0.8;}
 .cat-group.dragging{opacity:.5;transform:scale(1.02);z-index:10;position:relative;border-radius:12px;}
@@ -206,7 +206,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .budget-btn-step:active{background:#C51F5D;color:#141D26;}
 .budget-input{flex:0 0 38px;width:38px;text-align:center;padding:2px 1px;border-radius:5px;background:transparent;color:#E2E2D2;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;font-family:'Inter',-apple-system,Arial,sans-serif;appearance:textfield;outline:none;-webkit-user-select:text;user-select:text;}
 .budget-input:focus{background:#243447;}
-.btn-row-del{background:#243447;color:#8B1540;font-size:12px;font-weight:700;cursor:pointer;height:26px;width:26px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
+.btn-row-del{background:#243447;color:#C51F5D;font-size:12px;font-weight:700;cursor:pointer;height:26px;width:26px;border-radius:6px;-webkit-tap-highlight-color:transparent;flex-shrink:0;transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center;}
 .btn-row-del:active{background:#8B1540;color:#E2E2D2;}
 .btn-sec-add{width:100%;height:44px;background:transparent;color:#C51F5D;font-size:14px;font-weight:700;cursor:pointer;border-top:1px solid rgba(226,226,210,0.05);display:flex;align-items:center;justify-content:center;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s;}
 .btn-sec-add:active{background:rgba(197,31,93,0.1);}
@@ -734,7 +734,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   const NS = 'http://www.w3.org/2000/svg';
   const ROW_H = 18, BAR_H = 10, n = items.length, H = n * ROW_H;
-  const Z = 165, NW = 90, PW = 80, W = 317;
+  const Z = 165, NW = 90, PW = 115, W = 317;
   const ff = v => v.toFixed(1);
 
   const svg = document.createElementNS(NS, 'svg');
@@ -803,7 +803,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     val.setAttribute('font-size', '9.5');
     val.setAttribute('font-weight', '700');
     val.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
-    val.setAttribute('fill', isPos ? '#C51F5D' : '#8B1540');
+    val.setAttribute('fill', '#C51F5D');
     val.setAttribute('font-variant-numeric', 'tabular-nums');
     val.textContent = (isPos ? '+' : '−') + absVal;
     g.appendChild(val);
