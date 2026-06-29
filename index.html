@@ -408,7 +408,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="budget-section" id="bsec-variable">
         <div class="budget-section-title" onclick="toggleBudgetSection('variable')">
           Dépenses variables budgétées
-          <span class="budget-section-chevron">▾</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="bsec-total-variable" style="font-size:12px;font-weight:700;color:#C51F5D;font-variant-numeric:tabular-nums;"></span>
+            <span class="budget-section-chevron">▾</span>
+          </div>
         </div>
         <div class="budget-section-body">
           <div id="sec-variable"></div>
@@ -418,7 +421,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="budget-section" id="bsec-logement">
         <div class="budget-section-title" onclick="toggleBudgetSection('logement')">
           Logement
-          <span class="budget-section-chevron">▾</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="bsec-total-logement" style="font-size:12px;font-weight:700;color:#C51F5D;font-variant-numeric:tabular-nums;"></span>
+            <span class="budget-section-chevron">▾</span>
+          </div>
         </div>
         <div class="budget-section-body">
           <div id="sec-logement"></div>
@@ -428,7 +434,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="budget-section" id="bsec-abonnements">
         <div class="budget-section-title" onclick="toggleBudgetSection('abonnements')">
           Abonnements &amp; services
-          <span class="budget-section-chevron">▾</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="bsec-total-abonnements" style="font-size:12px;font-weight:700;color:#C51F5D;font-variant-numeric:tabular-nums;"></span>
+            <span class="budget-section-chevron">▾</span>
+          </div>
         </div>
         <div class="budget-section-body">
           <div id="sec-abonnements"></div>
@@ -438,7 +447,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       <div class="budget-section" id="bsec-epargne">
         <div class="budget-section-title" onclick="toggleBudgetSection('epargne')">
           Épargne
-          <span class="budget-section-chevron">▾</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="bsec-total-epargne" style="font-size:12px;font-weight:700;color:#C51F5D;font-variant-numeric:tabular-nums;"></span>
+            <span class="budget-section-chevron">▾</span>
+          </div>
         </div>
         <div class="budget-section-body">
           <div id="sec-epargne"></div>
@@ -632,6 +644,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     resteEl.className   = 'badge-val ' + (reste >= 0 ? 'green' : 'red');
 
     renderReelBadges({ globalReel, globalReste, reelTotal, resteReel, refundTotal, resteVariable });
+
+    ['variable','logement','abonnements','epargne'].forEach(key => {
+      const el = document.getElementById('bsec-total-' + key);
+      if (el) el.textContent = fmtR(budgetSections[key].reduce((s, r) => s + (r.value||0), 0));
+    });
 
     refreshCatList();
     save();
@@ -1721,7 +1738,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
           <button class="btn-row-del" onclick="nextBudgetDelRow('${key}',${row.id})">×</button>
         </div>`).join('');
       html += `<div class="budget-section" style="margin-bottom:6px;">
-        <div class="budget-section-title" style="cursor:default;">${name}</div>
+        <div class="budget-section-title" style="cursor:default;">
+          ${name}
+          <span id="next-sec-total-${key}" style="font-size:12px;font-weight:700;color:#C51F5D;font-variant-numeric:tabular-nums;"></span>
+        </div>
         <div class="budget-section-body">
           ${rows}
           <button class="btn-sec-add" onclick="nextBudgetAddRow('${key}')">+ Ajouter une ligne</button>
@@ -1780,6 +1800,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const nbr = document.getElementById('next-b-reste');
     if (nbv) nbv.textContent = Math.round(varT) + ' €';
     if (nbr) nbr.textContent = Math.round(nextBudget.salaire - varT - fixT) + ' €';
+    ['variable','logement','abonnements','epargne'].forEach(k => {
+      const el = document.getElementById('next-sec-total-' + k);
+      if (el) el.textContent = fmtR((nextBudget.sections[k] || []).reduce((a, r) => a + (r.value||0), 0));
+    });
   }
 
   async function saveNextMonthBudget() {
