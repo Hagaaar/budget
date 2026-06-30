@@ -1494,7 +1494,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }, 800);
   }
 
-  async function load() {
+  let _lastLoadTime = 0;
+  async function load(silent = false) {
+    _lastLoadTime = Date.now();
     let localData = null;
     const bk = localStorage.getItem('bm_bak');
     if (bk) { try { localData = JSON.parse(bk); applyData(localData); } catch(_) {} }
@@ -1538,7 +1540,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       splashHide();
     } catch(e) {
       setSyncStatus('err');
-      splashError(e);
+      if (!silent) splashError(e);
     }
   }
 
@@ -1670,10 +1672,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   window.addEventListener('offline', () => setSyncStatus('err'));
   window.addEventListener('online', () => {
-    if (document.getElementById('lock-screen').classList.contains('hidden')) load();
+    if (document.getElementById('lock-screen').classList.contains('hidden')) load(true);
   });
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')) load();
+    if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')
+        && Date.now() - _lastLoadTime > 120000) load(true);
   });
 
   // ── Budget mois prochain ──
