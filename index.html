@@ -1672,6 +1672,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   window.addEventListener('online', () => {
     if (document.getElementById('lock-screen').classList.contains('hidden')) load();
   });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')) load();
+  });
 
   // ── Budget mois prochain ──
   let nextBudget = null;
