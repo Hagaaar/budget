@@ -262,6 +262,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .btn-next-close{width:34px;height:34px;border-radius:50%;background:#141D26;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
 .btn-next-save{width:100%;height:50px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;}
 .btn-next-save:active{background:#8B1540;transform:scale(.97);}
+@keyframes nm-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#btn-save-next.nm-saving{opacity:.7;pointer-events:none;}
+#btn-save-next.nm-saving svg{animation:nm-spin .7s linear infinite;}
 </style>
 </head>
 <body>
@@ -475,7 +478,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       </svg>
     </button>
     <span class="next-month-bar-title" id="next-month-bar-title">Budget</span>
-    <button class="btn-next-close" style="background:#C51F5D;" onclick="saveNextMonthBudget()">
+    <button id="btn-save-next" class="btn-next-close" style="background:#C51F5D;" onclick="saveNextMonthBudget()">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#141D26" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
         <polyline points="17 21 17 13 7 13 7 21"/>
@@ -1815,12 +1818,15 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     if (!nextBudget) return;
     nextBudget.savedAt = Date.now();
     localStorage.setItem('bm_next_budget', JSON.stringify(nextBudget));
+    const btn = document.getElementById('btn-save-next');
+    btn.classList.add('nm-saving');
     try {
       setSyncStatus('syncing');
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
         body: JSON.stringify({ action:'next_budget', data: nextBudget }) });
       setSyncStatus('ok');
     } catch(_) { setSyncStatus('err'); }
+    btn.classList.remove('nm-saving');
     showToast('Budget ' + getNextMoisLabel() + ' sauvegardé ✓');
     closeNextMonth();
   }
