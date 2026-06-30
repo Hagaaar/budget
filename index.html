@@ -1735,7 +1735,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     secDefs.forEach(({ key, name }) => {
       const rows = (s[key] || []).map(row => `
         <div class="budget-row">
-          <input type="text" class="budget-row-label-input" value="${row.label.replace(/"/g,'&quot;')}" onchange="nextBudgetSetLabel('${key}',${row.id},this.value)">
+          <input type="text" class="budget-row-label-input" data-next-label="${key}-${row.id}" value="${row.label.replace(/"/g,'&quot;')}" onchange="nextBudgetSetLabel('${key}',${row.id},this.value)">
           <div class="budget-input-wrap">
             <button class="budget-btn-step" onclick="nextBudgetStep('${key}',${row.id},-10)">−</button>
             <input class="budget-input" type="number" value="${row.value}" data-next="${key}-${row.id}" onchange="nextBudgetSet('${key}',${row.id},this.value)">
@@ -1790,9 +1790,8 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     nextBudget.sections[secKey].push({ id: newId, label: 'Nouvelle ligne', value: 0 });
     renderNextMonthBudget();
     setTimeout(() => {
-      const inputs = document.querySelectorAll('#next-month-content .budget-row-label-input');
-      const last = inputs[inputs.length - 1];
-      if (last) { last.focus(); last.select(); }
+      const newInput = document.querySelector(`[data-next-label="${secKey}-${newId}"]`);
+      if (newInput) { newInput.focus(); newInput.select(); }
     }, 50);
   }
 
