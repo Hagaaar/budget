@@ -1379,7 +1379,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
   function splashError(e) {
     const s = document.getElementById('sync-splash');
-    if (s.classList.contains('hidden')) return;
+    s.classList.remove('hidden');
     document.getElementById('ss-reason').textContent =
       !navigator.onLine        ? 'Aucune connexion internet détectée sur cet appareil.' :
       e?.name === 'AbortError' ? 'Le serveur ne répond pas — délai de 10 s dépassé.' :
@@ -1495,7 +1495,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let _lastLoadTime = 0;
-  async function load(silent = false) {
+  async function load() {
     _lastLoadTime = Date.now();
     let localData = null;
     const bk = localStorage.getItem('bm_bak');
@@ -1540,7 +1540,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       splashHide();
     } catch(e) {
       setSyncStatus('err');
-      if (!silent) splashError(e);
+      splashError(e);
     }
   }
 
@@ -1672,11 +1672,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   window.addEventListener('offline', () => setSyncStatus('err'));
   window.addEventListener('online', () => {
-    if (document.getElementById('lock-screen').classList.contains('hidden')) load(true);
+    if (document.getElementById('lock-screen').classList.contains('hidden')) load();
   });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')
-        && Date.now() - _lastLoadTime > 120000) load(true);
+        && Date.now() - _lastLoadTime > 120000) load();
   });
 
   // ── Budget mois prochain ──
