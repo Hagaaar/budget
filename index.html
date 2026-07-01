@@ -235,20 +235,24 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
 /* ── Sync splash ── */
 @keyframes ss-spin{to{transform:rotate(360deg);}}
-#sync-splash{position:fixed;inset:0;background:#141D26;z-index:950;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:0;transition:opacity .35s ease;}
+#sync-splash{position:fixed;inset:0;background:#141D26;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;gap:0;transition:opacity .35s ease;}
 #sync-splash.hidden{display:none;}
 #sync-splash .ss-loading{display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center;}
 #sync-splash .ss-err-content{display:none;flex-direction:column;align-items:center;gap:16px;text-align:center;width:100%;max-width:300px;}
-#sync-splash.ss-error .ss-loading{display:none;}
+#sync-splash.ss-error .ss-loading{display:none!important;}
 #sync-splash.ss-error .ss-err-content{display:flex;}
+@keyframes ss-spin{to{transform:rotate(360deg)}}
 .ss-spinner{width:44px;height:44px;border-radius:50%;border:3px solid #243447;border-top-color:#C51F5D;animation:ss-spin .75s linear infinite;}
 .ss-title{font-size:18px;font-weight:600;color:#E2E2D2;}
 .ss-sub{font-size:13px;color:rgba(226,226,210,0.5);}
 .ss-err-circle{width:60px;height:60px;border-radius:50%;background:rgba(139,21,64,.12);border:1.5px solid rgba(139,21,64,.35);display:flex;align-items:center;justify-content:center;}
 .ss-reason{font-size:13px;color:rgba(226,226,210,0.5);background:#243447;border-radius:12px;padding:12px 16px;line-height:1.5;width:100%;}
 .ss-actions{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:4px;}
-.ss-btn-primary{width:100%;padding:15px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;}
+.ss-btn-primary{width:100%;padding:15px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;display:flex;align-items:center;justify-content:center;gap:10px;}
 .ss-btn-primary:active{background:#8B1540;transform:scale(.97);}
+.ss-btn-primary.reconnecting{opacity:.75;pointer-events:none;}
+.ss-btn-spinner{width:16px;height:16px;border-radius:50%;border:2px solid rgba(20,29,38,.3);border-top-color:#141D26;animation:ss-spin .65s linear infinite;display:none;flex-shrink:0;}
+.ss-btn-primary.reconnecting .ss-btn-spinner{display:block;}
 .ss-btn-secondary{width:100%;padding:14px;border-radius:14px;color:rgba(226,226,210,0.5);font-size:14px;font-weight:400;cursor:pointer;font-family:'Inter',-apple-system,Arial,sans-serif;background:transparent;border:1px solid rgba(226,226,210,.18);-webkit-tap-highlight-color:transparent;transition:background .12s;}
 .ss-btn-secondary:active{background:#243447;}
 
@@ -302,8 +306,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <p class="ss-title">Connexion impossible</p>
     <p class="ss-reason" id="ss-reason"></p>
     <div class="ss-actions">
-      <button class="ss-btn-primary" onclick="ssReconnect()">Se reconnecter</button>
-      <button class="ss-btn-secondary" onclick="ssContinueOffline()">Continuer hors ligne</button>
+      <button id="ss-reconnect-btn" class="ss-btn-primary" onclick="ssReconnect()">
+        <div class="ss-btn-spinner"></div>
+        <span id="ss-reconnect-label">Réessayer la connexion</span>
+      </button>
+      <button class="ss-btn-secondary" onclick="ssContinueOffline()">Rester hors ligne</button>
     </div>
   </div>
 </div>
@@ -1366,14 +1373,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     overlay.className = overlay.className.replace('show','').trim();
   }
 
-  function splashState(state) {
+  function splashStart(label) {
     const s = document.getElementById('sync-splash');
     s.style.opacity = '';
-    s.className = 'ss-' + state;
-    document.getElementById('ss-main-title').textContent =
-      state === 'connecting' ? 'Connexion en cours…' : 'Synchronisation en cours';
-    document.getElementById('ss-sub-title').textContent =
-      state === 'connecting' ? 'Tentative de reconnexion à Google Sheets…' : 'Récupération de vos données…';
+    s.classList.remove('hidden');
+    s.className = 'ss-loading-state';
+    document.getElementById('ss-main-title').textContent = label || 'Connexion en cours…';
+    document.getElementById('ss-sub-title').textContent = 'Tentative de connexion à Google Sheets…';
   }
   function splashHide() {
     const s = document.getElementById('sync-splash');
@@ -1385,12 +1391,21 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     s.classList.remove('hidden');
     document.getElementById('ss-reason').textContent =
       !navigator.onLine        ? 'Aucune connexion internet détectée sur cet appareil.' :
-      e?.name === 'AbortError' ? 'Le serveur ne répond pas — délai de 10 s dépassé.' :
-      e instanceof SyntaxError ? 'Réponse inattendue du serveur (format invalide).' :
+      e?.name === 'AbortError' ? 'Le serveur ne répond pas (délai 10 s dépassé).' :
+      e instanceof SyntaxError ? 'Réponse inattendue du serveur.' :
                                  'Impossible de joindre Google Sheets. Vérifiez votre connexion.';
     s.className = 'ss-error';
+    const btn = document.getElementById('ss-reconnect-btn');
+    btn.classList.remove('reconnecting');
+    document.getElementById('ss-reconnect-label').textContent = 'Réessayer la connexion';
   }
-  function ssReconnect() { splashState('connecting'); setTimeout(load, 150); }
+  function ssReconnect() {
+    const btn = document.getElementById('ss-reconnect-btn');
+    btn.classList.add('reconnecting');
+    document.getElementById('ss-reconnect-label').textContent = 'Connexion en cours…';
+    splashStart('Reconnexion en cours…');
+    setTimeout(load, 150);
+  }
   function ssContinueOffline() { splashHide(); }
 
   function getPayload() {
@@ -1630,7 +1645,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function initApp() {
     (async () => {
-      splashState('syncing');
+      splashStart('Synchronisation en cours…');
       await load();
       const lastExport = parseInt(localStorage.getItem('bm_last_export') || '0');
       if (Date.now() - lastExport > 7 * 24 * 60 * 60 * 1000) {
@@ -1675,11 +1690,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   window.addEventListener('offline', () => setSyncStatus('err'));
   window.addEventListener('online', () => {
-    if (document.getElementById('lock-screen').classList.contains('hidden')) load();
+    if (document.getElementById('lock-screen').classList.contains('hidden')) { splashStart(); load(); }
   });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')
-        && Date.now() - _lastLoadTime > 120000) load();
+        && Date.now() - _lastLoadTime > 120000) { splashStart(); load(); }
   });
 
   // ── Budget mois prochain ──
