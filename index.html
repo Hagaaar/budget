@@ -1508,7 +1508,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload), signal: ctrl.signal });
         clearTimeout(tid);
         setSyncStatus('ok');
-      } catch(e) { setSyncStatus('err', e); }
+      } catch(e) { setSyncStatus('err', false); }
     }, 800);
   }
 
