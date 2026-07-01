@@ -1358,8 +1358,9 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   let syncMsgTimer = null;
   function showSyncMsg() {
-    const state  = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
-    const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…', err: navigator.onLine ? 'Erreur de synchronisation · données locales' : 'Hors ligne · données locales' };
+    const state = (document.getElementById('sync-dot').className || '').replace('sync-pip','').trim();
+    if (state === 'err') { splashError(null); return; }
+    const labels = { ok:'Synchronisé ✓', syncing:'Synchronisation en cours…' };
     const overlay = document.getElementById('sync-overlay');
     document.getElementById('sync-overlay-text').textContent = labels[state] || '—';
     overlay.className = 'show ' + (state || '');
