@@ -1330,6 +1330,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     recalc();
   }
 
+  let offlineAcknowledged = false;
+  function connError(e) {
+    setSyncStatus('err');
+    if (!offlineAcknowledged) splashError(e);
+  }
+
   let syncOkTimer = null;
   function setSyncStatus(state) {
     document.getElementById('sync-dot').className = 'sync-pip ' + state;
@@ -1391,7 +1397,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     s.className = 'ss-error';
   }
   function ssReconnect() { splashState('connecting'); setTimeout(load, 150); }
-  function ssContinueOffline() { splashHide(); }
+  function ssContinueOffline() { offlineAcknowledged = true; splashHide(); }
 
   function getPayload() {
     const storedHwm = parseInt(localStorage.getItem('bm_hwm') || '0');
@@ -1493,7 +1499,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload), signal: ctrl.signal });
         clearTimeout(tid);
         setSyncStatus('ok');
-      } catch(e) { setSyncStatus('err'); }
+      } catch(e) { connError(e); }
     }, 800);
   }
 
@@ -1540,10 +1546,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         if (d.nextBudget) localStorage.setItem('bm_next_budget', JSON.stringify(d.nextBudget));
       }
       setSyncStatus('ok');
+      offlineAcknowledged = false;
       splashHide();
     } catch(e) {
-      setSyncStatus('err');
-      splashError(e);
+      connError(e);
     }
   }
 
@@ -1673,7 +1679,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
-  window.addEventListener('offline', () => setSyncStatus('err'));
+  window.addEventListener('offline', () => connError());
   window.addEventListener('online', () => {
     if (document.getElementById('lock-screen').classList.contains('hidden')) load();
   });
@@ -1825,7 +1831,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
         body: JSON.stringify({ action:'next_budget', data: nextBudget }) });
       setSyncStatus('ok');
-    } catch(_) { setSyncStatus('err'); }
+    } catch(e) { connError(e); }
     btn.classList.remove('nm-saving');
     showToast('Budget ' + getNextMoisLabel() + ' sauvegardé ✓');
     closeNextMonth();
