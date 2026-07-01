@@ -1338,7 +1338,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let syncOkTimer = null;
-  function setSyncStatus(state) {
+  function setSyncStatus(state, err) {
     document.getElementById('sync-dot').className = 'sync-pip ' + state;
     const t = document.getElementById('sync-status-toast');
     clearTimeout(syncOkTimer);
@@ -1348,10 +1348,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       syncOkTimer   = setTimeout(() => t.className = '', 3000);
     } else if (state === 'err') {
       t.textContent = navigator.onLine
-        ? 'Erreur de synchronisation · données locales — tap pour fermer'
-        : 'Hors ligne · données locales — tap pour fermer';
+        ? 'Erreur de synchronisation · données locales'
+        : 'Hors ligne · données locales';
       t.className   = 'show err-state';
       t.onclick     = () => { t.className = ''; };
+      if (err !== false && document.getElementById('lock-screen').classList.contains('hidden')) {
+        splashError(err instanceof Error ? err : null);
+      }
     } else {
       t.className = '';
     }
@@ -1498,7 +1501,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     saveTimer = setTimeout(async () => {
       const hwm = parseInt(localStorage.getItem('bm_hwm') || '0');
       if (hwm >= 5 && entries.length === 0) {
-        setSyncStatus('err');
+        setSyncStatus('err', false);
         showToast('⚠ Sync annulée · données vides détectées — rechargez');
         return;
       }
@@ -1509,7 +1512,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload), signal: ctrl.signal });
         clearTimeout(tid);
         setSyncStatus('ok');
-      } catch(e) { setSyncStatus('err'); splashError(e); }
+      } catch(e) { setSyncStatus('err', e); }
     }, 800);
   }
 
@@ -1558,8 +1561,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       setSyncStatus('ok');
       splashHide();
     } catch(e) {
-      setSyncStatus('err');
-      splashError(e);
+      setSyncStatus('err', e);
     }
   }
 
@@ -1595,7 +1597,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         moisActuel + ' a été archivé sur Google Sheets. Les dépenses réelles sont remises à zéro.',
         '→ ' + moisAttendu, '✓ Historique sauvegardé');
     } catch(e) {
-      setSyncStatus('err');
+      setSyncStatus('err', false);
       localStorage.setItem('bm_archive_bak_' + moisActuel, JSON.stringify(getPayload()));
       showModal('Archivage échoué',
         'Impossible de joindre Google Sheets. Tes données ' + moisActuel + ' sont sauvegardées en local.',
@@ -1689,10 +1691,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
-  window.addEventListener('offline', () => {
-    setSyncStatus('err');
-    if (document.getElementById('lock-screen').classList.contains('hidden')) splashError(null);
-  });
+  window.addEventListener('offline', () => { setSyncStatus('err'); });
   window.addEventListener('online', () => {
     if (document.getElementById('lock-screen').classList.contains('hidden')) { splashStart(); load(); }
   });
@@ -1844,7 +1843,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors',
         body: JSON.stringify({ action:'next_budget', data: nextBudget }) });
       setSyncStatus('ok');
-    } catch(e) { setSyncStatus('err'); splashError(e); }
+    } catch(e) { setSyncStatus('err', e); }
     btn.classList.remove('nm-saving');
     showToast('Budget ' + getNextMoisLabel() + ' sauvegardé ✓');
     closeNextMonth();
