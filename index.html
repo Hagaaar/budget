@@ -1389,6 +1389,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   function splashError(e) {
     const s = document.getElementById('sync-splash');
     s.classList.remove('hidden');
+    s.style.opacity = '';
     document.getElementById('ss-reason').textContent =
       !navigator.onLine        ? 'Aucune connexion internet détectée sur cet appareil.' :
       e?.name === 'AbortError' ? 'Le serveur ne répond pas (délai 10 s dépassé).' :
@@ -1688,7 +1689,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
 
-  window.addEventListener('offline', () => setSyncStatus('err'));
+  window.addEventListener('offline', () => {
+    setSyncStatus('err');
+    if (document.getElementById('lock-screen').classList.contains('hidden')) splashError(null);
+  });
   window.addEventListener('online', () => {
     if (document.getElementById('lock-screen').classList.contains('hidden')) { splashStart(); load(); }
   });
