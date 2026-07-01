@@ -1347,11 +1347,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       t.className   = 'show';
       syncOkTimer   = setTimeout(() => t.className = '', 3000);
     } else if (state === 'err') {
-      t.textContent = navigator.onLine
-        ? 'Erreur de synchronisation · données locales'
-        : 'Hors ligne · données locales';
-      t.className   = 'show err-state';
-      t.onclick     = () => { t.className = ''; };
+      t.className = '';
       if (err !== false && document.getElementById('lock-screen').classList.contains('hidden')) {
         splashError(err instanceof Error ? err : null);
       }
@@ -1502,7 +1498,6 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       const hwm = parseInt(localStorage.getItem('bm_hwm') || '0');
       if (hwm >= 5 && entries.length === 0) {
         setSyncStatus('err', false);
-        showToast('⚠ Sync annulée · données vides détectées — rechargez');
         return;
       }
       setSyncStatus('syncing');
