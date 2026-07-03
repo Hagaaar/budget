@@ -782,7 +782,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   if (items.length === 0) return;
 
-  items.sort((a, b) => b.variance - a.variance);
+  items.sort((a, b) => a.cat.localeCompare(b.cat, 'fr', { sensitivity: 'base' }));
 
   const maxPos = Math.max(...items.filter(d => d.variance > 0).map(d => d.variance), 1);
   const maxNeg = Math.max(...items.filter(d => d.variance < 0).map(d => Math.abs(d.variance)), 0);
@@ -830,11 +830,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     g.style.transition = 'opacity 0.18s';
     chartState.varGroups[d.cat] = g;
 
-    // Guideline: from BAR_START to Z, behind the bar
+    // Guideline: full track from BAR_START to BAR_END, behind bar on both sides
     const gl = document.createElementNS(NS, 'line');
-    gl.setAttribute('x1', ff(BAR_START)); gl.setAttribute('x2', ff(Z));
+    gl.setAttribute('x1', ff(BAR_START)); gl.setAttribute('x2', ff(BAR_END));
     gl.setAttribute('y1', ff(cy)); gl.setAttribute('y2', ff(cy));
-    gl.setAttribute('stroke', 'rgba(226,226,210,0.07)');
+    gl.setAttribute('stroke', 'rgba(226,226,210,0.18)');
     gl.setAttribute('stroke-width', '0.6');
     g.appendChild(gl);
 
@@ -853,11 +853,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     bar.setAttribute('opacity', isPos ? '0.82' : '0.95');
     g.appendChild(bar);
 
-    // Label — always extreme left, right-aligned
+    // Label — always extreme left, left-aligned
     const lbl = document.createElementNS(NS, 'text');
-    lbl.setAttribute('x', String(LBL_W - 5));
+    lbl.setAttribute('x', '2');
     lbl.setAttribute('y', ff(cy + 3.5));
-    lbl.setAttribute('text-anchor', 'end');
+    lbl.setAttribute('text-anchor', 'start');
     lbl.setAttribute('font-size', '9.5');
     lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
     lbl.setAttribute('fill', 'rgba(226,226,210,0.72)');
