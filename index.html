@@ -785,11 +785,17 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   items.sort((a, b) => b.variance - a.variance);
 
   const maxPos = Math.max(...items.filter(d => d.variance > 0).map(d => d.variance), 1);
-  const maxNeg = Math.max(...items.filter(d => d.variance < 0).map(d => Math.abs(d.variance)), 1);
+  const maxNeg = Math.max(...items.filter(d => d.variance < 0).map(d => Math.abs(d.variance)), 0);
 
   const NS = 'http://www.w3.org/2000/svg';
-  const ROW_H = 18, BAR_H = 10, n = items.length, H = n * ROW_H;
-  const Z = 165, NW = 90, PW = 115, W = 317;
+  const ROW_H = 20, BAR_H = 10, n = items.length, H = n * ROW_H;
+  const W = 310, LBL_W = 74, VAL_W = 36;
+  const BAR_START = LBL_W, BAR_END = W - VAL_W;
+  const BAR_AREA = BAR_END - BAR_START;
+  const totalMax = maxPos + maxNeg;
+  const Z = maxNeg > 0 ? BAR_START + (maxNeg / totalMax) * BAR_AREA : BAR_START;
+  const PW = BAR_END - Z;
+  const NW = Z - BAR_START;
   const ff = v => v.toFixed(1);
 
   const svg = document.createElementNS(NS, 'svg');
@@ -798,12 +804,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   svg.setAttribute('overflow', 'visible');
   svg.style.display = 'block';
 
+  // Zero line (vertical)
   const zl = document.createElementNS(NS, 'line');
-  zl.setAttribute('x1', String(Z)); zl.setAttribute('x2', String(Z));
+  zl.setAttribute('x1', ff(Z)); zl.setAttribute('x2', ff(Z));
   zl.setAttribute('y1', '0'); zl.setAttribute('y2', String(H));
-  zl.setAttribute('stroke', 'rgba(226,226,210,0.1)');
+  zl.setAttribute('stroke', 'rgba(226,226,210,0.13)');
   zl.setAttribute('stroke-width', '1');
-  zl.setAttribute('stroke-dasharray', '2,4');
   svg.appendChild(zl);
 
   chartState.varGroups = {};
@@ -819,12 +825,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     const by = cy - BAR_H / 2;
     const r = BAR_H / 2;
     const rr = Math.min(r, bw / 2);
-    const fill = d.color;
 
     const g = document.createElementNS(NS, 'g');
     g.style.transition = 'opacity 0.18s';
     chartState.varGroups[d.cat] = g;
 
+    // Guideline: from BAR_START to Z, behind the bar
+    const gl = document.createElementNS(NS, 'line');
+    gl.setAttribute('x1', ff(BAR_START)); gl.setAttribute('x2', ff(Z));
+    gl.setAttribute('y1', ff(cy)); gl.setAttribute('y2', ff(cy));
+    gl.setAttribute('stroke', 'rgba(226,226,210,0.07)');
+    gl.setAttribute('stroke-width', '0.6');
+    g.appendChild(gl);
+
+    // Bar
     let barPath;
     if (isPos) {
       const x0 = bx, x1 = bx + bw, y0 = by, y1 = by + BAR_H;
@@ -835,14 +849,14 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
     const bar = document.createElementNS(NS, 'path');
     bar.setAttribute('d', barPath);
-    bar.setAttribute('fill', fill);
-    bar.setAttribute('opacity', isPos ? '0.8' : '0.95');
+    bar.setAttribute('fill', d.color);
+    bar.setAttribute('opacity', isPos ? '0.82' : '0.95');
     g.appendChild(bar);
 
-    const lx = isPos ? (Z - 6) : (Z - bw - 6);
+    // Label — always extreme left, right-aligned
     const lbl = document.createElementNS(NS, 'text');
-    lbl.setAttribute('x', ff(lx));
-    lbl.setAttribute('y', ff(cy + 4));
+    lbl.setAttribute('x', String(LBL_W - 5));
+    lbl.setAttribute('y', ff(cy + 3.5));
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('font-size', '9.5');
     lbl.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
@@ -850,19 +864,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     lbl.textContent = d.cat;
     g.appendChild(lbl);
 
-    const vx = isPos ? (Z + bw + 6) : (Z + 6);
+    // Value — always extreme right, right-aligned
     const val = document.createElementNS(NS, 'text');
-    val.setAttribute('x', ff(vx));
-    val.setAttribute('y', ff(cy + 4));
-    val.setAttribute('text-anchor', 'start');
+    val.setAttribute('x', String(W - 1));
+    val.setAttribute('y', ff(cy + 3.5));
+    val.setAttribute('text-anchor', 'end');
     val.setAttribute('font-size', '9.5');
     val.setAttribute('font-weight', '700');
     val.setAttribute('font-family', 'Inter,-apple-system,sans-serif');
-    val.setAttribute('fill', '#C51F5D');
+    val.setAttribute('fill', isPos ? '#C51F5D' : 'rgba(226,226,210,0.5)');
     val.setAttribute('font-variant-numeric', 'tabular-nums');
     val.textContent = (isPos ? '+' : '−') + absVal;
     g.appendChild(val);
 
+    // Hit area
     const hit = document.createElementNS(NS, 'rect');
     hit.setAttribute('x', '0'); hit.setAttribute('y', String(i * ROW_H));
     hit.setAttribute('width', String(W)); hit.setAttribute('height', String(ROW_H));
