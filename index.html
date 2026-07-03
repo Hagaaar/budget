@@ -1528,7 +1528,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let _lastLoadTime = 0;
-  async function load() {
+  async function load(splashOnError = true) {
     _lastLoadTime = Date.now();
     let localData = null;
     const bk = localStorage.getItem('bm_bak');
@@ -1572,7 +1572,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       setSyncStatus('ok');
       splashHide();
     } catch(e) {
-      setSyncStatus('err', e);
+      setSyncStatus('err', splashOnError ? e : false);
     }
   }
 
@@ -1704,11 +1704,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   window.addEventListener('offline', () => { setSyncStatus('err'); });
   window.addEventListener('online', () => {
-    if (document.getElementById('lock-screen').classList.contains('hidden')) { splashStart(); load(); }
+    if (document.getElementById('lock-screen').classList.contains('hidden')) load(false);
   });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && document.getElementById('lock-screen').classList.contains('hidden')
-        && Date.now() - _lastLoadTime > 120000) { splashStart(); load(); }
+        && Date.now() - _lastLoadTime > 120000) load(false);
   });
 
   // ── Budget mois prochain ──
