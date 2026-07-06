@@ -58,11 +58,12 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 /* ── Confirm delete overlay ── */
 #confirm-overlay{position:fixed;inset:0;background:rgba(20,29,38,.85);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease;}
 #confirm-overlay.show{opacity:1;pointer-events:all;}
-#confirm-box{background:#243447;border-radius:24px;padding:28px 24px;width:100%;max-width:320px;text-align:center;transform:translateY(16px) scale(.96);transition:transform .25s cubic-bezier(.34,1.4,.64,1);}
+#confirm-box{background:#243447;border-radius:20px;padding:20px 18px;width:100%;max-width:320px;transform:translateY(16px) scale(.96);transition:transform .25s cubic-bezier(.34,1.4,.64,1);}
 #confirm-overlay.show #confirm-box{transform:translateY(0) scale(1);}
-.confirm-icon{font-size:34px;margin-bottom:10px;}
-.confirm-title{font-size:16px;font-weight:700;color:#E2E2D2;margin-bottom:6px;}
-.confirm-sub{font-size:13px;color:rgba(226,226,210,0.5);margin-bottom:22px;}
+#confirm-info{display:flex;align-items:center;gap:8px;margin-bottom:16px;min-height:32px;}
+#confirm-cat{font-size:12px;font-weight:700;color:#E2E2D2;background:rgba(226,226,210,0.1);border-radius:6px;padding:3px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;}
+#confirm-desc{font-size:13px;color:rgba(226,226,210,0.6);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#confirm-amount{font-size:14px;font-weight:700;color:#E2E2D2;white-space:nowrap;}
 .confirm-btns{display:flex;gap:10px;}
 .confirm-btn-del{flex:1;padding:13px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;}
 .confirm-btn-del:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
@@ -306,11 +307,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 <!-- Confirm delete overlay -->
 <div id="confirm-overlay">
   <div id="confirm-box">
-    <div class="confirm-icon">🗑️</div>
-    <div class="confirm-title">Supprimer ?</div>
-    <div class="confirm-sub" id="confirm-sub">Cette action est irréversible.</div>
+    <div id="confirm-info">
+      <span id="confirm-cat"></span>
+      <span id="confirm-desc"></span>
+      <span id="confirm-amount"></span>
+    </div>
     <div class="confirm-btns">
-      <button class="confirm-btn-del" id="confirm-del-btn" onclick="confirmDoDelete()">Supprimer</button>
+      <button class="confirm-btn-del" onclick="confirmDoDelete()">Supprimer</button>
       <button class="confirm-btn-cancel" onclick="confirmCancel()">Annuler</button>
     </div>
   </div>
@@ -1192,10 +1195,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   let _confirmCallback = null;
-  function confirmDelete(callback, label) {
+  function confirmDelete(callback, info) {
     _confirmCallback = callback;
-    const sub = label ? `Supprimer "${label}" ?` : 'Cette action est irréversible.';
-    document.getElementById('confirm-sub').textContent = sub;
+    document.getElementById('confirm-cat').textContent = info?.cat || '';
+    document.getElementById('confirm-desc').textContent = info?.desc || info?.label || '';
+    document.getElementById('confirm-amount').textContent = info?.amount != null ? fmt(info.amount) : '';
     document.getElementById('confirm-overlay').classList.add('show');
   }
   function confirmDoDelete() {
@@ -1208,10 +1212,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
 
   function removeEntry(id) {
+    const e = entries.find(x => x.id === id);
     confirmDelete(() => {
-      entries = entries.filter(e => e.id !== id);
+      entries = entries.filter(x => x.id !== id);
       recalc();
-    });
+    }, e ? { cat: e.cat, desc: e.desc, amount: e.montant } : null);
   }
 
   function renderBudgetSection(secKey) {
@@ -1272,7 +1277,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       renderBudgetSection(secKey);
       if (secKey === 'variable') refreshCatSelect();
       recalc();
-    }, row?.label);
+    }, row ? { cat: secKey, desc: row.label, amount: row.value } : null);
   }
 
   function reorderCatsByDom(newOrder) {
@@ -1863,7 +1868,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     confirmDelete(() => {
       nextBudget.sections[secKey] = nextBudget.sections[secKey].filter(r => r.id !== rowId);
       renderNextMonthBudget();
-    }, row?.label);
+    }, row ? { cat: secKey, desc: row.label, amount: row.value } : null);
   }
 
   function nextBudgetAddRow(secKey) {
