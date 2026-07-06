@@ -55,6 +55,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .modal-btn{width:100%;padding:14px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;}
 .modal-btn:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
 
+/* ── Confirm delete overlay ── */
+#confirm-overlay{position:fixed;inset:0;background:rgba(20,29,38,.85);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s ease;}
+#confirm-overlay.show{opacity:1;pointer-events:all;}
+#confirm-box{background:#243447;border-radius:24px;padding:28px 24px;width:100%;max-width:320px;text-align:center;transform:translateY(16px) scale(.96);transition:transform .25s cubic-bezier(.34,1.4,.64,1);}
+#confirm-overlay.show #confirm-box{transform:translateY(0) scale(1);}
+.confirm-icon{font-size:34px;margin-bottom:10px;}
+.confirm-title{font-size:16px;font-weight:700;color:#E2E2D2;margin-bottom:6px;}
+.confirm-sub{font-size:13px;color:rgba(226,226,210,0.5);margin-bottom:22px;}
+.confirm-btns{display:flex;gap:10px;}
+.confirm-btn-del{flex:1;padding:13px;background:#C51F5D;border-radius:14px;color:#141D26;font-size:15px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;}
+.confirm-btn-del:active{background:#8B1540;color:#E2E2D2;transform:scale(.97);}
+.confirm-btn-cancel{flex:1;padding:13px;background:rgba(226,226,210,0.08);border-radius:14px;color:#E2E2D2;font-size:15px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .15s,transform .1s;}
+.confirm-btn-cancel:active{background:rgba(226,226,210,0.16);transform:scale(.97);}
+
 /* ── Top bar ── */
 .top-bar{position:fixed;top:0;left:0;right:0;z-index:100;padding:6px 14px;background:#1C2735;border-radius:0 0 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:space-between;overflow:hidden;}
 .tab-pill{display:flex;align-items:center;background:rgba(20,29,38,.6);border-radius:28px;padding:4px;position:relative;gap:0;}
@@ -286,6 +300,19 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     <div class="modal-badge" id="modal-badge"></div>
     <div class="modal-status" id="modal-status"></div>
     <button class="modal-btn" onclick="closeModal()">C'est parti !</button>
+  </div>
+</div>
+
+<!-- Confirm delete overlay -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Supprimer ?</div>
+    <div class="confirm-sub" id="confirm-sub">Cette action est irréversible.</div>
+    <div class="confirm-btns">
+      <button class="confirm-btn-del" id="confirm-del-btn" onclick="confirmDoDelete()">Supprimer</button>
+      <button class="confirm-btn-cancel" onclick="confirmCancel()">Annuler</button>
+    </div>
   </div>
 </div>
 
@@ -1164,9 +1191,27 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     }
   }
 
+  let _confirmCallback = null;
+  function confirmDelete(callback, label) {
+    _confirmCallback = callback;
+    const sub = label ? `Supprimer "${label}" ?` : 'Cette action est irréversible.';
+    document.getElementById('confirm-sub').textContent = sub;
+    document.getElementById('confirm-overlay').classList.add('show');
+  }
+  function confirmDoDelete() {
+    document.getElementById('confirm-overlay').classList.remove('show');
+    if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+  }
+  function confirmCancel() {
+    document.getElementById('confirm-overlay').classList.remove('show');
+    _confirmCallback = null;
+  }
+
   function removeEntry(id) {
-    entries = entries.filter(e => e.id !== id);
-    recalc();
+    confirmDelete(() => {
+      entries = entries.filter(e => e.id !== id);
+      recalc();
+    });
   }
 
   function renderBudgetSection(secKey) {
@@ -1221,10 +1266,13 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
   }
   function removeBudgetRow(secKey, id) {
     if (budgetSections[secKey].length <= 1) return;
-    budgetSections[secKey] = budgetSections[secKey].filter(r => r.id !== id);
-    renderBudgetSection(secKey);
-    if (secKey === 'variable') refreshCatSelect();
-    recalc();
+    const row = budgetSections[secKey].find(r => r.id === id);
+    confirmDelete(() => {
+      budgetSections[secKey] = budgetSections[secKey].filter(r => r.id !== id);
+      renderBudgetSection(secKey);
+      if (secKey === 'variable') refreshCatSelect();
+      recalc();
+    }, row?.label);
   }
 
   function reorderCatsByDom(newOrder) {
@@ -1811,8 +1859,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 
   function nextBudgetDelRow(secKey, rowId) {
     if (!nextBudget?.sections[secKey]) return;
-    nextBudget.sections[secKey] = nextBudget.sections[secKey].filter(r => r.id !== rowId);
-    renderNextMonthBudget();
+    const row = nextBudget.sections[secKey].find(r => r.id === rowId);
+    confirmDelete(() => {
+      nextBudget.sections[secKey] = nextBudget.sections[secKey].filter(r => r.id !== rowId);
+      renderNextMonthBudget();
+    }, row?.label);
   }
 
   function nextBudgetAddRow(secKey) {
