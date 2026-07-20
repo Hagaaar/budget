@@ -438,7 +438,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
         <span class="badge-lbl" style="padding-left:10px;border-left:1px solid rgba(226,226,210,0.08);">Reste projeté</span>
         <span class="badge-lbl" style="padding-left:10px;border-left:1px solid rgba(226,226,210,0.08);">Total fixes</span>
         <span class="badge-lbl" style="padding-left:10px;border-left:1px solid rgba(226,226,210,0.08);">Budget variable</span>
-        <input class="badge-input" id="salaire" type="number" value="2779" oninput="recalc()">
+        <input class="badge-input" id="salaire" type="number" value="2779" oninput="recalc()" onfocus="this.select()">
         <span class="badge-val" id="b-reste" style="padding-left:10px;">313 €</span>
         <span class="badge-val" id="b-fixes" style="padding-left:10px;">1 806 €</span>
         <span class="badge-val" id="b-variable" style="padding-left:10px;">660 €</span>
@@ -1229,11 +1229,11 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
       div.id = 'brow-' + row.id;
       div.innerHTML = `
         <input class="budget-row-label-input" type="text" value="${row.label}"
-          onchange="updateBudgetRow(${row.id},'label',this.value)">
+          onchange="updateBudgetRow(${row.id},'label',this.value)" onfocus="this.select()">
         <div class="budget-input-wrap">
           <button class="budget-btn-step" onclick="stepBudgetRow(${row.id},-10)">−</button>
           <input class="budget-input" type="number" value="${row.value}"
-            onchange="updateBudgetRow(${row.id},'value',this.value)">
+            onchange="updateBudgetRow(${row.id},'value',this.value)" onfocus="this.select()">
           <button class="budget-btn-step" onclick="stepBudgetRow(${row.id},10)">+</button>
         </div>
         <button class="btn-row-del" onclick="removeBudgetRow('${secKey}',${row.id})">✕</button>`;
@@ -1806,7 +1806,7 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     let html = `<div class="badge-frame" style="flex-wrap:nowrap;gap:8px;margin-bottom:12px;justify-content:space-between;">
       <div class="badge-item" style="border-left:none;padding-left:0;">
         <span class="badge-lbl">Salaire net</span>
-        <input class="badge-input" id="next-salaire" type="number" value="${nextBudget.salaire||''}" oninput="updateNextMonthTotal()">
+        <input class="badge-input" id="next-salaire" type="number" value="${nextBudget.salaire||''}" oninput="updateNextMonthTotal()" onfocus="this.select()">
       </div>
       <div class="badge-item" style="padding-left:0;border-left:none;">
         <span class="badge-lbl">Budget variable</span>
@@ -1820,10 +1820,10 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
     secDefs.forEach(({ key, name }) => {
       const rows = (s[key] || []).map(row => `
         <div class="budget-row">
-          <input type="text" class="budget-row-label-input" data-next-label="${key}-${row.id}" value="${row.label.replace(/"/g,'&quot;')}" onchange="nextBudgetSetLabel('${key}',${row.id},this.value)">
+          <input type="text" class="budget-row-label-input" data-next-label="${key}-${row.id}" value="${row.label.replace(/"/g,'&quot;')}" onchange="nextBudgetSetLabel('${key}',${row.id},this.value)" onfocus="this.select()">
           <div class="budget-input-wrap">
             <button class="budget-btn-step" onclick="nextBudgetStep('${key}',${row.id},-10)">−</button>
-            <input class="budget-input" type="number" value="${row.value}" data-next="${key}-${row.id}" onchange="nextBudgetSet('${key}',${row.id},this.value)">
+            <input class="budget-input" type="number" value="${row.value}" data-next="${key}-${row.id}" onchange="nextBudgetSet('${key}',${row.id},this.value)" onfocus="this.select()">
             <button class="budget-btn-step" onclick="nextBudgetStep('${key}',${row.id},+10)">+</button>
           </div>
           <button class="btn-row-del" onclick="nextBudgetDelRow('${key}',${row.id})">×</button>
